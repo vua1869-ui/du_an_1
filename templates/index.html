@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BalanceNutrition AI Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+        .section-hidden { display: none; }
+        .section-active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-box { height: 400px; overflow-y: auto; }
+        #boundingBoxCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col min-h-screen">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="font-black text-xl text-emerald-600"><i class="fa-solid fa-leaf"></i> BalanceNutrition Pro</div>
+            <div class="flex gap-2">
+                <button onclick="switchTab('scan')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100">Scan (YOLO)</button>
+                <button onclick="switchTab('diet')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">Diet Planner</button>
+                <button onclick="switchTab('chat')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100">RAG Chatbot</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-6xl mx-auto w-full p-4 mt-6">
+        
+        <section id="sec-scan" class="section-active max-w-4xl mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold mb-4">Computer Vision (YOLOv8)</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="relative min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex items-center justify-center">
+                        <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" onchange="previewImage(event)">
+                        <div id="uploadPlaceholder" class="text-center text-gray-400"><i class="fa-solid fa-cloud-arrow-up text-4xl mb-2"></i><p>Tải ảnh lên</p></div>
+                        <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex items-center justify-center p-2">
+                            <img id="imagePreview" class="max-h-full max-w-full rounded" alt="Preview">
+                            <canvas id="boundingBoxCanvas"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btn-analyze" onclick="startAIAnalysis()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl mb-4 disabled:opacity-50">Phân tích AI</button>
+                        <div id="result-box" class="p-4 bg-gray-50 rounded-xl min-h-[200px]">Kết quả YOLO sẽ hiện ở đây...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-diet" class="section-hidden max-w-4xl mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold mb-4">Thuật toán Bốc xuất Thực đơn</h2>
+                <button onclick="calcDiet()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl mb-6">Tạo thực đơn ngẫu nhiên từ SQLite</button>
+                <div id="diet-result" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <section id="sec-chat" class="section-hidden max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-purple-600 p-4 text-white font-bold"><i class="fa-solid fa-robot mr-2"></i> Trợ lý Dinh dưỡng (Gemini LLM + RAG)</div>
+                <div id="chat-history" class="chat-box p-6 space-y-4 bg-gray-50">
+                    <div class="flex"><div class="bg-white p-3 rounded-xl shadow-sm max-w-[80%] text-sm">Chào bạn, tôi là trợ lý AI được kết nối với CSDL dinh dưỡng. Tôi có thể giúp gì cho bạn?</div></div>
+                </div>
+                <div class="p-4 bg-white border-t flex gap-2">
+                    <input type="text" id="chat-input" class="flex-grow border rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" placeholder="Hỏi về calo, tư vấn món ăn...">
+                    <button onclick="sendChat()" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(sec => { sec.classList.remove('section-active'); sec.classList.add('section-hidden'); });
+            document.getElementById('sec-' + tabId).classList.remove('section-hidden');
+            document.getElementById('sec-' + tabId).classList.add('section-active');
+        }
+
+        let currentFile = null;
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                currentFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                    const img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    document.getElementById('btn-analyze').disabled = false;
+                    const canvas = document.getElementById('boundingBoxCanvas');
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    document.getElementById('result-box').innerHTML = "Sẵn sàng phân tích...";
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function startAIAnalysis() {
+            if(!currentFile) return;
+            const btn = document.getElementById('btn-analyze');
+            btn.innerHTML = 'Đang xử lý...'; btn.disabled = true;
+            
+            const formData = new FormData(); formData.append("image", currentFile);
+
+            fetch("/api/analyze", { method: "POST", body: formData })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = 'Phân tích AI'; btn.disabled = false;
+                let resHTML = `<p class="font-bold mb-2">Phát hiện ${data.detections.length} vật thể:</p><ul class="list-disc pl-5">`;
+                
+                const canvas = document.getElementById('boundingBoxCanvas');
+                const img = document.getElementById('imagePreview');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.clientWidth; canvas.height = img.clientHeight;
+                
+                const scaleX = canvas.width / data.image_size[0];
+                const scaleY = canvas.height / data.image_size[1];
+
+                data.detections.forEach(d => {
+                    resHTML += `<li>${d.label} - Tin cậy: ${d.confidence}%</li>`;
+                    ctx.beginPath();
+                    ctx.rect(d.box[0]*scaleX, d.box[1]*scaleY, (d.box[2]-d.box[0])*scaleX, (d.box[3]-d.box[1])*scaleY);
+                    ctx.lineWidth = 3; ctx.strokeStyle = '#10b981'; ctx.stroke();
+                    ctx.fillStyle = '#10b981';
+                    ctx.font = '14px Arial'; ctx.fillText(d.label, d.box[0]*scaleX, (d.box[1]*scaleY) - 5);
+                });
+                resHTML += '</ul>';
+                document.getElementById('result-box').innerHTML = data.detections.length > 0 ? resHTML : "Không tìm thấy đồ ăn.";
+            });
+        }
+
+        function calcDiet() {
+            fetch("/api/diet", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({tdee: 2000})})
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) { document.getElementById('diet-result').innerHTML = `<p class="text-red-500">${data.error}</p>`; return; }
+                document.getElementById('diet-result').innerHTML = `
+                    <div class="p-4 bg-emerald-50 rounded font-bold">Tổng Calo: ${data.total_calories} | Pro: ${data.total_protein}g</div>
+                    <div class="p-3 border rounded">Sáng: ${data.meals.breakfast.name} (${data.meals.breakfast.cals} kcal)</div>
+                    <div class="p-3 border rounded">Trưa: ${data.meals.lunch.name} (${data.meals.lunch.cals} kcal)</div>
+                    <div class="p-3 border rounded">Tối: ${data.meals.dinner.name} (${data.meals.dinner.cals} kcal)</div>
+                `;
+            });
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            const history = document.getElementById('chat-history');
+            history.innerHTML += `<div class="flex justify-end"><div class="bg-purple-100 p-3 rounded-xl max-w-[80%] text-sm">${text}</div></div>`;
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+            
+            const loadingId = 'load-' + Date.now();
+            history.innerHTML += `<div id="${loadingId}" class="flex"><div class="text-gray-400 text-sm p-3">AI đang suy nghĩ...</div></div>`;
+            
+            fetch("/api/chat", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({message: text})})
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(loadingId).remove();
+                const cleanResponse = data.response.replace(/\n/g, '<br>');
+                history.innerHTML += `<div class="flex"><div class="bg-white border p-3 rounded-xl shadow-sm max-w-[80%] text-sm">${cleanResponse}</div></div>`;
+                history.scrollTop = history.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Flask==3.0.0
+torch
+torchvision
+pandas
+ultralytics
+opencv-python-headless
+google-generativeai
+python-dotenv
