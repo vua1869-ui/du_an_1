@@ -4,5 +4,8 @@ torchvision
 pandas
 ultralytics
 opencv-python-headless
-google-generativeai
+google-genai
 python-dotenv
+inference-sdk
+sentence-transformers
+chromadb

@@ -3,173 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BalanceNutrition AI Pro</title>
+    <title>NutritionAI Tracker - Quản lý dinh dưỡng</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-        .section-hidden { display: none; }
-        .section-active { display: block; animation: fadeIn 0.4s ease-out; }
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-box { height: 400px; overflow-y: auto; }
-        #boundingBoxCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
     </style>
 </head>
-<body class="text-gray-800 flex flex-col min-h-screen">
+<body class="text-gray-800">
 
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="font-black text-xl text-emerald-600"><i class="fa-solid fa-leaf"></i> BalanceNutrition Pro</div>
-            <div class="flex gap-2">
-                <button onclick="switchTab('scan')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100">Scan (YOLO)</button>
-                <button onclick="switchTab('diet')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">Diet Planner</button>
-                <button onclick="switchTab('chat')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100">RAG Chatbot</button>
+    <!-- ================= MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ ================= -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-blue-800 text-white p-3 rounded-full text-2xl mb-3">🌿</div>
+                <h1 class="text-3xl font-extrabold text-blue-900">NutritionAI Tracker</h1>
+                <p class="text-gray-500 mt-2">Đăng nhập để theo dõi dinh dưỡng của bạn</p>
             </div>
-        </div>
-    </nav>
+            
+            <div class="flex border-b-2 border-gray-100 mb-6">
+                <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-2 font-semibold text-blue-800 border-b-2 border-blue-800">Đăng Nhập</button>
+                <button id="tab-register" onclick="switchTab('register')" class="flex-1 py-2 font-semibold text-gray-400 border-b-2 border-transparent">Đăng Ký</button>
+            </div>
 
-    <main class="flex-grow max-w-6xl mx-auto w-full p-4 mt-6">
-        
-        <section id="sec-scan" class="section-active max-w-4xl mx-auto">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-2xl font-bold mb-4">Computer Vision (YOLOv8)</h2>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="relative min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex items-center justify-center">
-                        <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" onchange="previewImage(event)">
-                        <div id="uploadPlaceholder" class="text-center text-gray-400"><i class="fa-solid fa-cloud-arrow-up text-4xl mb-2"></i><p>Tải ảnh lên</p></div>
-                        <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex items-center justify-center p-2">
-                            <img id="imagePreview" class="max-h-full max-w-full rounded" alt="Preview">
-                            <canvas id="boundingBoxCanvas"></canvas>
+            <form id="form-login" class="space-y-4" onsubmit="handleAuth(event)">
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-1">Email</label>
+                    <input type="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition" placeholder="you@example.com">
+                </div>
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-1">Mật khẩu</label>
+                    <input type="password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-lg transition duration-300">Đăng Nhập</button>
+            </form>
+
+            <form id="form-register" class="space-y-4 hidden" onsubmit="handleAuth(event)">
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-1">Họ và Tên</label>
+                    <input type="text" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition" placeholder="Nguyễn Văn A">
+                </div>
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-1">Email</label>
+                    <input type="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition" placeholder="you@example.com">
+                </div>
+                <div>
+                    <label class="block text-gray-600 text-sm font-medium mb-1">Mật khẩu</label>
+                    <input type="password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition" placeholder="Tối thiểu 6 ký tự">
+                </div>
+                <button type="submit" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-lg transition duration-300">Tạo Tài Khoản</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD ỨNG DỤNG ================= -->
+    <div id="app-screen" class="hidden min-h-screen flex flex-col">
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-blue-800 text-2xl">🌿</span>
+                    <h1 class="text-xl font-extrabold text-blue-900 hidden sm:block">NutritionAI</h1>
+                </div>
+                <button onclick="logout()" class="text-sm font-medium text-gray-500 hover:text-red-600">Đăng xuất</button>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Xin chào, User 👋</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800">Mục tiêu hôm nay</h3>
+                        <button onclick="openScanModal()" class="text-sm text-white bg-blue-600 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700">+ Thêm thức ăn bằng AI</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Mục tiêu</p>
+                            <p class="text-2xl font-extrabold text-gray-900" id="dash-goal">2150</p>
+                            <p class="text-xs text-gray-400">kcal</p>
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <p class="text-xs text-blue-500 uppercase tracking-wider mb-1">Đã nạp</p>
+                            <p class="text-2xl font-extrabold text-blue-700" id="dash-eaten">0</p>
+                            <p class="text-xs text-blue-400">kcal</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <p class="text-xs text-green-500 uppercase tracking-wider mb-1">Còn lại</p>
+                            <p class="text-2xl font-extrabold text-green-600" id="dash-remaining">2150</p>
+                            <p class="text-xs text-green-400">kcal</p>
                         </div>
                     </div>
-                    <div>
-                        <button id="btn-analyze" onclick="startAIAnalysis()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl mb-4 disabled:opacity-50">Phân tích AI</button>
-                        <div id="result-box" class="p-4 bg-gray-50 rounded-xl min-h-[200px]">Kết quả YOLO sẽ hiện ở đây...</div>
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-100">
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <div class="flex justify-between mb-1"><span class="font-medium text-red-600">Protein</span><span class="text-gray-500" id="macro-p-text">0g</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-p" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1"><span class="font-medium text-blue-600">Carbs</span><span class="text-gray-500" id="macro-c-text">0g</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-c" class="bg-blue-700 h-2.5 rounded-full" style="width: 0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1"><span class="font-medium text-yellow-600">Fat</span><span class="text-gray-500" id="macro-f-text">0g</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-f" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4">Tính lại TDEE & Gợi ý</h3>
+                    <div class="flex gap-2 items-end">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1">TDEE (kcal)</label>
+                            <input type="number" id="tdee-input" value="2150" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800">
+                        </div>
+                        <button onclick="getDiet()" class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg">Lập thực đơn</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Hệ thống sẽ gợi ý món ăn chuẩn TDEE.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4">Nhật ký ăn uống hôm nay</h3>
+                    <div id="today-logs" class="space-y-2">
+                        <p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4">Gợi ý thực đơn AI</h3>
+                    <div id="diet-results">
+                        <p class="text-gray-400 text-sm">Nhấn "Lập thực đơn" để AI gợi ý.</p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <section id="sec-diet" class="section-hidden max-w-4xl mx-auto">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-2xl font-bold mb-4">Thuật toán Bốc xuất Thực đơn</h2>
-                <button onclick="calcDiet()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl mb-6">Tạo thực đơn ngẫu nhiên từ SQLite</button>
-                <div id="diet-result" class="space-y-4"></div>
-            </div>
-        </section>
-
-        <section id="sec-chat" class="section-hidden max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="bg-purple-600 p-4 text-white font-bold"><i class="fa-solid fa-robot mr-2"></i> Trợ lý Dinh dưỡng (Gemini LLM + RAG)</div>
-                <div id="chat-history" class="chat-box p-6 space-y-4 bg-gray-50">
-                    <div class="flex"><div class="bg-white p-3 rounded-xl shadow-sm max-w-[80%] text-sm">Chào bạn, tôi là trợ lý AI được kết nối với CSDL dinh dưỡng. Tôi có thể giúp gì cho bạn?</div></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-1">
+                    <h3 class="font-bold text-gray-800 mb-4">Tỷ lệ Macro hôm nay</h3>
+                    <div class="relative h-48 flex items-center justify-center">
+                        <canvas id="macroChart"></canvas>
+                    </div>
                 </div>
-                <div class="p-4 bg-white border-t flex gap-2">
-                    <input type="text" id="chat-input" class="flex-grow border rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500" placeholder="Hỏi về calo, tư vấn món ăn...">
-                    <button onclick="sendChat()" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+                    <h3 class="font-bold text-gray-800 mb-4">Thống kê Calo 7 ngày qua</h3>
+                    <div class="relative h-48">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </section>
+        </main>
+    </div>
 
-    </main>
+    <!-- ================= MODAL QUÉT ẢNH (POPUP) ================= -->
+    <div id="scan-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 fade-in relative">
+            <button onclick="closeScanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Nhận diện thức ăn bằng AI</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-800 transition">
+                        <input type="file" id="image-input" class="hidden" onchange="uploadImage()">
+                        <div id="upload-placeholder" class="text-gray-500">
+                            <span class="text-4xl">📷</span>
+                            <p class="mt-3 font-medium">Tải ảnh món ăn lên</p>
+                            <p class="text-xs text-gray-400">Hỗ trợ nhận diện mọi loại thức ăn</p>
+                        </div>
+                        <img id="image-preview" class="hidden max-h-60 mx-auto rounded-lg" />
+                    </label>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">Phân tích AI</h3>
+                    <div id="scan-results" class="text-gray-500">
+                        <p class="text-gray-400">Chưa có dữ liệu. Vui lòng tải ảnh lên.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CHATBOT NỔI (FLOATING WIDGET) ================= -->
+    <button id="chat-toggle-btn" onclick="toggleChat()" class="hidden fixed bottom-6 right-6 bg-blue-800 text-white p-4 rounded-full shadow-lg hover:bg-blue-900 z-30">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+    </button>
+
+    <div id="chat-window" class="hidden fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-2xl border border-gray-200 z-30 flex flex-col" style="height: 500px;">
+        <div class="bg-blue-800 text-white p-4 rounded-t-xl flex justify-between items-center">
+            <h3 class="font-bold">Trợ lý Dinh Dưỡng AI</h3>
+            <button onclick="toggleChat()" class="text-blue-200 hover:text-white">&times;</button>
+        </div>
+        <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50"></div>
+        <div class="p-3 border-t border-gray-200 bg-white flex gap-2 rounded-b-xl">
+            <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendMessage()" class="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-800 text-sm" placeholder="Hỏi về calo, món ăn...">
+            <button onclick="sendMessage()" class="bg-blue-800 text-white font-medium px-4 py-2 rounded-full text-sm">Gửi</button>
+        </div>
+    </div>
 
     <script>
-        function switchTab(tabId) {
-            document.querySelectorAll('section').forEach(sec => { sec.classList.remove('section-active'); sec.classList.add('section-hidden'); });
-            document.getElementById('sec-' + tabId).classList.remove('section-hidden');
-            document.getElementById('sec-' + tabId).classList.add('section-active');
-        }
-
-        let currentFile = null;
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                currentFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('uploadPlaceholder').classList.add('hidden');
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                    const img = document.getElementById('imagePreview');
-                    img.src = e.target.result;
-                    document.getElementById('btn-analyze').disabled = false;
-                    const canvas = document.getElementById('boundingBoxCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    document.getElementById('result-box').innerHTML = "Sẵn sàng phân tích...";
-                }
-                reader.readAsDataURL(file);
+        // --- LOGIC AUTH ---
+        function switchTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const registerForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden'); registerForm.classList.add('hidden');
+                tabLogin.classList.add('border-blue-800', 'text-blue-800'); tabLogin.classList.remove('text-gray-400', 'border-transparent');
+                tabRegister.classList.add('text-gray-400', 'border-transparent'); tabRegister.classList.remove('border-blue-800', 'text-blue-800');
+            } else {
+                loginForm.classList.add('hidden'); registerForm.classList.remove('hidden');
+                tabRegister.classList.add('border-blue-800', 'text-blue-800'); tabRegister.classList.remove('text-gray-400', 'border-transparent');
+                tabLogin.classList.add('text-gray-400', 'border-transparent'); tabLogin.classList.remove('border-blue-800', 'text-blue-800');
             }
         }
 
-        function startAIAnalysis() {
-            if(!currentFile) return;
-            const btn = document.getElementById('btn-analyze');
-            btn.innerHTML = 'Đang xử lý...'; btn.disabled = true;
-            
-            const formData = new FormData(); formData.append("image", currentFile);
+        function handleAuth(e) {
+            e.preventDefault();
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('app-screen').classList.add('flex');
+            document.getElementById('chat-toggle-btn').classList.remove('hidden'); // Hiện nút chat
+            loadTodayLogs(); 
+            loadWeeklyChart(); 
+            getDiet(); 
+        }
 
-            fetch("/api/analyze", { method: "POST", body: formData })
+        function logout() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('flex');
+            document.getElementById('chat-toggle-btn').classList.add('hidden'); // Ẩn nút chat
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        // --- LOGIC MODAL QUÉT ẢNH ---
+        function openScanModal() {
+            document.getElementById('scan-modal').classList.remove('hidden');
+        }
+        function closeScanModal() {
+            document.getElementById('scan-modal').classList.add('hidden');
+            // Reset modal
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('image-input').value = '';
+            document.getElementById('scan-results').innerHTML = '<p class="text-gray-400">Chưa có dữ liệu. Vui lòng tải ảnh lên.</p>';
+        }
+
+        // --- LOGIC CHATBOT TOGGLE ---
+        function toggleChat() {
+            const chatWin = document.getElementById('chat-window');
+            chatWin.classList.toggle('hidden');
+        }
+
+        // --- LOGIC QUÉT ẢNH ---
+        function uploadImage() {
+            const file = document.getElementById('image-input').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('upload-placeholder').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            const resultsDiv = document.getElementById('scan-results');
+            resultsDiv.innerHTML = '<p class="text-blue-600 animate-pulse font-medium">⏳ AI đang phân tích món ăn...</p>';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/api/analyze', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) { resultsDiv.innerHTML = `<p class="text-red-500">${data.error}</p>`; return; }
+                    const a = data.analysis;
+                    if (a.dish_name === "Không phải thức ăn") {
+                        resultsDiv.innerHTML = `<p class="text-orange-500 font-medium">🤖 ${a.description}</p>`;
+                        return;
+                    }
+
+                    let html = `
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider">Món ăn nhận diện</p>
+                                <h3 class="text-lg font-bold text-blue-800">${a.dish_name}</h3>
+                                <p class="text-sm text-gray-500 mt-1">${a.description}</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-lg text-center">
+                                <p class="text-2xl font-extrabold text-blue-700">${a.calories} <span class="text-sm font-normal">kcal</span></p>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                <div class="p-2 bg-gray-50 rounded-lg"><p class="text-red-500 font-medium">Protein</p><p class="font-bold">${a.protein}g</p></div>
+                                <div class="p-2 bg-gray-50 rounded-lg"><p class="text-blue-600 font-medium">Carbs</p><p class="font-bold">${a.carbs}g</p></div>
+                                <div class="p-2 bg-gray-50 rounded-lg"><p class="text-yellow-600 font-medium">Fat</p><p class="font-bold">${a.fat}g</p></div>
+                            </div>
+                            <button onclick='addFoodToLog(${JSON.stringify(a)})' class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition text-sm">
+                                + Thêm vào Nhật ký
+                            </button>
+                        </div>`;
+                    resultsDiv.innerHTML = html;
+                })
+                .catch(() => resultsDiv.innerHTML = '<p class="text-red-500">Lỗi server.</p>');
+        }
+
+        // --- LOGIC THỰC ĐƠN ---
+        function getDiet() {
+            const tdee = document.getElementById('tdee-input').value;
+            const resultsDiv = document.getElementById('diet-results');
+            resultsDiv.innerHTML = '<p class="text-blue-600 animate-pulse">⏳ Đang tạo thực đơn...</p>';
+
+            fetch('/api/diet', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tdee: parseInt(tdee) })
+            })
             .then(res => res.json())
             .then(data => {
-                btn.innerHTML = 'Phân tích AI'; btn.disabled = false;
-                let resHTML = `<p class="font-bold mb-2">Phát hiện ${data.detections.length} vật thể:</p><ul class="list-disc pl-5">`;
+                if (data.error) { resultsDiv.innerHTML = `<p class="text-red-500">${data.error}</p>`; return; }
+                const meals = data.meals;
+                const icons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
                 
-                const canvas = document.getElementById('boundingBoxCanvas');
-                const img = document.getElementById('imagePreview');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.clientWidth; canvas.height = img.clientHeight;
-                
-                const scaleX = canvas.width / data.image_size[0];
-                const scaleY = canvas.height / data.image_size[1];
+                let html = '<div class="space-y-3">';
+                for (const [key, value] of Object.entries(meals)) {
+                    const foodObj = { dish_name: value.name, calories: value.cals, protein: 0, carbs: 0, fat: 0, meal_type: key };
+                    html += `
+                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100 flex justify-between items-center">
+                            <div>
+                                <span class="mr-2">${icons[key]}</span>
+                                <span class="font-semibold text-gray-800 text-sm">${value.name}</span>
+                                <p class="text-xs text-gray-500 ml-7">${value.cals} kcal</p>
+                            </div>
+                            <button onclick='addFoodToLog(${JSON.stringify(foodObj)})' class="text-xs bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-md hover:bg-blue-200">+ Thêm</button>
+                        </div>`;
+                }
+                html += '</div>';
+                resultsDiv.innerHTML = html;
 
-                data.detections.forEach(d => {
-                    resHTML += `<li>${d.label} - Tin cậy: ${d.confidence}%</li>`;
-                    ctx.beginPath();
-                    ctx.rect(d.box[0]*scaleX, d.box[1]*scaleY, (d.box[2]-d.box[0])*scaleX, (d.box[3]-d.box[1])*scaleY);
-                    ctx.lineWidth = 3; ctx.strokeStyle = '#10b981'; ctx.stroke();
-                    ctx.fillStyle = '#10b981';
-                    ctx.font = '14px Arial'; ctx.fillText(d.label, d.box[0]*scaleX, (d.box[1]*scaleY) - 5);
+                document.getElementById('dash-goal').innerText = data.target_tdee;
+                loadTodayLogs(); 
+            });
+        }
+
+        // --- LOGIC NHẬT KÝ (FOOD LOG) ---
+        function addFoodToLog(foodData) {
+            const payload = {
+                name: foodData.dish_name,
+                calories: foodData.calories,
+                protein: foodData.protein,
+                carbs: foodData.carbs,
+                fat: foodData.fat,
+                meal_type: foodData.meal_type || 'snack'
+            };
+
+            fetch('/api/log_food', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("✅ Đã thêm món ăn vào nhật ký!");
+                closeScanModal(); // Đóng popup quét ảnh lại
+                loadTodayLogs(); 
+            })
+            .catch(err => alert("Lỗi khi thêm món: " + err));
+        }
+
+        function loadTodayLogs() {
+            fetch('/api/today_logs')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.foods || data.foods.length === 0) {
+                    document.getElementById('today-logs').innerHTML = '<p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm.</p>';
+                    updateMacroChart(0,0,0);
+                    return;
+                }
+
+                const goal = parseInt(document.getElementById('dash-goal').innerText);
+                const eaten = data.totals.calories;
+                const remaining = goal - eaten;
+                
+                document.getElementById('dash-eaten').innerText = eaten;
+                document.getElementById('dash-remaining').innerText = remaining >= 0 ? remaining : 0;
+
+                const goalP = 100, goalC = 130, goalF = 60;
+                document.getElementById('macro-p-text').innerText = `${data.totals.protein}g / ${goalP}g`;
+                document.getElementById('macro-c-text').innerText = `${data.totals.carbs}g / ${goalC}g`;
+                document.getElementById('macro-f-text').innerText = `${data.totals.fat}g / ${goalF}g`;
+                
+                document.getElementById('bar-p').style.width = Math.min(100, (data.totals.protein/goalP)*100) + '%';
+                document.getElementById('bar-c').style.width = Math.min(100, (data.totals.carbs/goalC)*100) + '%';
+                document.getElementById('bar-f').style.width = Math.min(100, (data.totals.fat/goalF)*100) + '%';
+
+                const icons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍪' };
+                let html = '<div class="space-y-2">';
+                data.foods.forEach(food => {
+                    html += `
+                        <div class="flex justify-between items-center p-3 border-b border-gray-100">
+                            <div>
+                                <span class="mr-2">${icons[food.meal_type]}</span>
+                                <span class="font-medium text-sm text-gray-800">${food.name}</span>
+                            </div>
+                            <span class="text-sm text-gray-500 font-semibold">${food.calories} kcal</span>
+                        </div>`;
                 });
-                resHTML += '</ul>';
-                document.getElementById('result-box').innerHTML = data.detections.length > 0 ? resHTML : "Không tìm thấy đồ ăn.";
+                html += '</div>';
+                document.getElementById('today-logs').innerHTML = html;
+
+                updateMacroChart(data.totals.protein, data.totals.carbs, data.totals.fat);
             });
         }
 
-        function calcDiet() {
-            fetch("/api/diet", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({tdee: 2000})})
+        // --- LOGIC BIỂU ĐỒ (CHART.JS) ---
+        let macroChartInstance = null;
+        let weeklyChartInstance = null;
+
+        function loadWeeklyChart() {
+            fetch('/api/weekly_stats')
             .then(res => res.json())
             .then(data => {
-                if(data.error) { document.getElementById('diet-result').innerHTML = `<p class="text-red-500">${data.error}</p>`; return; }
-                document.getElementById('diet-result').innerHTML = `
-                    <div class="p-4 bg-emerald-50 rounded font-bold">Tổng Calo: ${data.total_calories} | Pro: ${data.total_protein}g</div>
-                    <div class="p-3 border rounded">Sáng: ${data.meals.breakfast.name} (${data.meals.breakfast.cals} kcal)</div>
-                    <div class="p-3 border rounded">Trưa: ${data.meals.lunch.name} (${data.meals.lunch.cals} kcal)</div>
-                    <div class="p-3 border rounded">Tối: ${data.meals.dinner.name} (${data.meals.dinner.cals} kcal)</div>
-                `;
+                const ctx = document.getElementById('weeklyChart').getContext('2d');
+                if (weeklyChartInstance) weeklyChartInstance.destroy();
+                
+                weeklyChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Calo nạp vào',
+                            data: data.calories,
+                            backgroundColor: '#2563eb', 
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
             });
         }
 
-        function sendChat() {
+        function updateMacroChart(p, c, f) {
+            const ctx = document.getElementById('macroChart').getContext('2d');
+            if (macroChartInstance) macroChartInstance.destroy();
+            
+            macroChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Protein (g)', 'Carbs (g)', 'Fat (g)'],
+                    datasets: [{
+                        data: [p, c, f],
+                        backgroundColor: ['#ef4444', '#2563eb', '#eab308'], 
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // --- LOGIC CHATBOT ---
+        function sendMessage() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text) return;
-            
-            const history = document.getElementById('chat-history');
-            history.innerHTML += `<div class="flex justify-end"><div class="bg-purple-100 p-3 rounded-xl max-w-[80%] text-sm">${text}</div></div>`;
+            const msg = input.value.trim();
+            if (!msg) return;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-blue-800 text-white px-3 py-2 rounded-2xl rounded-tr-sm max-w-[80%] text-sm">${msg}</div></div>`;
             input.value = '';
-            history.scrollTop = history.scrollHeight;
-            
-            const loadingId = 'load-' + Date.now();
-            history.innerHTML += `<div id="${loadingId}" class="flex"><div class="text-gray-400 text-sm p-3">AI đang suy nghĩ...</div></div>`;
-            
-            fetch("/api/chat", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({message: text})})
+            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.innerHTML += `<div id="typing" class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-500 px-3 py-2 rounded-2xl rounded-tl-sm text-sm">AI đang trả lời...</div></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            fetch('/api/chat', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            })
             .then(res => res.json())
             .then(data => {
-                document.getElementById(loadingId).remove();
-                const cleanResponse = data.response.replace(/\n/g, '<br>');
-                history.innerHTML += `<div class="flex"><div class="bg-white border p-3 rounded-xl shadow-sm max-w-[80%] text-sm">${cleanResponse}</div></div>`;
-                history.scrollTop = history.scrollHeight;
+                document.getElementById('typing').remove();
+                const formattedResponse = data.response.replace(/\n/g, '<br>');
+                chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-2xl rounded-tl-sm max-w-[80%] shadow-sm text-sm">${formattedResponse}</div></div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
     </script>
