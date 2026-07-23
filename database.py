@@ -80,7 +80,23 @@ def init_db():
     conn.commit()
     conn.close()
     
-def get_diet_plan(tdee):
+def score_food(food, goal):
+    # food = (id, meal_type, name, calories, protein, carbs, fat)
+    cals, protein, fat = food[3], food[4], food[6]
+    if cals <= 0:
+        return -999
+    protein_ratio = (protein * 4) / cals
+    fat_ratio = (fat * 9) / cals
+    density = cals
+
+    if goal == "giam_can":
+        return protein_ratio * 2 - fat_ratio - (density / 500)
+    elif goal == "tang_can":
+        return (density / 300) + protein_ratio
+    else:
+        return protein_ratio
+
+def get_diet_plan(tdee, goal="duy_tri"):
     conn = sqlite3.connect('balance_nutrition.db')
     c = conn.cursor()
     c.execute('SELECT * FROM foods WHERE meal_type="breakfast"')
@@ -92,11 +108,12 @@ def get_diet_plan(tdee):
     if not breakfasts or len(main_meals) < 2:
         return {"error": "Thiếu dữ liệu DB."}
 
+    breakfasts = sorted(breakfasts, key=lambda f: score_food(f, goal), reverse=True)[:15]
+    main_meals = sorted(main_meals, key=lambda f: score_food(f, goal), reverse=True)[:15]
+
     bf = random.choice(breakfasts)
-    # Chọn 2 món chính KHÁC NHAU cho trưa/tối (loại bỏ trùng)
     lu, dn = random.sample(main_meals, 2)
 
-    # Chia TDEE theo tỉ lệ chuẩn: sáng 25% / trưa 40% / tối 35%
     targets = {'bf': tdee * 0.25, 'lu': tdee * 0.40, 'dn': tdee * 0.35}
 
     def scale(item, target_cals):

@@ -1,9 +1,11 @@
 from google import genai
 import sqlite3
 import os
+import re
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 import chromadb
+from database import get_diet_plan
 
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
@@ -23,6 +25,17 @@ embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 chroma_client = chromadb.Client()
 collection = chroma_client.get_or_create_collection(name="food_database")
 
+# Từ khóa nhận diện người dùng muốn tính TDEE / lập thực đơn
+DIET_KEYWORDS = [
+    "tdee", "thực đơn", "thuc don", "lập thực đơn", "lap thuc don",
+    "gợi ý món", "goi y mon", "kế hoạch ăn", "ke hoach an",
+    "giảm cân", "giam can", "tăng cân", "tang can", "duy trì", "duy tri",
+    "calo mục tiêu", "mục tiêu calo", "ăn bao nhiêu", "an bao nhieu",
+    "menu", "meal plan", "diet plan", "lượng calo cần", "nhu cầu calo",
+    "tính calo", "tinh calo", "lượng calo trong ngày", "lập menu",
+]
+
+
 def init_vector_db():
     """Hàm này dùng để nạp dữ liệu từ SQLite vào ChromaDB (Chỉ chạy 1 lần khi cần)"""
     conn = sqlite3.connect('balance_nutrition.db')
@@ -30,14 +43,14 @@ def init_vector_db():
     c.execute('SELECT name, calories, protein, carbs, fat FROM foods')
     foods = c.fetchall()
     conn.close()
-    
+
     # Nếu DB đã có dữ liệu thì không cần thêm lại
     if collection.count() == 0 and len(foods) > 0:
         print("Đang tạo Vector Database cho đồ ăn...")
         documents = []
         metadatas = []
         ids = []
-        
+
         for i, food in enumerate(foods):
             name, cals, pro, carbs, fat = food
             # Tạo 1 câu mô tả để AI dễ hiểu ngữ nghĩa
@@ -45,7 +58,7 @@ def init_vector_db():
             documents.append(doc_text)
             metadatas.append({"name": name, "calories": cals, "protein": pro, "carbs": carbs, "fat": fat})
             ids.append(f"food_{i}")
-            
+
         # Thêm vào ChromaDB
         collection.add(
             documents=documents,
@@ -54,31 +67,162 @@ def init_vector_db():
         )
         print(f"Đã nạp {len(foods)} món ăn vào Vector DB.")
 
+
 def retrieve_nutrition_data_vector(user_message):
     """Hàm tìm kiếm bằng Vector (Semantic Search)"""
     if collection.count() == 0:
         init_vector_db()
-        
+
     # Query ChromaDB (Tìm top 3 món ăn có ngữ nghĩa gần nhất)
     results = collection.query(
         query_texts=[user_message],
         n_results=3
     )
-    
+
     context = ""
     for i in range(len(results['documents'][0])):
         meta = results['metadatas'][0][i]
         context += f"- {meta['name']} | Calo: {meta['calories']} | Protein: {meta['protein']}g | Carbs: {meta['carbs']}g | Fat: {meta['fat']}g\n"
-    
+
     return context
 
-def get_chatbot_response(user_message):
-    if not client:
-        return "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env."
 
-    # Gọi hàm tìm kiếm Vector
+def is_diet_request(user_message: str) -> bool:
+    """Kiểm tra tin nhắn có liên quan đến TDEE / lập thực đơn không."""
+    msg = user_message.lower()
+    return any(kw in msg for kw in DIET_KEYWORDS)
+
+
+def extract_goal(user_message: str) -> str:
+    """Trích xuất mục tiêu từ tin nhắn người dùng."""
+    msg = user_message.lower()
+    if any(k in msg for k in ["giảm cân", "giam can", "giảm mỡ", "giam mo", "cut", "lose weight"]):
+        return "giam_can"
+    if any(k in msg for k in ["tăng cân", "tang can", "bulk", "tăng cơ", "tang co", "gain weight"]):
+        return "tang_can"
+    return "duy_tri"
+
+
+def extract_tdee(user_message: str, default: int = 2000) -> int:
+    """Trích xuất số TDEE/calo từ tin nhắn (ưu tiên số gần từ khóa TDEE/calo)."""
+    msg = user_message.lower()
+
+    # Ưu tiên: số đứng cạnh từ TDEE / calo / kcal
+    patterns = [
+        r"tdee\s*[:=]?\s*(\d{3,5})",
+        r"(\d{3,5})\s*(?:kcal|calo|calories?)",
+        r"(?:mục tiêu|muc tieu|cần|can|khoảng|khoang)\s*(\d{3,5})",
+        r"(\d{3,5})",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, msg)
+        if match:
+            value = int(match.group(1))
+            if 800 <= value <= 6000:
+                return value
+    return default
+
+
+def build_diet_summary(diet: dict, goal: str) -> str:
+    """Tạo câu trả lời text ngắn gọn kèm tóm tắt thực đơn."""
+    goal_labels = {
+        "giam_can": "Giảm cân",
+        "tang_can": "Tăng cân",
+        "duy_tri": "Duy trì / Tăng cơ",
+    }
+    meals = diet.get("meals", {})
+    icons = {"breakfast": "🌅 Sáng", "lunch": "☀️ Trưa", "dinner": "🌙 Tối"}
+
+    lines = [
+        f"Đã lập thực đơn theo TDEE **{diet.get('target_tdee')} kcal** — mục tiêu: **{goal_labels.get(goal, goal)}**.",
+        f"Tổng calo gợi ý: **{diet.get('total_calories')} kcal** "
+        f"(P: {diet.get('total_protein')}g · C: {diet.get('total_carbs')}g · F: {diet.get('total_fat')}g).",
+        "",
+        "Thực đơn đề xuất:",
+    ]
+    for key in ("breakfast", "lunch", "dinner"):
+        meal = meals.get(key)
+        if meal:
+            lines.append(
+                f"- {icons.get(key, key)}: {meal['name']} — {meal['cals']} kcal "
+                f"({meal.get('grams', '?')}g)"
+            )
+    lines.append("")
+    lines.append("Bạn có thể bấm **+ Thêm** trên từng món để đưa vào nhật ký, hoặc hỏi mình để chỉnh lại TDEE/mục tiêu.")
+    return "\n".join(lines)
+
+
+def get_chatbot_response(user_message, current_tdee=2000):
+    """
+    Trả về dict:
+      {
+        "response": str,          # text trả lời
+        "type": "chat" | "diet",  # loại phản hồi
+        "tdee": int | None,
+        "goal": str | None,
+        "diet": dict | None       # cấu trúc giống /api/diet khi type=diet
+      }
+    """
+    if not client:
+        return {
+            "response": "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env.",
+            "type": "chat",
+            "tdee": None,
+            "goal": None,
+            "diet": None,
+        }
+
+    # --- Nhánh TDEE / lập thực đơn: trích xuất → get_diet_plan → trả cấu trúc ---
+    if is_diet_request(user_message):
+        tdee = extract_tdee(user_message, default=current_tdee or 2000)
+        goal = extract_goal(user_message)
+        diet = get_diet_plan(tdee, goal)
+
+        if diet.get("error"):
+            return {
+                "response": f"Xin lỗi, không lập được thực đơn: {diet['error']}",
+                "type": "chat",
+                "tdee": tdee,
+                "goal": goal,
+                "diet": None,
+            }
+
+        # Bổ sung lời giải thích ngắn từ Gemini (fallback nếu lỗi)
+        explanation = build_diet_summary(diet, goal)
+        try:
+            prompt = f"""
+            Bạn là chuyên gia dinh dưỡng. Người dùng vừa hỏi: "{user_message}"
+            Hệ thống đã lập thực đơn với TDEE={tdee} kcal, mục tiêu={goal}.
+            Tổng calo: {diet.get('total_calories')}.
+            Sáng: {diet['meals']['breakfast']['name']} ({diet['meals']['breakfast']['cals']} kcal)
+            Trưa: {diet['meals']['lunch']['name']} ({diet['meals']['lunch']['cals']} kcal)
+            Tối: {diet['meals']['dinner']['name']} ({diet['meals']['dinner']['cals']} kcal)
+
+            Hãy viết 2-3 câu thân thiện:
+            1) Xác nhận đã hiểu mục tiêu của họ
+            2) Giải thích ngắn vì sao mức calo/mục tiêu này hợp lý
+            3) Khuyến khích xem thực đơn bên dưới
+            Không liệt kê lại chi tiết món (đã có sẵn trong UI). Trả lời tiếng Việt.
+            """
+            ai_text = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            ).text
+            explanation = (ai_text or "").strip() + "\n\n" + build_diet_summary(diet, goal)
+        except Exception:
+            pass
+
+        return {
+            "response": explanation,
+            "type": "diet",
+            "tdee": tdee,
+            "goal": goal,
+            "diet": diet,
+        }
+
+    # --- Nhánh chat thường (RAG) ---
     retrieved_context = retrieve_nutrition_data_vector(user_message)
-    
+
     prompt = f"""
     Bạn là một chuyên gia dinh dưỡng thông minh và thân thiện.
     Nhiệm vụ của bạn là tư vấn dinh dưỡng dựa trên câu hỏi của người dùng.
@@ -90,15 +234,28 @@ def get_chatbot_response(user_message):
     1. Nếu có dữ liệu DB, hãy ưu tiên sử dụng chính xác số liệu đó để trả lời.
     2. Trả lời ngắn gọn, súc tích và dễ hiểu.
     3. Nếu người dùng hỏi về lượng calo hoặc dinh dưỡng, hãy liệt kê rõ ràng các chỉ số (Protein, Carbs, Fat).
-    
+    4. Nếu người dùng muốn tính TDEE hoặc lập thực đơn, gợi ý họ nói rõ TDEE (kcal) và mục tiêu (giảm cân / tăng cân / duy trì).
+
     Câu hỏi của người dùng: "{user_message}"
     """
-    
+
     try:
         response = client.models.generate_content(
-            model="gemini-flash-latest", 
-            contents=prompt
-        )                
-        return response.text
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
+        return {
+            "response": response.text,
+            "type": "chat",
+            "tdee": None,
+            "goal": None,
+            "diet": None,
+        }
     except Exception as e:
-        return f"Lỗi AI: {str(e)}"
+        return {
+            "response": f"Lỗi AI: {str(e)}",
+            "type": "chat",
+            "tdee": None,
+            "goal": None,
+            "diet": None,
+        }

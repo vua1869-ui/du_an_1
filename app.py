@@ -27,16 +27,29 @@ def analyze():
 
 @app.route('/api/diet', methods=['POST'])
 def diet():
-    tdee = request.json.get('tdee', 2150)
-    return jsonify(get_diet_plan(tdee))
+    data = request.json
+    tdee = data.get('tdee', 2000)
+    goal = data.get('goal', 'duy_tri')   # mặc định duy trì nếu không gửi lên
+    result = get_diet_plan(tdee, goal)
+    return jsonify(result)
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    message = request.json.get('message', '')
-    if not message: 
-        return jsonify({'response': 'Vui lòng nhập câu hỏi.'}), 400
-    ai_response = get_chatbot_response(message)
-    return jsonify({'response': ai_response})
+    data = request.json or {}
+    message = data.get('message', '')
+    if not message:
+        return jsonify({'response': 'Vui lòng nhập câu hỏi.', 'type': 'chat'}), 400
+
+    # current_tdee: dùng giá trị đang có trên dashboard nếu user không nêu số
+    current_tdee = data.get('tdee') or 2000
+    try:
+        current_tdee = int(current_tdee)
+    except (TypeError, ValueError):
+        current_tdee = 2000
+
+    result = get_chatbot_response(message, current_tdee=current_tdee)
+    # result là dict: response, type, tdee, goal, diet
+    return jsonify(result)
 
 # ROUTE MỚI: Thêm thức ăn vào nhật ký
 @app.route('/api/log_food', methods=['POST'])

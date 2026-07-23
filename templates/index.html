@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutritionAI Tracker - Quản lý dinh dưỡng</title>
+    <title>NutritionAI Tracker - Quản lý dinh dưỡng bằng AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,9 +19,47 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- ================= MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ ================= -->
-    <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700">
+    <!-- ================= 1. LANDING PAGE ================= -->
+    <div id="landing-screen" class="min-h-screen bg-white">
+        <nav class="bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <span class="text-blue-800 text-2xl">🌿</span>
+                    <h1 class="text-xl font-extrabold text-blue-900">NutritionAI</h1>
+                </div>
+                <button onclick="showAuth()" class="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700">Đăng Nhập</button>
+            </div>
+        </nav>
+
+        <section class="max-w-7xl mx-auto py-20 px-4 text-center">
+            <div class="inline-block bg-blue-50 text-blue-700 font-medium px-4 py-1.5 rounded-full text-sm mb-6">Sức mạnh của AI trong việc quản lý dinh dưỡng</div>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+                Quản lý bữa ăn <span class="text-blue-600">thông minh hơn</span><br>bằng Trí tuệ Nhân tạo
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                Chỉ cần một bức ảnh hoặc một câu hỏi, AI sẽ giúp bạn nhận diện thức ăn, tính toán calo và thiết kế thực đơn hoàn hảo.
+            </p>
+            <button onclick="showAuth()" class="bg-blue-800 text-white font-bold px-8 py-3 rounded-lg text-lg hover:bg-blue-900 transition shadow-lg">Bắt đầu ngay</button>
+        </section>
+
+        <section class="max-w-7xl mx-auto py-16 px-4 grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                <div class="text-4xl mb-4">📷</div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">AI Vision (YOLOv8 & Gemini)</h3>
+                <p class="text-gray-600 text-sm">Tải ảnh món ăn lên, AI tự động nhận diện và ước lượng calo, macro chuẩn xác. Tích hợp dự phòng Gemini API.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                <div class="text-4xl mb-4">🤖</div>
+                <h3 class="font-bold text-lg mb-2 text-gray-900">Trợ lý AI & Lập thực đơn</h3>
+                <p class="text-gray-600 text-sm">Chatbot hiểu ngữ nghĩa bằng Vector DB. Chỉ cần nói "Lập thực đơn giảm cân 1800 calo", AI sẽ tự sinh thực đơn ngay trong chat.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= 2. ĐĂNG NHẬP ================= -->
+    <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md fade-in">
+            <button onclick="showLanding()" class="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><span>&larr;</span> Quay lại</button>
             <div class="text-center mb-8">
                 <div class="inline-block bg-blue-800 text-white p-3 rounded-full text-2xl mb-3">🌿</div>
                 <h1 class="text-3xl font-extrabold text-blue-900">NutritionAI Tracker</h1>
@@ -63,7 +101,7 @@
         </div>
     </div>
 
-    <!-- ================= DASHBOARD ỨNG DỤNG ================= -->
+    <!-- ================= 3. DASHBOARD ỨNG DỤNG ================= -->
     <div id="app-screen" class="hidden min-h-screen flex flex-col">
         <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -78,94 +116,81 @@
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Xin chào, User 👋</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-800">Mục tiêu hôm nay</h3>
-                        <button onclick="openScanModal()" class="text-sm text-white bg-blue-600 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700">+ Thêm thức ăn bằng AI</button>
-                    </div>
-                    <div class="grid grid-cols-3 gap-4 text-center">
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Mục tiêu</p>
-                            <p class="text-2xl font-extrabold text-gray-900" id="dash-goal">2150</p>
-                            <p class="text-xs text-gray-400">kcal</p>
-                        </div>
-                        <div class="p-4 bg-blue-50 rounded-lg">
-                            <p class="text-xs text-blue-500 uppercase tracking-wider mb-1">Đã nạp</p>
-                            <p class="text-2xl font-extrabold text-blue-700" id="dash-eaten">0</p>
-                            <p class="text-xs text-blue-400">kcal</p>
-                        </div>
-                        <div class="p-4 bg-green-50 rounded-lg">
-                            <p class="text-xs text-green-500 uppercase tracking-wider mb-1">Còn lại</p>
-                            <p class="text-2xl font-extrabold text-green-600" id="dash-remaining">2150</p>
-                            <p class="text-xs text-green-400">kcal</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-4 border-t border-gray-100">
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="font-medium text-red-600">Protein</span><span class="text-gray-500" id="macro-p-text">0g</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-p" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="font-medium text-blue-600">Carbs</span><span class="text-gray-500" id="macro-c-text">0g</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-c" class="bg-blue-700 h-2.5 rounded-full" style="width: 0%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between mb-1"><span class="font-medium text-yellow-600">Fat</span><span class="text-gray-500" id="macro-f-text">0g</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-f" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div></div>
-                            </div>
-                        </div>
+            <!-- Khung Theo dõi Calo & Nút Thao tác chính -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h3 class="font-bold text-gray-800 text-lg">Mục tiêu hôm nay</h3>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button onclick="openScanModal()" class="flex-1 md:flex-none text-sm text-white bg-blue-600 font-medium px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                            📷 <span>Quét Ảnh AI</span>
+                        </button>
+                        <button onclick="toggleChat()" class="flex-1 md:flex-none text-sm text-white bg-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-900 flex items-center justify-center gap-2">
+                            🤖 <span>Trợ lý AI</span>
+                        </button>
                     </div>
                 </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-4">Tính lại TDEE & Gợi ý</h3>
-                    <div class="flex gap-2 items-end">
-                        <div class="flex-1">
-                            <label class="block text-xs text-gray-500 mb-1">TDEE (kcal)</label>
-                            <input type="number" id="tdee-input" value="2150" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-800">
-                        </div>
-                        <button onclick="getDiet()" class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg">Lập thực đơn</button>
+                
+                <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Mục tiêu</p>
+                        <p class="text-2xl font-extrabold text-gray-900" id="dash-goal">2150</p>
+                        <p class="text-xs text-gray-400">kcal</p>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2">Hệ thống sẽ gợi ý món ăn chuẩn TDEE.</p>
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <p class="text-xs text-blue-500 uppercase tracking-wider mb-1">Đã nạp</p>
+                        <p class="text-2xl font-extrabold text-blue-700" id="dash-eaten">0</p>
+                        <p class="text-xs text-blue-400">kcal</p>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <p class="text-xs text-green-500 uppercase tracking-wider mb-1">Còn lại</p>
+                        <p class="text-2xl font-extrabold text-green-600" id="dash-remaining">2150</p>
+                        <p class="text-xs text-green-400">kcal</p>
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="font-medium text-red-600">Protein</span><span class="text-gray-500" id="macro-p-text">0g</span></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-p" class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="font-medium text-blue-600">Carbs</span><span class="text-gray-500" id="macro-c-text">0g</span></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-c" class="bg-blue-700 h-2.5 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span class="font-medium text-yellow-600">Fat</span><span class="text-gray-500" id="macro-f-text">0g</span></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="bar-f" class="bg-yellow-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <h3 class="font-bold text-gray-800 mb-4">Nhật ký ăn uống hôm nay</h3>
                     <div id="today-logs" class="space-y-2">
-                        <p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm.</p>
+                        <p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm. Hãy Quét Ảnh hoặc hỏi Trợ lý AI nhé!</p>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-4">Gợi ý thực đơn AI</h3>
-                    <div id="diet-results">
-                        <p class="text-gray-400 text-sm">Nhấn "Lập thực đơn" để AI gợi ý.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-1">
                     <h3 class="font-bold text-gray-800 mb-4">Tỷ lệ Macro hôm nay</h3>
                     <div class="relative h-48 flex items-center justify-center">
                         <canvas id="macroChart"></canvas>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
-                    <h3 class="font-bold text-gray-800 mb-4">Thống kê Calo 7 ngày qua</h3>
-                    <div class="relative h-48">
-                        <canvas id="weeklyChart"></canvas>
-                    </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="font-bold text-gray-800 mb-4">Thống kê Calo 7 ngày qua</h3>
+                <div class="relative h-48">
+                    <canvas id="weeklyChart"></canvas>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- ================= MODAL QUÉT ẢNH (POPUP) ================= -->
+    <!-- ================= MODAL QUÉT ẢNH ================= -->
     <div id="scan-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 fade-in relative">
             <button onclick="closeScanModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
@@ -192,8 +217,8 @@
         </div>
     </div>
 
-    <!-- ================= CHATBOT NỔI (FLOATING WIDGET) ================= -->
-    <button id="chat-toggle-btn" onclick="toggleChat()" class="hidden fixed bottom-6 right-6 bg-blue-800 text-white p-4 rounded-full shadow-lg hover:bg-blue-900 z-30">
+    <!-- ================= CHATBOT NỔI ================= -->
+    <button id="chat-toggle-btn" class="hidden fixed bottom-6 right-6 bg-blue-800 text-white p-4 rounded-full shadow-lg hover:bg-blue-900 z-30">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
     </button>
 
@@ -204,13 +229,24 @@
         </div>
         <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50"></div>
         <div class="p-3 border-t border-gray-200 bg-white flex gap-2 rounded-b-xl">
-            <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendMessage()" class="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-800 text-sm" placeholder="Hỏi về calo, món ăn...">
+            <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendMessage()" class="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-800 text-sm" placeholder="Thử gõ: Lập thực đơn giảm cân 1800 calo">
             <button onclick="sendMessage()" class="bg-blue-800 text-white font-medium px-4 py-2 rounded-full text-sm">Gửi</button>
         </div>
     </div>
 
     <script>
-        // --- LOGIC AUTH ---
+        // --- LOGIC CHUYỂN TRANG ---
+        function showAuth() {
+            document.getElementById('landing-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function showLanding() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('landing-screen').classList.remove('hidden');
+        }
+
         function switchTab(tab) {
             const loginForm = document.getElementById('form-login');
             const registerForm = document.getElementById('form-register');
@@ -232,39 +268,35 @@
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('flex');
-            document.getElementById('chat-toggle-btn').classList.remove('hidden'); // Hiện nút chat
+            document.getElementById('chat-toggle-btn').classList.remove('hidden');
             loadTodayLogs(); 
             loadWeeklyChart(); 
-            getDiet(); 
         }
 
         function logout() {
             document.getElementById('app-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('flex');
-            document.getElementById('chat-toggle-btn').classList.add('hidden'); // Ẩn nút chat
-            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('chat-toggle-btn').classList.add('hidden');
+            document.getElementById('landing-screen').classList.remove('hidden');
         }
 
-        // --- LOGIC MODAL QUÉT ẢNH ---
-        function openScanModal() {
-            document.getElementById('scan-modal').classList.remove('hidden');
-        }
+        // --- LOGIC MODAL & CHATBOT TOGGLE ---
+        function openScanModal() { document.getElementById('scan-modal').classList.remove('hidden'); }
         function closeScanModal() {
             document.getElementById('scan-modal').classList.add('hidden');
-            // Reset modal
             document.getElementById('image-preview').classList.add('hidden');
             document.getElementById('upload-placeholder').classList.remove('hidden');
             document.getElementById('image-input').value = '';
             document.getElementById('scan-results').innerHTML = '<p class="text-gray-400">Chưa có dữ liệu. Vui lòng tải ảnh lên.</p>';
         }
-
-        // --- LOGIC CHATBOT TOGGLE ---
-        function toggleChat() {
-            const chatWin = document.getElementById('chat-window');
-            chatWin.classList.toggle('hidden');
-        }
+        function toggleChat() { document.getElementById('chat-window').classList.toggle('hidden'); }
 
         // --- LOGIC QUÉT ẢNH ---
+        function extractJson(text) {
+            const match = text.match(/\{.*\}/s);
+            return match ? match[0] : text;
+        }
+
         function uploadImage() {
             const file = document.getElementById('image-input').files[0];
             if (!file) return;
@@ -316,44 +348,7 @@
                 .catch(() => resultsDiv.innerHTML = '<p class="text-red-500">Lỗi server.</p>');
         }
 
-        // --- LOGIC THỰC ĐƠN ---
-        function getDiet() {
-            const tdee = document.getElementById('tdee-input').value;
-            const resultsDiv = document.getElementById('diet-results');
-            resultsDiv.innerHTML = '<p class="text-blue-600 animate-pulse">⏳ Đang tạo thực đơn...</p>';
-
-            fetch('/api/diet', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tdee: parseInt(tdee) })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) { resultsDiv.innerHTML = `<p class="text-red-500">${data.error}</p>`; return; }
-                const meals = data.meals;
-                const icons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
-                
-                let html = '<div class="space-y-3">';
-                for (const [key, value] of Object.entries(meals)) {
-                    const foodObj = { dish_name: value.name, calories: value.cals, protein: 0, carbs: 0, fat: 0, meal_type: key };
-                    html += `
-                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100 flex justify-between items-center">
-                            <div>
-                                <span class="mr-2">${icons[key]}</span>
-                                <span class="font-semibold text-gray-800 text-sm">${value.name}</span>
-                                <p class="text-xs text-gray-500 ml-7">${value.cals} kcal</p>
-                            </div>
-                            <button onclick='addFoodToLog(${JSON.stringify(foodObj)})' class="text-xs bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-md hover:bg-blue-200">+ Thêm</button>
-                        </div>`;
-                }
-                html += '</div>';
-                resultsDiv.innerHTML = html;
-
-                document.getElementById('dash-goal').innerText = data.target_tdee;
-                loadTodayLogs(); 
-            });
-        }
-
-        // --- LOGIC NHẬT KÝ (FOOD LOG) ---
+        // --- LOGIC NHẬT KÝ ---
         function addFoodToLog(foodData) {
             const payload = {
                 name: foodData.dish_name,
@@ -371,7 +366,7 @@
             .then(res => res.json())
             .then(data => {
                 alert("✅ Đã thêm món ăn vào nhật ký!");
-                closeScanModal(); // Đóng popup quét ảnh lại
+                closeScanModal(); 
                 loadTodayLogs(); 
             })
             .catch(err => alert("Lỗi khi thêm món: " + err));
@@ -382,7 +377,7 @@
             .then(res => res.json())
             .then(data => {
                 if (!data.foods || data.foods.length === 0) {
-                    document.getElementById('today-logs').innerHTML = '<p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm.</p>';
+                    document.getElementById('today-logs').innerHTML = '<p class="text-gray-400 text-sm">Chưa có món ăn nào được thêm. Hãy Quét Ảnh hoặc hỏi Trợ lý AI nhé!</p>';
                     updateMacroChart(0,0,0);
                     return;
                 }
@@ -422,7 +417,7 @@
             });
         }
 
-        // --- LOGIC BIỂU ĐỒ (CHART.JS) ---
+        // --- LOGIC BIỂU ĐỒ ---
         let macroChartInstance = null;
         let weeklyChartInstance = null;
 
@@ -444,12 +439,7 @@
                             borderRadius: 4
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true } },
-                        plugins: { legend: { display: false } }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
                 });
             });
         }
@@ -468,23 +458,25 @@
                         borderWidth: 0
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
         }
 
-        // --- LOGIC CHATBOT ---
+        // --- LOGIC CHATBOT (NÂNG CẤP RICH MESSAGE) ---
+        document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
+        
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
             if (!msg) return;
             const chatBox = document.getElementById('chat-box');
+            
+            // Hiển thị câu hỏi của user
             chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-blue-800 text-white px-3 py-2 rounded-2xl rounded-tr-sm max-w-[80%] text-sm">${msg}</div></div>`;
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // Hiển thị typing...
             chatBox.innerHTML += `<div id="typing" class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-500 px-3 py-2 rounded-2xl rounded-tl-sm text-sm">AI đang trả lời...</div></div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -495,8 +487,55 @@
             .then(res => res.json())
             .then(data => {
                 document.getElementById('typing').remove();
-                const formattedResponse = data.response.replace(/\n/g, '<br>');
-                chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-2xl rounded-tl-sm max-w-[80%] shadow-sm text-sm">${formattedResponse}</div></div>`;
+                
+                // Nếu AI trả về loại "diet" (kèm thực đơn)
+                if (data.type === 'diet' && data.diet) {
+                    const diet = data.diet;
+                    const meals = diet.meals;
+                    const icons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
+                    
+                    // Cập nhật TDEE mới vào Dashboard
+                    if(data.tdee) {
+                        document.getElementById('dash-goal').innerText = data.tdee;
+                        loadTodayLogs(); // Tính lại Calo còn lại
+                    }
+                    
+                    let cardHtml = `
+                        <div class="bg-white border border-blue-200 rounded-xl p-4 shadow-sm max-w-[90%]">
+                            <div class="flex justify-between items-center mb-3 border-b pb-2">
+                                <div class="font-bold text-blue-800 text-sm">🤖 Thực đơn AI Gợi Ý</div>
+                                <div class="text-xs text-gray-500">${diet.total_calories} kcal</div>
+                            </div>
+                            <div class="space-y-2 mb-3">
+                    `;
+                    
+                    for (const [key, value] of Object.entries(meals)) {
+                        const foodObj = { dish_name: value.name, calories: value.cals, protein: value.protein || 0, carbs: value.carbs || 0, fat: value.fat || 0, meal_type: key };
+                        cardHtml += `
+                            <div class="flex justify-between items-center text-xs p-2 bg-gray-50 rounded-lg">
+                                <div>
+                                    <span class="mr-1">${icons[key]}</span>
+                                    <span class="font-medium">${value.name}</span>
+                                    <p class="text-gray-400 ml-5">${value.cals} kcal</p>
+                                </div>
+                                <button onclick='addFoodToLog(${JSON.stringify(foodObj)})' class="text-blue-600 font-bold hover:text-blue-800">+ Thêm</button>
+                            </div>`;
+                    }
+                    
+                    cardHtml += `
+                            </div>
+                            <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg">${data.response.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                    
+                    chatBox.innerHTML += `<div class="flex justify-start">${cardHtml}</div>`;
+                } 
+                // Nếu là chat bình thường
+                else {
+                    const formattedResponse = data.response.replace(/\n/g, '<br>');
+                    chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-2xl rounded-tl-sm max-w-[80%] shadow-sm text-sm">${formattedResponse}</div></div>`;
+                }
+                
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
