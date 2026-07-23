@@ -11,3 +11,4 @@
 # for model in client.models.list():
 #     if 'generateContent' in str(model.supported_actions):
 #         print(model.name)
+print("test thử xem như nào")
