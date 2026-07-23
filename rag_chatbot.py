@@ -152,7 +152,7 @@ def build_diet_summary(diet: dict, goal: str) -> str:
     return "\n".join(lines)
 
 
-def get_chatbot_response(user_message, current_tdee=2000):
+def get_chatbot_response(user_message, current_tdee=2000, profile=None):
     """
     Trả về dict:
       {
@@ -174,6 +174,12 @@ def get_chatbot_response(user_message, current_tdee=2000):
 
     # --- Nhánh TDEE / lập thực đơn: trích xuất → get_diet_plan → trả cấu trúc ---
     if is_diet_request(user_message):
+        if not profile or not profile.get('weight') or not profile.get('height'):
+            return {
+                "response": "Để lập thực đơn chính xác, mình cần biết thêm vài thông tin về bạn trước đã 👇",
+                "type": "clarify",
+                "tdee": None, "goal": None, "diet": None,
+            }
         tdee = extract_tdee(user_message, default=current_tdee or 2000)
         goal = extract_goal(user_message)
         diet = get_diet_plan(tdee, goal)
@@ -205,7 +211,7 @@ def get_chatbot_response(user_message, current_tdee=2000):
             Không liệt kê lại chi tiết món (đã có sẵn trong UI). Trả lời tiếng Việt.
             """
             ai_text = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-flash-latest",
                 contents=prompt,
             ).text
             explanation = (ai_text or "").strip() + "\n\n" + build_diet_summary(diet, goal)
@@ -241,7 +247,7 @@ def get_chatbot_response(user_message, current_tdee=2000):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-flash-latest",
             contents=prompt,
         )
         return {
