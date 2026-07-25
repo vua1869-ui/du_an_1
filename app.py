@@ -93,6 +93,32 @@ def admin_delete_food(food_id):
     result = delete_food(food_id)
     return jsonify(result)
 
+@app.route('/api/admin/users', methods=['GET'])
+def admin_get_users():
+    from database import get_all_users
+    return jsonify(get_all_users())
+
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    from database import delete_user
+    result = delete_user(user_id)
+    return jsonify(result)
+
+# ================= AUTH ROUTES =================
+@app.route('/api/login', methods=['POST'])
+def login_api():
+    from database import verify_login
+    data = request.json
+    result = verify_login(data.get('email'), data.get('password'))
+    return jsonify(result)
+
+@app.route('/api/register', methods=['POST'])
+def register_api():
+    from database import register_user
+    data = request.json
+    result = register_user(data.get('fullname'), data.get('email'), data.get('password'))
+    return jsonify(result)
+
 if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('data', exist_ok=True)

@@ -51,6 +51,31 @@ def init_db():
             fat INTEGER
         )
     ''')
+
+    # TẠO BẢNG USERS
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fullname TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            role TEXT DEFAULT 'user',
+            created_at TEXT
+        )
+    ''')
+    
+    # Tạo tài khoản mẫu nếu chưa có
+    c.execute('SELECT COUNT(*) FROM users')
+    if c.fetchone()[0] == 0:
+        today = date.today().isoformat()
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  ('Quản trị viên', 'admin@gmail.com', 'admin123', 'admin', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  ('Lê Văn Quý', 'quy@gmail.com', '123', 'user', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                ('Vũ Tiến Anh', 'anh@gmail.com', '456', 'user', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                ('Hoàng Xuân Đức', 'duc@gmail.com', '789', 'user', today))
     
     c.execute('SELECT COUNT(*) FROM foods')
     if c.fetchone()[0] == 0:
@@ -274,3 +299,54 @@ def delete_food(food_id):
     conn.commit()
     conn.close()
     return {"status": "success", "message": "Đã xóa món ăn!"}
+
+def get_all_users():
+    """Lấy danh sách người dùng cho Admin"""
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('SELECT id, fullname, email, role, created_at FROM users ORDER BY id DESC')
+    users = c.fetchall()
+    conn.close()
+    return [{"id": u[0], "fullname": u[1], "email": u[2], "role": u[3], "created_at": u[4]} for u in users]
+
+def delete_user(user_id):
+    """Xóa/Khóa tài khoản người dùng"""
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM users WHERE id=?', (user_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Đã xóa tài khoản!"}
+
+# ================= AUTH FUNCTIONS =================
+def verify_login(email, password):
+    """Kiểm tra đăng nhập"""
+    import sqlite3
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('SELECT id, fullname, role FROM users WHERE email=? AND password=?', (email, password))
+    user = c.fetchone()
+    conn.close()
+    
+    if user:
+        return {"status": "success", "user": {"id": user[0], "fullname": user[1], "role": user[2]}}
+    return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
+
+def register_user(fullname, email, password):
+    """Đăng ký tài khoản mới"""
+    import sqlite3
+    from datetime import date
+    try:
+        conn = sqlite3.connect('balance_nutrition.db')
+        c = conn.cursor()
+        today = date.today().isoformat()
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  (fullname, email, password, 'user', today))
+        new_id = c.lastrowid
+        conn.commit()
+        conn.close()
+        return {"status": "success", "user": {"id": new_id, "fullname": fullname, "role": "user"}}
+    except sqlite3.IntegrityError:
+        return {"status": "error", "message": "Email này đã được đăng ký!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
