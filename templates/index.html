@@ -119,7 +119,41 @@
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Xin chào, User 👋</h2>
-            
+            <!-- Hồ sơ cá nhân -->
+<div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+    <h3 class="font-bold text-gray-800 text-lg mb-4">👤 Hồ sơ của bạn</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div>
+            <label class="block text-xs mb-1 text-gray-500">Chiều cao (cm)</label>
+            <input type="number" id="profile-height" class="w-full px-3 py-2 border rounded-lg" placeholder="170">
+        </div>
+        <div>
+            <label class="block text-xs mb-1 text-gray-500">Cân nặng (kg)</label>
+            <input type="number" id="profile-weight" class="w-full px-3 py-2 border rounded-lg" placeholder="60">
+        </div>
+        <div>
+            <label class="block text-xs mb-1 text-gray-500">Tuổi</label>
+            <input type="number" id="profile-age" class="w-full px-3 py-2 border rounded-lg" placeholder="20">
+        </div>
+        <div>
+            <label class="block text-xs mb-1 text-gray-500">Giới tính</label>
+            <select id="profile-gender" class="w-full px-3 py-2 border rounded-lg">
+                <option value="nam">Nam</option>
+                <option value="nu">Nữ</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs mb-1 text-gray-500">Mục tiêu</label>
+            <select id="profile-goal" class="w-full px-3 py-2 border rounded-lg">
+                <option value="giam_can">Giảm cân</option>
+                <option value="tang_can">Tăng cân</option>
+                <option value="duy_tri">Duy trì</option>
+            </select>
+        </div>
+    </div>
+    <button onclick="saveProfile()" class="mt-3 bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg">Lưu hồ sơ</button>
+    <p id="profile-status" class="text-xs text-gray-400 mt-2"></p>
+</div>
             <!-- Khung Theo dõi Calo & Nút Thao tác chính -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -239,6 +273,7 @@
     </div>
 
     <script>
+        let lastUserMessage = '';
         // --- LOGIC CHUYỂN TRANG ---
         function showAuth() {
             document.getElementById('landing-screen').classList.add('hidden');
@@ -266,7 +301,39 @@
                 tabLogin.classList.add('text-gray-400', 'border-transparent'); tabLogin.classList.remove('border-blue-800', 'text-blue-800');
             }
         }
+        function saveProfile() {
+            const profile = {
+                height: parseFloat(document.getElementById('profile-height').value),
+                weight: parseFloat(document.getElementById('profile-weight').value),
+                age: parseInt(document.getElementById('profile-age').value),
+                gender: document.getElementById('profile-gender').value,
+                goal: document.getElementById('profile-goal').value
+            };
+            if (!profile.height || !profile.weight || !profile.age) {
+                document.getElementById('profile-status').innerText = "Vui lòng nhập đủ chiều cao/cân nặng/tuổi.";
+                return;
+            }
+            localStorage.setItem('user_profile', JSON.stringify(profile));
 
+            let bmr = profile.gender === 'nam'
+                ? 10 * profile.weight + 6.25 * profile.height - 5 * profile.age + 5
+                : 10 * profile.weight + 6.25 * profile.height - 5 * profile.age - 161;
+            const tdee = Math.round(bmr * 1.4);
+
+            document.getElementById('dash-goal').innerText = tdee;
+            document.getElementById('profile-status').innerText = `Đã lưu. TDEE ước tính: ${tdee} kcal — giờ hỏi Trợ lý AI sẽ tự dùng số này.`;
+        }
+
+        function loadProfile() {
+            const saved = localStorage.getItem('user_profile');
+            if (!saved) return;
+            const p = JSON.parse(saved);
+            document.getElementById('profile-height').value = p.height || '';
+            document.getElementById('profile-weight').value = p.weight || '';
+            document.getElementById('profile-age').value = p.age || '';
+            document.getElementById('profile-gender').value = p.gender || 'nam';
+            document.getElementById('profile-goal').value = p.goal || 'duy_tri';
+        }
         function handleAuth(e) {
             e.preventDefault();
             const email = document.querySelector('#form-login input[type="email"]')?.value;
@@ -285,7 +352,8 @@
             document.getElementById('app-screen').classList.add('flex');
             document.getElementById('chat-toggle-btn').classList.remove('hidden');
             loadTodayLogs(); 
-            loadWeeklyChart(); 
+            loadWeeklyChart();
+            loadProfile(); 
         }
 
         function logout() {
@@ -339,6 +407,23 @@
                         return;
                     }
 
+                    let itemsHtml = '';
+                    if (a.items && a.items.length > 0) {
+                        itemsHtml = '<div class="space-y-2">';
+                        a.items.forEach(item => {
+                            const qtyLabel = item.quantity > 1 ? ` × ${item.quantity} ${item.unit}` : ` (${item.unit})`;
+                            itemsHtml += `
+                                <div class="flex justify-between items-start p-2 bg-gray-50 rounded-lg">
+                                    <div class="pr-2">
+                                        <p class="font-medium text-sm text-gray-800">${item.name}${qtyLabel}</p>
+                                        <p class="text-xs text-gray-400">${item.portion_note || ''}</p>
+                                    </div>
+                                    <p class="text-sm font-semibold text-blue-700 whitespace-nowrap">${item.calories} kcal</p>
+                                </div>`;
+                        });
+                        itemsHtml += '</div>';
+                    }
+
                     let html = `
                         <div class="space-y-3">
                             <div>
@@ -346,7 +431,9 @@
                                 <h3 class="text-lg font-bold text-blue-800">${a.dish_name}</h3>
                                 <p class="text-sm text-gray-500 mt-1">${a.description}</p>
                             </div>
+                            ${itemsHtml}
                             <div class="bg-blue-50 p-3 rounded-lg text-center">
+                                <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Tổng cộng cả mâm</p>
                                 <p class="text-2xl font-extrabold text-blue-700">${a.calories} <span class="text-sm font-normal">kcal</span></p>
                             </div>
                             <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -355,7 +442,7 @@
                                 <div class="p-2 bg-gray-50 rounded-lg"><p class="text-yellow-600 font-medium">Fat</p><p class="font-bold">${a.fat}g</p></div>
                             </div>
                             <button onclick='addFoodToLog(${JSON.stringify(a)})' class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition text-sm">
-                                + Thêm vào Nhật ký
+                                + Thêm cả mâm vào Nhật ký
                             </button>
                         </div>`;
                     resultsDiv.innerHTML = html;
@@ -476,45 +563,84 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
         }
-
         // --- LOGIC CHATBOT (NÂNG CẤP RICH MESSAGE) ---
         document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
-        
+
+        function quickGoal(goal) {
+            const profile = {
+                height: parseFloat(document.getElementById('quick-height').value),
+                weight: parseFloat(document.getElementById('quick-weight').value),
+                age: parseInt(document.getElementById('quick-age').value),
+                gender: document.getElementById('quick-gender').value,
+                goal: goal
+            };
+            if (!profile.height || !profile.weight || !profile.age) {
+                alert("Điền đủ chiều cao/cân nặng/tuổi trước khi bấm nhé.");
+                return;
+            }
+            localStorage.setItem('user_profile', JSON.stringify(profile));
+            document.getElementById('chat-input').value = lastUserMessage;
+            sendMessage();
+        }
+
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
             if (!msg) return;
             const chatBox = document.getElementById('chat-box');
-            
+            lastUserMessage = msg;
+
             // Hiển thị câu hỏi của user
             chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-blue-800 text-white px-3 py-2 rounded-2xl rounded-tr-sm max-w-[80%] text-sm">${msg}</div></div>`;
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
-            
+
             // Hiển thị typing...
             chatBox.innerHTML += `<div id="typing" class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-500 px-3 py-2 rounded-2xl rounded-tl-sm text-sm">AI đang trả lời...</div></div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
             fetch('/api/chat', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg })
+                body: JSON.stringify({ message: msg, profile: JSON.parse(localStorage.getItem('user_profile') || 'null') })
             })
             .then(res => res.json())
             .then(data => {
                 document.getElementById('typing').remove();
-                
-                // Nếu AI trả về loại "diet" (kèm thực đơn)
+
+                if (data.type === 'clarify') {
+                    chatBox.innerHTML += `
+                        <div class="flex justify-start">
+                            <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3 max-w-[90%] text-sm space-y-3">
+                                <p>${data.response}</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" id="quick-height" placeholder="Chiều cao (cm)" class="border rounded-lg px-2 py-1.5 text-sm">
+                                    <input type="number" id="quick-weight" placeholder="Cân nặng (kg)" class="border rounded-lg px-2 py-1.5 text-sm">
+                                    <input type="number" id="quick-age" placeholder="Tuổi" class="border rounded-lg px-2 py-1.5 text-sm">
+                                    <select id="quick-gender" class="border rounded-lg px-2 py-1.5 text-sm">
+                                        <option value="nam">Nam</option><option value="nu">Nữ</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="quickGoal('giam_can')" class="flex-1 bg-gray-100 hover:bg-blue-100 text-xs font-medium py-2 rounded-lg">🔥 Giảm cân</button>
+                                    <button onclick="quickGoal('tang_can')" class="flex-1 bg-gray-100 hover:bg-blue-100 text-xs font-medium py-2 rounded-lg">🍚 Tăng cân</button>
+                                    <button onclick="quickGoal('duy_tri')" class="flex-1 bg-gray-100 hover:bg-blue-100 text-xs font-medium py-2 rounded-lg">⚖️ Duy trì</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    return;
+                }
+
                 if (data.type === 'diet' && data.diet) {
                     const diet = data.diet;
                     const meals = diet.meals;
                     const icons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
-                    
-                    // Cập nhật TDEE mới vào Dashboard
-                    if(data.tdee) {
+
+                    if (data.tdee) {
                         document.getElementById('dash-goal').innerText = data.tdee;
-                        loadTodayLogs(); // Tính lại Calo còn lại
+                        loadTodayLogs();
                     }
-                    
+
                     let cardHtml = `
                         <div class="bg-white border border-blue-200 rounded-xl p-4 shadow-sm max-w-[90%]">
                             <div class="flex justify-between items-center mb-3 border-b pb-2">
@@ -523,7 +649,7 @@
                             </div>
                             <div class="space-y-2 mb-3">
                     `;
-                    
+
                     for (const [key, value] of Object.entries(meals)) {
                         const foodObj = { dish_name: value.name, calories: value.cals, protein: value.protein || 0, carbs: value.carbs || 0, fat: value.fat || 0, meal_type: key };
                         cardHtml += `
@@ -536,21 +662,20 @@
                                 <button onclick='addFoodToLog(${JSON.stringify(foodObj)})' class="text-blue-600 font-bold hover:text-blue-800">+ Thêm</button>
                             </div>`;
                     }
-                    
+
                     cardHtml += `
                             </div>
                             <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded-lg">${data.response.replace(/\n/g, '<br>')}</div>
                         </div>
                     `;
-                    
+
                     chatBox.innerHTML += `<div class="flex justify-start">${cardHtml}</div>`;
-                } 
-                // Nếu là chat bình thường
+                }
                 else {
                     const formattedResponse = data.response.replace(/\n/g, '<br>');
                     chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-2xl rounded-tl-sm max-w-[80%] shadow-sm text-sm">${formattedResponse}</div></div>`;
                 }
-                
+
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
@@ -671,3 +796,4 @@
     </div>
 </body>
 </html>
+    

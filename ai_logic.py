@@ -319,7 +319,7 @@ def predict_with_gemini(image_bytes):
         return {"error": "Chưa cấu hình GEMINI_API_KEY trong file .env."}
     try:
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-flash-latest",
             contents=[
                 types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                 DETAILED_FOOD_PROMPT,

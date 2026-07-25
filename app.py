@@ -48,7 +48,8 @@ def chat():
     except (TypeError, ValueError):
         current_tdee = 2000
 
-    result = get_chatbot_response(message, current_tdee=current_tdee)
+    profile = data.get('profile')
+    result = get_chatbot_response(message, current_tdee=current_tdee, profile=profile)
     # result là dict: response, type, tdee, goal, diet
     return jsonify(result)
 
