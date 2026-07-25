@@ -109,9 +109,13 @@
                     <span class="text-blue-800 text-2xl">🌿</span>
                     <h1 class="text-xl font-extrabold text-blue-900 hidden sm:block">NutritionAI</h1>
                 </div>
-                <button onclick="logout()" class="text-sm font-medium text-gray-500 hover:text-red-600">Đăng xuất</button>
+                <div class="flex items-center gap-4">
+                    <button id="admin-btn" onclick="showAdminPanel()" class="hidden text-sm font-bold text-white bg-purple-600 px-3 py-1.5 rounded hover:bg-purple-700">👑 Admin Panel</button>
+                    <button onclick="logout()" class="text-sm font-medium text-gray-500 hover:text-red-600">Đăng xuất</button>
+                </div>
             </div>
         </header>
+
 
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Xin chào, User 👋</h2>
@@ -265,7 +269,18 @@
 
         function handleAuth(e) {
             e.preventDefault();
+            const email = document.querySelector('#form-login input[type="email"]')?.value;
+            
             document.getElementById('auth-screen').classList.add('hidden');
+            
+            // Nếu email là admin, hiển thị nút Admin
+            if (email === 'admin@gmail.com') {
+                document.getElementById('admin-btn').classList.remove('hidden');
+                alert("Đăng nhập thành công với quyền ADMIN!");
+            } else {
+                document.getElementById('admin-btn').classList.add('hidden');
+            }
+
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('flex');
             document.getElementById('chat-toggle-btn').classList.remove('hidden');
@@ -539,6 +554,120 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
+
+                // Hiển thị giao diện Admin
+        function showAdminPanel() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('chat-toggle-btn').classList.add('hidden');
+            document.getElementById('admin-screen').classList.remove('hidden');
+            loadAdminFoods();
+        }
+
+        // Đóng Admin panel
+        function closeAdminPanel() {
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('chat-toggle-btn').classList.remove('hidden');
+        }
+
+        // Tải danh sách thức ăn
+        function loadAdminFoods() {
+            fetch('/api/admin/foods')
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                data.forEach(f => {
+                    html += `<tr>
+                        <td class="px-4 py-3 text-gray-500">#${f.id}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">${f.name} <span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">${f.meal_type}</span></td>
+                        <td class="px-4 py-3 text-blue-600 font-bold">${f.calories}</td>
+                        <td class="px-4 py-3 text-gray-500">${f.protein} / ${f.carbs} / ${f.fat}</td>
+                        <td class="px-4 py-3 text-right">
+                            <button onclick="adminDeleteFood(${f.id})" class="text-red-500 hover:text-red-700 font-medium">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('admin-food-table').innerHTML = html;
+            });
+        }
+
+        // Admin thêm thức ăn
+        function adminAddFood(e) {
+            e.preventDefault();
+            const payload = {
+                meal_type: document.getElementById('adm-meal').value,
+                name: document.getElementById('adm-name').value,
+                calories: document.getElementById('adm-cal').value,
+                protein: document.getElementById('adm-pro').value,
+                carbs: document.getElementById('adm-carb').value,
+                fat: document.getElementById('adm-fat').value
+            };
+            
+            fetch('/api/admin/foods', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                e.target.reset();
+                loadAdminFoods(); // Tải lại bảng
+            });
+        }
+
+        // Admin xóa thức ăn
+        function adminDeleteFood(id) {
+            if(!confirm("Bạn có chắc chắn muốn xóa món này?")) return;
+            fetch(`/api/admin/foods/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                loadAdminFoods();
+            });
+        }
     </script>
+    <!-- ================= 4. ADMIN PANEL ================= -->
+    <div id="admin-screen" class="hidden min-h-screen bg-gray-50 flex flex-col">
+        <header class="bg-purple-800 text-white border-b border-purple-900 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+                <h1 class="text-xl font-extrabold">👑 NutritionAI Admin</h1>
+                <button onclick="closeAdminPanel()" class="text-sm font-medium hover:text-purple-200">&larr; Về App</button>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Quản lý CSDL Thức ăn</h2>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                <h3 class="font-bold mb-4">Thêm món ăn mới (Cập nhật RAG)</h3>
+                <form id="add-food-form" class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end" onsubmit="adminAddFood(event)">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-xs text-gray-500">Loại bữa</label>
+                        <select id="adm-meal" class="w-full border rounded p-2 text-sm"><option value="breakfast">Sáng</option><option value="lunch">Trưa/Tối</option><option value="snack">Ăn vặt</option></select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs text-gray-500">Tên món</label>
+                        <input type="text" id="adm-name" required class="w-full border rounded p-2 text-sm" placeholder="VD: Bún chả">
+                    </div>
+                    <div><label class="block text-xs text-gray-500">Calo</label><input type="number" id="adm-cal" required class="w-full border rounded p-2 text-sm"></div>
+                    <div><label class="block text-xs text-gray-500">Protein (g)</label><input type="number" id="adm-pro" required class="w-full border rounded p-2 text-sm"></div>
+                    <div><label class="block text-xs text-gray-500">Carb (g)</label><input type="number" id="adm-carb" required class="w-full border rounded p-2 text-sm"></div>
+                    <div><label class="block text-xs text-gray-500">Fat (g)</label><input type="number" id="adm-fat" required class="w-full border rounded p-2 text-sm"></div>
+                    <div class="col-span-2 md:col-span-6"><button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded">Thêm vào DB</button></div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr><th class="px-4 py-3 text-left font-medium text-gray-500">ID</th><th class="px-4 py-3 text-left font-medium text-gray-500">Món ăn</th><th class="px-4 py-3 text-left font-medium text-gray-500">Calo</th><th class="px-4 py-3 text-left font-medium text-gray-500">Macro (P/C/F)</th><th class="px-4 py-3 text-right font-medium text-gray-500">Hành động</th></tr>
+                    </thead>
+                    <tbody id="admin-food-table" class="divide-y divide-gray-200 bg-white">
+                        <!-- Đổ dữ liệu từ JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
