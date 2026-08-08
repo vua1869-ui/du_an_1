@@ -51,6 +51,31 @@ def init_db():
             fat INTEGER
         )
     ''')
+
+    # TẠO BẢNG USERS
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fullname TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            role TEXT DEFAULT 'user',
+            created_at TEXT
+        )
+    ''')
+    
+    # Tạo tài khoản mẫu nếu chưa có
+    c.execute('SELECT COUNT(*) FROM users')
+    if c.fetchone()[0] == 0:
+        today = date.today().isoformat()
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  ('Quản trị viên', 'admin@gmail.com', 'admin123', 'admin', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  ('Lê Văn Quý', 'quy@gmail.com', '123', 'user', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                ('Vũ Tiến Anh', 'anh@gmail.com', '456', 'user', today))
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                ('Hoàng Xuân Đức', 'duc@gmail.com', '789', 'user', today))
     
     c.execute('SELECT COUNT(*) FROM foods')
     if c.fetchone()[0] == 0:
@@ -203,3 +228,125 @@ def get_weekly_stats():
         
     conn.close()
     return {"dates": dates, "calories": calories}
+
+# ================= ADMIN FUNCTIONS =================
+
+def get_all_foods():
+    """Lấy danh sách toàn bộ món ăn cho Admin"""
+    import sqlite3
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('SELECT id, meal_type, name, calories, protein, carbs, fat FROM foods ORDER BY id DESC')
+    foods = c.fetchall()
+    conn.close()
+    return [{"id": f[0], "meal_type": f[1], "name": f[2], "calories": f[3], "protein": f[4], "carbs": f[5], "fat": f[6]} for f in foods]
+
+def add_new_food(data):
+    """Admin thêm món ăn mới vào DB và cập nhật Vector DB"""
+    import sqlite3
+    try:
+        conn = sqlite3.connect('balance_nutrition.db')
+        c = conn.cursor()
+        
+        # 1. Thêm vào SQLite
+        c.execute('''
+            INSERT INTO foods (meal_type, name, calories, protein, carbs, fat)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            data.get('meal_type', 'snack'),
+            data.get('name'),
+            safe_int(data.get('calories', 0)),
+            safe_int(data.get('protein', 0)),
+            safe_int(data.get('carbs', 0)),
+            safe_int(data.get('fat', 0))
+        ))
+        
+        new_id = c.lastrowid
+        conn.commit()
+        conn.close()
+        
+        # 2. Cập nhật trực tiếp vào ChromaDB (RAG)
+        try:
+            from rag_chatbot import collection
+            doc_text = f"{data.get('name')} chứa {data.get('calories', 0)} calo, {data.get('protein', 0)}g protein, {data.get('carbs', 0)}g carbs, {data.get('fat', 0)}g chất béo."
+            meta = {
+                "name": data.get('name'), 
+                "calories": safe_int(data.get('calories', 0)), 
+                "protein": safe_int(data.get('protein', 0)), 
+                "carbs": safe_int(data.get('carbs', 0)), 
+                "fat": safe_int(data.get('fat', 0))
+            }
+            collection.add(
+                documents=[doc_text],
+                metadatas=[meta],
+                ids=[f"food_new_{new_id}"]
+            )
+        except Exception as vec_err:
+            print("Lỗi update Vector DB:", vec_err)
+            
+        return {"status": "success", "message": "Đã thêm món ăn mới thành công!"}
+        
+    except Exception as e:
+        print("Lỗi Database:", e)
+        return {"error": f"Có lỗi xảy ra: {str(e)}"}
+
+def delete_food(food_id):
+    """Admin xóa món ăn"""
+    import sqlite3
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM foods WHERE id=?', (food_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Đã xóa món ăn!"}
+
+def get_all_users():
+    """Lấy danh sách người dùng cho Admin"""
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('SELECT id, fullname, email, role, created_at FROM users ORDER BY id DESC')
+    users = c.fetchall()
+    conn.close()
+    return [{"id": u[0], "fullname": u[1], "email": u[2], "role": u[3], "created_at": u[4]} for u in users]
+
+def delete_user(user_id):
+    """Xóa/Khóa tài khoản người dùng"""
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM users WHERE id=?', (user_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Đã xóa tài khoản!"}
+
+# ================= AUTH FUNCTIONS =================
+def verify_login(email, password):
+    """Kiểm tra đăng nhập"""
+    import sqlite3
+    conn = sqlite3.connect('balance_nutrition.db')
+    c = conn.cursor()
+    c.execute('SELECT id, fullname, role FROM users WHERE email=? AND password=?', (email, password))
+    user = c.fetchone()
+    conn.close()
+    
+    if user:
+        return {"status": "success", "user": {"id": user[0], "fullname": user[1], "role": user[2]}}
+    return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
+
+def register_user(fullname, email, password):
+    """Đăng ký tài khoản mới"""
+    import sqlite3
+    from datetime import date
+    try:
+        conn = sqlite3.connect('balance_nutrition.db')
+        c = conn.cursor()
+        today = date.today().isoformat()
+        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
+                  (fullname, email, password, 'user', today))
+        new_id = c.lastrowid
+        conn.commit()
+        conn.close()
+        return {"status": "success", "user": {"id": new_id, "fullname": fullname, "role": "user"}}
+    except sqlite3.IntegrityError:
+        return {"status": "error", "message": "Email này đã được đăng ký!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

@@ -109,12 +109,16 @@
                     <span class="text-blue-800 text-2xl">🌿</span>
                     <h1 class="text-xl font-extrabold text-blue-900 hidden sm:block">NutritionAI</h1>
                 </div>
-                <button onclick="logout()" class="text-sm font-medium text-gray-500 hover:text-red-600">Đăng xuất</button>
+                <div class="flex items-center gap-4">
+                    <button id="admin-btn" onclick="showAdminPanel()" class="hidden text-sm font-bold text-white bg-purple-600 px-3 py-1.5 rounded hover:bg-purple-700">👑 Admin Panel</button>
+                    <button onclick="logout()" class="text-sm font-medium text-gray-500 hover:text-red-600">Đăng xuất</button>
+                </div>
             </div>
         </header>
 
+
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Xin chào, User 👋</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6" id="greeting-text">Xin chào, User 👋</h2>
             <!-- Hồ sơ cá nhân -->
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
     <h3 class="font-bold text-gray-800 text-lg mb-4">👤 Hồ sơ của bạn</h3>
@@ -330,22 +334,105 @@
             document.getElementById('profile-gender').value = p.gender || 'nam';
             document.getElementById('profile-goal').value = p.goal || 'duy_tri';
         }
+
+                // --- QUẢN LÝ PHIÊN ĐĂNG NHẬP & ĐĂNG KÝ ---
         function handleAuth(e) {
             e.preventDefault();
+            const isLogin = !document.getElementById('form-login').classList.contains('hidden');
+            
+            if (isLogin) {
+                // XỬ LÝ ĐĂNG NHẬP
+                const email = document.querySelector('#form-login input[type="email"]').value;
+                const password = document.querySelector('#form-login input[type="password"]').value;
+                
+                fetch('/api/login', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: email, password: password})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        // Đăng nhập thành công -> Lưu LocalStorage và vào App
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                        applyLoginState();
+                    } else {
+                        alert(data.message); // Báo lỗi sai pass/email
+                    }
+                })
+                .catch(err => console.error("Lỗi đăng nhập:", err));
+                
+            } else {
+                // XỬ LÝ ĐĂNG KÝ
+                const fullname = document.querySelector('#form-register input[type="text"]').value;
+                const email = document.querySelector('#form-register input[type="email"]').value;
+                const password = document.querySelector('#form-register input[type="password"]').value;
+                
+                fetch('/api/register', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({fullname: fullname, email: email, password: password})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        // Đăng ký thành công -> Báo hiệu và chuyển sang Tab Đăng nhập
+                        alert("🎉 Đăng ký thành công! Vui lòng đăng nhập bằng tài khoản vừa tạo.");
+                        document.getElementById('form-register').reset(); // Xóa trắng form đăng ký
+                        switchTab('login'); // Chuyển giao diện sang tab Login
+                    } else {
+                        alert(data.message); // Báo lỗi trùng email
+                    }
+                })
+                .catch(err => console.error("Lỗi đăng ký:", err));
+            }
+        }
+
+        // Áp dụng trạng thái sau khi có dữ liệu đăng nhập
+        function applyLoginState() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            
+            const user = JSON.parse(userStr);
+            
+            // Đổi lời chào
+            const greetingText = document.getElementById('greeting-text');
+            if(user.role === 'admin') {
+                greetingText.innerText = `Xin chào, Admin 👋`;
+                document.getElementById('admin-btn').classList.remove('hidden');
+            } else {
+                greetingText.innerText = `Xin chào, ${user.fullname} 👋`;
+                document.getElementById('admin-btn').classList.add('hidden');
+            }
+
+            // Chuyển màn hình
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('flex');
             document.getElementById('chat-toggle-btn').classList.remove('hidden');
+            
             loadTodayLogs(); 
-            loadWeeklyChart();
-            loadProfile(); 
+            loadWeeklyChart(); 
         }
 
+        // Sửa lại nút Đăng xuất để xóa dữ liệu
         function logout() {
+            localStorage.removeItem('currentUser'); // Xóa bộ nhớ
             document.getElementById('app-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('flex');
             document.getElementById('chat-toggle-btn').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
             document.getElementById('landing-screen').classList.remove('hidden');
+            
+            // Xóa trắng form đăng nhập
+            document.getElementById('form-login').reset();
+            document.getElementById('form-register').reset();
+        }
+
+        // Kiểm tra xem đã đăng nhập từ trước chưa khi vừa mở trang
+        window.onload = function() {
+            if(localStorage.getItem('currentUser')) {
+                document.getElementById('landing-screen').classList.add('hidden');
+                applyLoginState();
+            }
         }
 
         // --- LOGIC MODAL & CHATBOT TOGGLE ---
@@ -664,7 +751,203 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
+
+                // Hiển thị giao diện Admin
+        function showAdminPanel() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('chat-toggle-btn').classList.add('hidden');
+            document.getElementById('admin-screen').classList.remove('hidden');
+            loadAdminFoods();
+        }
+
+        // Đóng Admin panel
+        function closeAdminPanel() {
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('chat-toggle-btn').classList.remove('hidden');
+        }
+
+        // Tải danh sách thức ăn
+        function loadAdminFoods() {
+            fetch('/api/admin/foods')
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                data.forEach(f => {
+                    html += `<tr>
+                        <td class="px-4 py-3 text-gray-500">#${f.id}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">${f.name} <span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">${f.meal_type}</span></td>
+                        <td class="px-4 py-3 text-blue-600 font-bold">${f.calories}</td>
+                        <td class="px-4 py-3 text-gray-500">${f.protein} / ${f.carbs} / ${f.fat}</td>
+                        <td class="px-4 py-3 text-right">
+                            <button onclick="adminDeleteFood(${f.id})" class="text-red-500 hover:text-red-700 font-medium">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('admin-food-table').innerHTML = html;
+            });
+        }
+
+        // Admin thêm thức ăn
+        function adminAddFood(e) {
+            e.preventDefault();
+            const payload = {
+                meal_type: document.getElementById('adm-meal').value,
+                name: document.getElementById('adm-name').value,
+                calories: document.getElementById('adm-cal').value,
+                protein: document.getElementById('adm-pro').value,
+                carbs: document.getElementById('adm-carb').value,
+                fat: document.getElementById('adm-fat').value
+            };
+            
+            fetch('/api/admin/foods', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                e.target.reset();
+                loadAdminFoods(); // Tải lại bảng
+            });
+        }
+
+        // Admin xóa thức ăn
+        function adminDeleteFood(id) {
+            if(!confirm("Bạn có chắc chắn muốn xóa món này?")) return;
+            fetch(`/api/admin/foods/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                loadAdminFoods();
+            });
+        }
+
+                // --- LOGIC CHUYỂN TAB TRONG ADMIN ---
+        function switchAdminTab(tab) {
+            const tabFoods = document.getElementById('tab-adm-foods');
+            const tabUsers = document.getElementById('tab-adm-users');
+            const viewFoods = document.getElementById('adm-view-foods');
+            const viewUsers = document.getElementById('adm-view-users');
+
+            if (tab === 'foods') {
+                viewFoods.classList.remove('hidden'); viewUsers.classList.add('hidden');
+                tabFoods.classList.add('border-purple-800', 'text-purple-800'); tabFoods.classList.remove('text-gray-400', 'border-transparent');
+                tabUsers.classList.add('text-gray-400', 'border-transparent'); tabUsers.classList.remove('border-purple-800', 'text-purple-800');
+                loadAdminFoods();
+            } else {
+                viewUsers.classList.remove('hidden'); viewFoods.classList.add('hidden');
+                tabUsers.classList.add('border-purple-800', 'text-purple-800'); tabUsers.classList.remove('text-gray-400', 'border-transparent');
+                tabFoods.classList.add('text-gray-400', 'border-transparent'); tabFoods.classList.remove('border-purple-800', 'text-purple-800');
+                loadAdminUsers();
+            }
+        }
+
+        // --- TẢI DANH SÁCH USER ---
+        function loadAdminUsers() {
+            fetch('/api/admin/users')
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                data.forEach(u => {
+                    const roleBadge = u.role === 'admin' 
+                        ? '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-bold">Admin</span>' 
+                        : '<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">User</span>';
+                        
+                    html += `<tr>
+                        <td class="px-4 py-3 text-gray-500">#${u.id}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900">${u.fullname}</td>
+                        <td class="px-4 py-3 text-gray-500">${u.email}</td>
+                        <td class="px-4 py-3">${roleBadge}</td>
+                        <td class="px-4 py-3 text-gray-500">${u.created_at}</td>
+                        <td class="px-4 py-3 text-right">
+                            ${u.role !== 'admin' ? `<button onclick="adminDeleteUser(${u.id})" class="text-red-500 hover:text-red-700 font-medium">Khóa/Xóa</button>` : ''}
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('admin-user-table').innerHTML = html;
+            });
+        }
+
+        // --- XÓA USER ---
+        function adminDeleteUser(id) {
+            if(!confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
+            fetch(`/api/admin/users/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                loadAdminUsers(); // Tải lại bảng
+            });
+        }
     </script>
+    <!-- ================= 4. ADMIN PANEL ================= -->
+    <div id="admin-screen" class="hidden min-h-screen bg-gray-50 flex flex-col">
+        <header class="bg-purple-800 text-white border-b border-purple-900 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+                <h1 class="text-xl font-extrabold">👑 NutritionAI Admin</h1>
+                <button onclick="closeAdminPanel()" class="text-sm font-medium hover:text-purple-200">&larr; Về App</button>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Bảng Điều Khiển Admin</h2>
+            </div>
+            
+            <!-- Menu Tabs Admin -->
+            <div class="flex border-b-2 border-gray-200 mb-6">
+                <button id="tab-adm-foods" onclick="switchAdminTab('foods')" class="px-6 py-2 font-bold text-purple-800 border-b-2 border-purple-800">Quản lý Món ăn</button>
+                <button id="tab-adm-users" onclick="switchAdminTab('users')" class="px-6 py-2 font-bold text-gray-400 border-b-2 border-transparent">Quản lý Người dùng</button>
+            </div>
+
+            <!-- TAB 1: QUẢN LÝ MÓN ĂN -->
+            <div id="adm-view-foods" class="block">
+                <!-- FORM THÊM MÓN GIỮ NGUYÊN NHƯ CŨ CỦA BẠN -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                    <h3 class="font-bold mb-4">Thêm món ăn mới (Cập nhật RAG)</h3>
+                    <form id="add-food-form" class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end" onsubmit="adminAddFood(event)">
+                        <!-- (Giữ nguyên các thẻ input form thêm món lúc nãy của bạn) -->
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-xs text-gray-500">Loại</label>
+                            <select id="adm-meal" class="w-full border rounded p-2 text-sm"><option value="breakfast">Sáng</option><option value="lunch">Trưa/Tối</option><option value="snack">Ăn vặt</option></select>
+                        </div>
+                        <div class="col-span-2"><label class="block text-xs text-gray-500">Tên</label><input type="text" id="adm-name" required class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs text-gray-500">Calo</label><input type="number" id="adm-cal" required class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs text-gray-500">Pro</label><input type="number" id="adm-pro" required class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs text-gray-500">Carb</label><input type="number" id="adm-carb" required class="w-full border rounded p-2 text-sm"></div>
+                        <div><label class="block text-xs text-gray-500">Fat</label><input type="number" id="adm-fat" required class="w-full border rounded p-2 text-sm"></div>
+                        <div class="col-span-2 md:col-span-6"><button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded">Thêm vào DB</button></div>
+                    </form>
+                </div>
+                <!-- BẢNG MÓN ĂN -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left">ID</th><th class="px-4 py-3 text-left">Món ăn</th><th class="px-4 py-3 text-left">Calo</th><th class="px-4 py-3 text-right">Xóa</th></tr></thead>
+                        <tbody id="admin-food-table" class="divide-y divide-gray-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: QUẢN LÝ NGƯỜI DÙNG -->
+            <div id="adm-view-users" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500">ID</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500">Người dùng</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500">Email</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500">Quyền</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500">Ngày tạo</th>
+                                <th class="px-4 py-3 text-right font-medium text-gray-500">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-table" class="divide-y divide-gray-200 bg-white">
+                            <!-- Đổ dữ liệu users từ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
     

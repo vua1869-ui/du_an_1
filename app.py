@@ -3,6 +3,7 @@ from ai_logic import predict_image
 from database import init_db, get_diet_plan, log_food, get_today_logs
 from rag_chatbot import get_chatbot_response, init_vector_db
 import os
+from database import get_all_foods, add_new_food, delete_food
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -70,6 +71,54 @@ def weekly_stats():
     from database import get_weekly_stats
     result = get_weekly_stats()
     return jsonify(result)
+
+# ================= ADMIN ROUTES =================
+@app.route('/api/admin/foods', methods=['GET'])
+def admin_get_foods():
+    from database import get_all_foods
+    return jsonify(get_all_foods())
+
+@app.route('/api/admin/foods', methods=['POST'])
+def admin_add_food():
+    from database import add_new_food
+    data = request.json
+    result = add_new_food(data)
+    if "error" in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+@app.route('/api/admin/foods/<int:food_id>', methods=['DELETE'])
+def admin_delete_food(food_id):
+    from database import delete_food
+    result = delete_food(food_id)
+    return jsonify(result)
+
+@app.route('/api/admin/users', methods=['GET'])
+def admin_get_users():
+    from database import get_all_users
+    return jsonify(get_all_users())
+
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    from database import delete_user
+    result = delete_user(user_id)
+    return jsonify(result)
+
+# ================= AUTH ROUTES =================
+@app.route('/api/login', methods=['POST'])
+def login_api():
+    from database import verify_login
+    data = request.json
+    result = verify_login(data.get('email'), data.get('password'))
+    return jsonify(result)
+
+@app.route('/api/register', methods=['POST'])
+def register_api():
+    from database import register_user
+    data = request.json
+    result = register_user(data.get('fullname'), data.get('email'), data.get('password'))
+    return jsonify(result)
+
 if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('data', exist_ok=True)
