@@ -317,25 +317,29 @@ Bạn là chuyên gia dinh dưỡng Việt Nam. Hãy phân tích ẢNH MÓN ĂN 
 def predict_with_gemini(image_bytes):
     if not gemini_client:
         return {"error": "Chưa cấu hình GEMINI_API_KEY trong file .env."}
-    try:
-        response = gemini_client.models.generate_content(
-            model="gemini-flash-latest",
-            contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                DETAILED_FOOD_PROMPT,
-            ],
-            config=types.GenerateContentConfig(response_mime_type="application/json"),
-        )
-        result = safe_json_parse(response.text)
-        analysis = normalize_analysis(result)
-        return {
-            "detections": [],
-            "analysis": analysis,
-            "message": "Đã phân tích chi tiết từng món bằng Gemini!"
-        }
-    except Exception as e:
-        print(f"Lỗi Gemini Vision: {e}")
-        return {"error": f"Lỗi khi phân tích ảnh bằng AI: {str(e)}"}
+    import time
+    for attempt in range(3):
+        try:
+            response = gemini_client.models.generate_content(
+                model="gemini-flash-latest",
+                contents=[
+                    types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                    DETAILED_FOOD_PROMPT,
+                ],
+                config=types.GenerateContentConfig(response_mime_type="application/json"),
+            )
+            result = safe_json_parse(response.text)
+            analysis = normalize_analysis(result)
+            return {
+                "detections": [],
+                "analysis": analysis,
+                "message": "Đã phân tích chi tiết từng món bằng Gemini!"
+            }
+        except Exception as e:
+            print(f"Lỗi Gemini Vision (lần {attempt + 1}): {e}")
+            if attempt == 2:
+                return {"error": f"Hệ thống AI đang quá tải (Lỗi 503) hoặc có lỗi: {str(e)}. Vui lòng tải lại ảnh sau ít phút!"}
+            time.sleep(2)
  
  
 def predict_image(image_bytes):
