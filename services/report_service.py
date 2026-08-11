@@ -48,7 +48,7 @@ def generate_weekly_report(user_id, tdee, target_calories):
         
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-flash-latest",
             contents=prompt,
         )
         
