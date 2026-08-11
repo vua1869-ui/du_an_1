@@ -656,12 +656,31 @@
                     <h2 class="text-3xl font-display font-bold text-dark mb-3">AI Quét Món Ăn</h2>
                     <p class="text-inkmute font-medium mb-8 max-w-sm">Chụp hoặc tải ảnh món ăn của bạn lên, AI sẽ bóc tách và tính toán calo tự động.</p>
 
-                    <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="uploadImage(event)">
-                    <button onclick="document.getElementById('image-upload').click()" class="btn-press w-full sm:w-auto bg-gradient-to-r from-ocean to-primary text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-ocean/25 text-lg flex items-center justify-center gap-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
-                        Tải ảnh lên ngay
-                    </button>
-                    <p class="text-[11px] text-inkmute/70 font-medium mt-4">Hỗ trợ JPG, PNG · Kết quả có trong vài giây</p>
+                    <!-- KHU VỰC CAMERA -->
+                    <div id="camera-container" class="hidden w-full max-w-sm mx-auto mb-6 relative rounded-[2rem] overflow-hidden shadow-lg border border-line bg-black animate-scale-in">
+                        <video id="camera-stream" autoplay playsinline class="w-full h-auto object-cover aspect-[4/3]"></video>
+                        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-6 items-center">
+                            <button onclick="closeCamera()" class="w-10 h-10 bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Đóng Camera">✖</button>
+                            <button onclick="captureCamera()" class="w-16 h-16 bg-white/30 backdrop-blur-md rounded-full border-4 border-white flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                <span class="w-12 h-12 bg-white rounded-full shadow-inner"></span>
+                            </button>
+                            <div class="w-10"></div>
+                        </div>
+                        <canvas id="camera-canvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- CÁC NÚT TƯƠNG TÁC -->
+                    <div id="scan-buttons" class="flex flex-col sm:flex-row justify-center gap-4 w-full">
+                        <button onclick="openCamera()" class="btn-press w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-primary text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-primary/25 text-lg flex items-center justify-center gap-2">
+                            📸 Mở Camera
+                        </button>
+                        
+                        <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="uploadImage(event)">
+                        <button onclick="document.getElementById('image-upload').click()" class="btn-press w-full sm:w-auto bg-white text-dark border border-line font-bold py-4 px-8 rounded-2xl shadow-sm text-lg flex items-center justify-center gap-2 hover:bg-surface2 transition-colors">
+                            🖼️ Tải ảnh lên
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-inkmute/70 font-medium mt-4">Hỗ trợ Camera Trực tiếp · JPG, PNG</p>
                 </div>
 
                 <div id="loading-scan" class="py-10 text-center hidden">
@@ -1252,7 +1271,7 @@
                         html += `<div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-line shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-2xl bg-paper flex items-center justify-center text-2xl border border-line">🍽️</div>
-                                <div><p class="font-bold text-dark">${escapeHtml(f.name)}</p><p class="text-xs text-inkmute font-medium mt-0.5 font-num"><span class="text-primary font-bold">${f.calories} kcal</span> &bull; P:${f.protein} C:${f.carbs} F:${f.fat}</p></div>
+                                <div><p class="font-bold text-dark">${escapeHtml(f.name)}</p><p class="text-xs text-inkmute font-medium mt-0.5 font-num"><span class="text-primary font-bold">${f.calories} cal</span> &bull; P:${f.protein} C:${f.carbs} F:${f.fat}</p></div>
                             </div>
                         </div>`;
                     });
@@ -1268,6 +1287,8 @@
             const goal = u.goal || 'duy_tri';
             const tdee = u.target_calories || 2000;
             const uid = u.id || 1;
+
+            document.getElementById('ai-recommends-list').innerHTML = '<div class="skeleton h-36 rounded-3xl"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div>';
 
             fetch(`/api/recommendations?user_id=${uid}&tdee=${tdee}&goal=${goal}`)
             .then(res => res.json())
@@ -1285,7 +1306,7 @@
                             <span class="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-1 block">${labels[key] || key}</span>
                             <h4 class="font-bold text-dark text-base mb-2 relative z-10 pr-6">${m.name}</h4>
                             <div class="flex items-center gap-3 text-xs font-bold text-inkmute font-num relative z-10">
-                                <span class="bg-white px-2 py-1 rounded-md shadow-sm border border-line text-primary">${m.cals} kcal</span>
+                                <span class="bg-white px-2 py-1 rounded-md shadow-sm border border-line text-primary">${m.calories || m.cals} cal</span>
                                 <span>P: ${m.protein}g</span>
                             </div>
                             <button onclick='addFoodToLog(${JSON.stringify(m)})' class="mt-4 w-full bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white py-2.5 rounded-xl text-xs font-bold transition-colors relative z-10 btn-press shadow-sm">
@@ -1299,6 +1320,19 @@
                 }
             }).catch(err => {
                 document.getElementById('ai-recommends-list').innerHTML = '';
+            });
+        }
+
+
+        function addFoodToLog(food) {
+            fetch('/api/log_food', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(food) })
+            .then(() => {
+                showToast("Đã thêm món vào nhật ký thành công!", "success");
+                switchAppTab('dashboard');
+                loadTodayLogs();
+                checkAchievements();
+
+                loadRecommendations(); 
             });
         }
 
@@ -1355,9 +1389,63 @@
         }
 
         // ================= AI VISION & SCORING LOGIC =================
+        let cameraStream = null;
+
+        async function openCamera() {
+            const container = document.getElementById('camera-container');
+            const video = document.getElementById('camera-stream');
+            const buttons = document.getElementById('scan-buttons');
+            
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showToast("Trình duyệt chặn Camera. Cần chạy trên localhost hoặc HTTPS!", "error");
+                    return;
+                }
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = cameraStream;
+                container.classList.remove('hidden');
+                buttons.classList.add('hidden');
+            } catch (err) {
+                showToast("Không thể mở Camera! Vui lòng cấp quyền.", "error");
+            }
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            document.getElementById('camera-container').classList.add('hidden');
+            document.getElementById('scan-buttons').classList.remove('hidden');
+        }
+
+        function captureCamera() {
+            const video = document.getElementById('camera-stream');
+            const canvas = document.getElementById('camera-canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            closeCamera();
+
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+                    processImageFile(file);
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
         function uploadImage(e) {
             const file = e.target.files[0];
-            if (!file) return;
+            if (file) {
+                processImageFile(file);
+            }
+        }
+
+        function processImageFile(file) {
             document.getElementById('loading-scan').classList.remove('hidden');
             document.getElementById('scan-result').classList.add('hidden');
             
@@ -1380,37 +1468,24 @@
                         html += `
                         <div class="bg-paper p-5 rounded-[1.5rem] border border-line shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex justify-between items-center mb-4">
-                                <div class="text-left"><p class="font-bold text-dark text-lg">${f.name}</p><p class="text-xs text-ocean font-bold mt-1 font-num">${f.calories || f.cals} kcal</p></div>
+                                <div class="text-left"><p class="font-bold text-dark text-lg">${f.name}</p><p class="text-xs text-ocean font-bold mt-1 font-num">${f.calories || f.cals} cal</p></div>
                                 <button onclick='addFoodToLog(${JSON.stringify(f)})' class="btn-press bg-gradient-to-r from-ocean to-primary text-white hover:shadow-lg px-5 py-2.5 rounded-xl font-bold text-sm transition-all">+ Thêm</button>
                             </div>
                             
-                            <!-- Khung chứa Healthy Score -->
                             <div id="${scoreBoxId}" class="mt-4 pt-4 border-t border-line/60">
-                                <div class="flex items-center gap-3 mb-3">
-                                    <div class="skeleton w-8 h-8 rounded-full"></div>
-                                    <div class="skeleton h-4 w-32 rounded"></div>
-                                </div>
-                                <div class="skeleton h-2 w-full rounded-full mb-3"></div>
-                                <div class="skeleton h-12 w-full rounded-xl"></div>
+                                <div class="flex items-center gap-3 mb-3"><div class="skeleton w-8 h-8 rounded-full"></div><div class="skeleton h-4 w-32 rounded"></div></div>
+                                <div class="skeleton h-2 w-full rounded-full mb-3"></div><div class="skeleton h-12 w-full rounded-xl"></div>
                             </div>
 
-                            <!-- MỚI: Khung đề xuất món thay thế -->
                             <div id="${altBoxId}" class="mt-4 pt-4 border-t border-line hidden">
                                 <h5 class="text-xs font-bold text-dark mb-3 flex items-center gap-1.5">💡 AI Đề xuất thay thế Healthy:</h5>
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="alt-list-${altBoxId}">
-                                    <div class="skeleton h-24 w-full rounded-xl"></div>
-                                    <div class="skeleton h-24 w-full rounded-xl"></div>
-                                    <div class="skeleton h-24 w-full rounded-xl"></div>
+                                    <div class="skeleton h-24 w-full rounded-xl"></div><div class="skeleton h-24 w-full rounded-xl"></div><div class="skeleton h-24 w-full rounded-xl"></div>
                                 </div>
                             </div>
                         </div>`;
                         
-                        // Kích hoạt API chấm điểm và API đề xuất ngầm
-                        setTimeout(() => {
-                            fetchScore(f, scoreBoxId);
-                            fetchAlternatives(f, altBoxId);
-                        }, delayIndex * 2500);
-
+                        setTimeout(() => { fetchScore(f, scoreBoxId); fetchAlternatives(f, altBoxId); }, delayIndex * 2500);
                         delayIndex++;
                     }
                     html += `</div>`;
@@ -1418,6 +1493,9 @@
                     html = `<p class="text-inkmute font-medium text-center">AI không nhận ra món ăn. Vui lòng chụp rõ hơn!</p>`; 
                 }
                 document.getElementById('scan-result').innerHTML = html;
+            }).catch(err => {
+                document.getElementById('loading-scan').classList.add('hidden');
+                showToast("Lỗi kết nối AI!", "error");
             });
         }
 

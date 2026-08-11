@@ -1,4 +1,5 @@
 import os
+import binascii
 from flask import Flask
 from database.db_core import init_db
 from ai.rag import init_vector_db
@@ -10,7 +11,7 @@ CSV_PATH = os.path.join(BASE_DIR, 'data', 'vi-food-nutrition_vi.csv')
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.secret_key = os.getenv("SECRET_KEY", "khoa_bao_mat_balance_nutrition_123")
+app.secret_key = os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(24)).decode())
 
 # Khởi tạo Hệ thống
 init_db(DB_PATH, CSV_PATH)

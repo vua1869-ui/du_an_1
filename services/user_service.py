@@ -4,7 +4,12 @@ from datetime import date, timedelta
 def log_food(food_data):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('''INSERT INTO daily_logs (user_id, date, meal_type, name, calories, protein, carbs, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (1, date.today().isoformat(), food_data.get('meal_type', 'snack'), food_data.get('name', 'Món ăn'), food_data.get('calories', 0), food_data.get('protein', 0), food_data.get('carbs', 0), food_data.get('fat', 0)))
+
+    cals = food_data.get('calories')
+    if cals is None:
+        cals = food_data.get('cals', 0)
+        
+    c.execute('''INSERT INTO daily_logs (user_id, date, meal_type, name, calories, protein, carbs, fat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (1, date.today().isoformat(), food_data.get('meal_type', 'snack'), food_data.get('name', 'Món ăn'), cals, food_data.get('protein', 0), food_data.get('carbs', 0), food_data.get('fat', 0)))
     conn.commit()
     conn.close()
     return {"status": "success", "message": "Đã thêm vào nhật ký!"}

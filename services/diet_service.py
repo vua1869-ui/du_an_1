@@ -1,5 +1,6 @@
 import random
 from database.db_core import get_db_connection
+from ai.diet_optimizer import optimize_diet_plan # Import thuật toán tối ưu
 
 def score_food(food, goal):
     cals, protein, fat = food[3], food[4], food[6]
@@ -19,16 +20,15 @@ def get_diet_plan(tdee, goal="duy_tri"):
     main_meals = c.fetchall()
     conn.close()
 
-    if not breakfasts or len(main_meals) < 2: return {"error": "Thiếu dữ liệu DB."}
-    breakfasts = sorted(breakfasts, key=lambda f: score_food(f, goal), reverse=True)[:15]
-    main_meals = sorted(main_meals, key=lambda f: score_food(f, goal), reverse=True)[:15]
-    bf = random.choice(breakfasts)
-    lu, dn = random.sample(main_meals, 2)
+    if not breakfasts or len(main_meals) < 2: 
+        return {"error": "Thiếu dữ liệu DB."}
+    
+    # Lọc ra top 50 món tốt nhất cho mục tiêu hiện tại để giảm bớt không gian duyệt thuật toán
+    breakfasts = sorted(breakfasts, key=lambda f: score_food(f, goal), reverse=True)[:50]
+    lunches = sorted(main_meals, key=lambda f: score_food(f, goal), reverse=True)[:50]
+    dinners = lunches.copy() # Dùng chung data bữa chính cho trưa và tối
 
-    targets = {'bf': tdee * 0.25, 'lu': tdee * 0.40, 'dn': tdee * 0.35}
-    def scale(item, target_cals):
-        factor = (target_cals / (item[3] if item[3]>0 else 1))
-        return {'name': item[2], 'grams': round(factor*100), 'cals': round(item[3]*factor), 'protein': round(item[4]*factor), 'carbs': round(item[5]*factor), 'fat': round(item[6]*factor)}
-
-    m_bf, m_lu, m_dn = scale(bf, targets['bf']), scale(lu, targets['lu']), scale(dn, targets['dn'])
-    return {'target_tdee': tdee, 'total_calories': m_bf['cals'] + m_lu['cals'] + m_dn['cals'], 'total_protein': m_bf['protein']+m_lu['protein']+m_dn['protein'], 'total_carbs': m_bf['carbs']+m_lu['carbs']+m_dn['carbs'], 'total_fat': m_bf['fat']+m_lu['fat']+m_dn['fat'], 'meals': {'breakfast': m_bf, 'lunch': m_lu, 'dinner': m_dn}}
+    # GỌI THUẬT TOÁN TỐI ƯU (KNAPSACK-LIKE) thay vì random scale
+    best_plan = optimize_diet_plan(breakfasts, lunches, dinners, tdee)
+    
+    return best_plan

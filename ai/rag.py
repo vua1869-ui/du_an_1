@@ -38,7 +38,8 @@ def init_vector_db(db_path):
     db_path = os.path.join('data', 'balance_nutrition.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute('SELECT name, calories, protein, carbs, fat FROM foods')
+    # THÊM id VÀO CÂU TRUY VẤN
+    c.execute('SELECT id, name, calories, protein, carbs, fat FROM foods')
     foods = c.fetchall()
     conn.close()
 
@@ -48,12 +49,12 @@ def init_vector_db(db_path):
         metadatas = []
         ids = []
 
-        for i, food in enumerate(foods):
-            name, cals, pro, carbs, fat = food
+        for food in foods:
+            fid, name, cals, pro, carbs, fat = food # Đọc id (fid)
             doc_text = f"{name} chứa {cals} calo, {pro}g protein, {carbs}g carbs, {fat}g chất béo."
             documents.append(doc_text)
             metadatas.append({"name": name, "calories": cals, "protein": pro, "carbs": carbs, "fat": fat})
-            ids.append(f"food_{i}")
+            ids.append(f"food_{fid}") # ĐẶT ID ĐỒNG BỘ VỚI SQLITE
 
         collection.add(
             documents=documents,
