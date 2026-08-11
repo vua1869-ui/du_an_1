@@ -715,7 +715,7 @@
                 </div>
                 
                 <!-- Khu vực tin nhắn -->
-                <div id="chat-box" class="flex-1 p-5 overflow-y-auto bg-[#FBF9F4] space-y-6 flex flex-col scroll-smooth">
+                <div id="chat-box" class="flex-1 min-h-0 p-5 overflow-y-auto bg-[#FBF9F4] space-y-6 flex flex-col scroll-smooth">
                     
                     <!-- Lời chào từ AI -->
                     <div class="flex justify-start items-end gap-3 animate-fade-in-up">
@@ -1025,18 +1025,30 @@
             views.forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 const nav = document.getElementById(`nav-${v}`);
-                if (el) el.classList.add('hidden');
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex'); 
+                }
                 if (nav) { nav.classList.remove('text-primary'); nav.classList.add('text-inkmute'); }
             });
 
             const activeEl = document.getElementById(`view-${tab}`);
             const activeNav = document.getElementById(`nav-${tab}`);
+            
             if (activeEl) {
                 activeEl.classList.remove('hidden');
-                activeEl.classList.remove('animate-fade-in-up'); void activeEl.offsetWidth; activeEl.classList.add('animate-fade-in-up');
+
+                if (tab === 'chat') {
+                    activeEl.classList.add('flex');
+                }
+                
+                activeEl.classList.remove('animate-fade-in-up'); 
+                void activeEl.offsetWidth; 
+                activeEl.classList.add('animate-fade-in-up');
             }
             if (activeNav) {
-                activeNav.classList.add('text-primary'); activeNav.classList.remove('text-inkmute');
+                activeNav.classList.add('text-primary'); 
+                activeNav.classList.remove('text-inkmute');
             }
 
             if(tab === 'chat') setTimeout(() => document.getElementById('chat-input').focus(), 100);
@@ -1268,16 +1280,32 @@
                 let html = '';
                 if(data.foods.length > 0){
                     data.foods.forEach(f => {
-                        html += `<div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-line shadow-sm hover:shadow-md transition-shadow">
+                        html += `<div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-line shadow-sm hover:shadow-md transition-shadow group">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-2xl bg-paper flex items-center justify-center text-2xl border border-line">🍽️</div>
                                 <div><p class="font-bold text-dark">${escapeHtml(f.name)}</p><p class="text-xs text-inkmute font-medium mt-0.5 font-num"><span class="text-primary font-bold">${f.calories} cal</span> &bull; P:${f.protein} C:${f.carbs} F:${f.fat}</p></div>
                             </div>
+                            <button onclick="deleteFoodLog(${f.id})" class="btn-press opacity-0 group-hover:opacity-100 text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-xl font-bold text-xs transition-all">Xóa</button>
                         </div>`;
                     });
                 } else { html = `<div class="text-center p-8 text-inkmute bg-white rounded-3xl border border-dashed border-line font-medium">Chưa có dữ liệu ăn uống hôm nay.</div>`; }
                 listEl.innerHTML = html;
             });
+        }
+
+        function deleteFoodLog(id) {
+            if(!confirm("Bạn có chắc chắn muốn xóa món này khỏi nhật ký hôm nay?")) return;
+            
+            fetch(`/api/log_food/${id}`, { 
+                method: 'DELETE' 
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast("Đã xóa món ăn!", "info");
+                // Load lại dữ liệu ngay lập tức để biểu đồ và danh sách tự cập nhật
+                loadTodayLogs();
+            })
+            .catch(err => showToast("Lỗi khi xóa món ăn!", "error"));
         }
 
         function loadRecommendations() {
@@ -1563,15 +1591,22 @@
             
             const chatBox = document.getElementById('chat-box');
             
-            // Render tin nhắn của User
+            // HÀM MỚI: Cuộn xuống đáy với độ trễ để DOM kịp render
+            const scrollToBottom = () => {
+                setTimeout(() => {
+                    chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+                }, 100);
+            };
+            
+            // Render tin nhắn của User (Bổ sung escapeHtml để bảo mật XSS)
             chatBox.innerHTML += `
             <div class="flex justify-end items-end gap-3 animate-fade-in-up">
-                <div class="bg-gradient-to-r from-primary to-ocean text-white p-4 rounded-2xl rounded-br-sm max-w-[85%] shadow-md text-sm font-medium leading-relaxed">${msg}</div>
+                <div class="bg-gradient-to-r from-primary to-ocean text-white p-4 rounded-2xl rounded-br-sm max-w-[85%] shadow-md text-sm font-medium leading-relaxed">${escapeHtml(msg)}</div>
                 <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm shadow-sm border border-primary/30 shrink-0 mb-1">🥑</div>
             </div>`;
             
             input.value = ''; 
-            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+            scrollToBottom(); // Gọi cuộn khi User gửi
             
             // Render hiệu ứng Loading của AI
             const loadingId = 'loading-' + Date.now();
@@ -1584,7 +1619,7 @@
                     <div class="w-2 h-2 bg-inkmute/50 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
                 </div>
             </div>`;
-            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+            scrollToBottom(); // Gọi cuộn khi AI đang gõ
 
             const userStr = localStorage.getItem('currentUser');
             let tdeeTarget = 2000;
@@ -1608,19 +1643,17 @@
                 // Render câu trả lời của AI
                 if(data.type === 'diet' && data.diet && data.diet.meals) {
                     
-                    // LƯU LẠI THỰC ĐƠN ĐỂ LUÔN CẬP NHẬT KHI ĐỔI MENU
                     window.lastGeneratedDiet = Object.values(data.diet.meals);
                     
                     let cardHtml = `<div class="bg-white border border-primary/15 shadow-lg shadow-primary/5 rounded-3xl overflow-hidden w-full max-w-[90%]"><div class="p-4 bg-primary/5 border-b border-primary/10 font-bold text-primary flex items-center gap-2 font-display">📋 Thực đơn đề xuất</div><div class="divide-y divide-line/60">`;
                     const icons = { 'breakfast': '🌅', 'lunch': '☀️', 'dinner': '🌙' };
                     for (const [key, value] of Object.entries(data.diet.meals)) {
                         cardHtml += `<div class="p-4 flex justify-between items-center hover:bg-paper transition-colors">
-                                <div><p class="font-bold text-sm text-dark"><span class="mr-2">${icons[key]}</span>${value.name}</p><p class="text-xs font-bold text-inkmute mt-1 ml-7 font-num">${value.cals} kcal</p></div>
+                                <div><p class="font-bold text-sm text-dark"><span class="mr-2">${icons[key]}</span>${value.name}</p><p class="text-xs font-bold text-inkmute mt-1 ml-7 font-num">${value.cals} cal</p></div>
                                 <button onclick='addFoodToLog(${JSON.stringify(value)})' class="btn-press text-primary font-bold bg-primary/10 px-4 py-2 rounded-xl text-xs hover:bg-primary hover:text-white transition-colors">+ Thêm</button>
                             </div>`;
                     }
                     
-                    // THÊM NÚT TẠO DANH SÁCH ĐI CHỢ
                     cardHtml += `</div>
                         <div class="p-4 bg-paper text-xs font-medium text-slate-600 leading-relaxed">${data.response.replace(/\n/g, '<br>')}</div>
                         <div class="p-4 bg-white border-t border-line/60">
@@ -1641,7 +1674,8 @@
                         </div>
                     </div>`;
                 }
-                chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+                
+                scrollToBottom(); // Gọi cuộn lần cuối khi AI đã trả lời xong
             });
         }
 

@@ -33,3 +33,12 @@ def get_weekly_stats():
         calories.append(sum(log[0] for log in c.fetchall()))
     conn.close()
     return {"dates": dates, "calories": calories}
+
+def delete_log(log_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    # Xóa bản ghi dựa trên ID (tạm thời để user_id=1 theo cấu trúc hiện tại của bạn)
+    c.execute('DELETE FROM daily_logs WHERE id=? AND user_id=1', (log_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Đã xóa món ăn khỏi nhật ký!"}

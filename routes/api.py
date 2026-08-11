@@ -3,7 +3,7 @@ from ai.vision import predict_image
 from ai.rag import get_chatbot_response, client
 from services.auth_service import verify_login, register_user, save_user_onboarding
 from services.diet_service import get_diet_plan
-from services.user_service import log_food, get_today_logs, get_weekly_stats
+from services.user_service import log_food, get_today_logs, get_weekly_stats, delete_log
 from services.admin_service import get_all_foods, add_new_food, delete_food, get_all_users, delete_user
 from services.recommendation_service import get_personalized_recommendations
 from services.weight_service import add_or_update_weight, delete_weight, get_weight_data
@@ -228,3 +228,7 @@ def login():
 def logout():
     session.clear()
     return jsonify({"status": "success", "message": "Đã đăng xuất"})
+
+@api_bp.route('/api/log_food/<int:log_id>', methods=['DELETE'])
+def remove_food_log(log_id):
+    return jsonify(delete_log(log_id))
