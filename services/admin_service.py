@@ -20,7 +20,8 @@ def add_new_food(data):
         try:
             from ai.rag import collection
             doc_text = f"{data.get('name')} chứa {data.get('calories', 0)} calo."
-            collection.add(documents=[doc_text], metadatas=[{"name": data.get('name'), "calories": safe_int(data.get('calories', 0)), "protein": safe_int(data.get('protein', 0)), "carbs": safe_int(data.get('carbs', 0)), "fat": safe_int(data.get('fat', 0))}], ids=[f"food_new_{new_id}"])
+            # SỬA PREFIX ID ĐỂ ĐỒNG BỘ
+            collection.add(documents=[doc_text], metadatas=[{"name": data.get('name'), "calories": safe_int(data.get('calories', 0)), "protein": safe_int(data.get('protein', 0)), "carbs": safe_int(data.get('carbs', 0)), "fat": safe_int(data.get('fat', 0))}], ids=[f"food_{new_id}"])
         except: pass
         return {"status": "success", "message": "Đã thêm món ăn mới thành công!"}
     except Exception as e: return {"error": f"Có lỗi: {str(e)}"}
@@ -31,6 +32,13 @@ def delete_food(food_id):
     c.execute('DELETE FROM foods WHERE id=?', (food_id,))
     conn.commit()
     conn.close()
+
+    try:
+        from ai.rag import collection
+        collection.delete(ids=[f"food_{food_id}"])
+    except Exception as e: 
+        pass
+
     return {"status": "success", "message": "Đã xóa món ăn!"}
 
 def get_all_users():
