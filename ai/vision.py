@@ -35,13 +35,43 @@ roboflow_client = InferenceHTTPClient(
 MODEL_ID = "vietnamese-food-flf5p/1"   # đổi đúng theo project của em nếu khác
 CONFIDENCE_THRESHOLD = 0.5   # dưới ngưỡng này thì chuyển sang hỏi Gemini
  
-# Bảng tra dinh dưỡng ước lượng cho 5 món model đã học (calo/protein/carb/fat cho 1 phần ăn)
+# Bảng tra dinh dưỡng ước lượng cho 35 món model YOLO đã học (calo/protein/carb/fat cho 1 phần ăn)
 NUTRITION_LOOKUP = {
-    "banh mi": {"calories": 400, "protein": 15, "carbs": 50, "fat": 15},
-    "bot chien": {"calories": 350, "protein": 8, "carbs": 40, "fat": 18},
-    "bun": {"calories": 380, "protein": 18, "carbs": 55, "fat": 8},
-    "goi cuon": {"calories": 220, "protein": 12, "carbs": 25, "fat": 6},
+    "sup cua": {"calories": 200, "protein": 15, "carbs": 20, "fat": 5},
+    "bun ngan": {"calories": 450, "protein": 25, "carbs": 50, "fat": 15},
+    "banh flan": {"calories": 150, "protein": 5, "carbs": 20, "fat": 5},
+    "com chien": {"calories": 550, "protein": 15, "carbs": 70, "fat": 20},
+    "cha gio": {"calories": 100, "protein": 4, "carbs": 10, "fat": 6},
+    "bun dau mam tom": {"calories": 650, "protein": 30, "carbs": 60, "fat": 30},
+    "xoi xeo": {"calories": 450, "protein": 12, "carbs": 60, "fat": 15},
+    "banh can": {"calories": 200, "protein": 8, "carbs": 25, "fat": 5},
+    "ca kho": {"calories": 300, "protein": 25, "carbs": 10, "fat": 18},
+    "cao lau": {"calories": 400, "protein": 20, "carbs": 55, "fat": 10},
+    "banh duc": {"calories": 150, "protein": 5, "carbs": 25, "fat": 3},
+    "bun mam": {"calories": 500, "protein": 25, "carbs": 60, "fat": 15},
+    "banh pia": {"calories": 300, "protein": 6, "carbs": 40, "fat": 12},
+    "banh bot loc": {"calories": 180, "protein": 8, "carbs": 25, "fat": 5},
+    "banh gio": {"calories": 250, "protein": 10, "carbs": 25, "fat": 12},
+    "banh canh": {"calories": 400, "protein": 15, "carbs": 55, "fat": 10},
     "pho": {"calories": 450, "protein": 25, "carbs": 60, "fat": 10},
+    "nem chua": {"calories": 50, "protein": 4, "carbs": 2, "fat": 2},
+    "mi quang": {"calories": 480, "protein": 20, "carbs": 60, "fat": 14},
+    "banh chung": {"calories": 600, "protein": 20, "carbs": 65, "fat": 25},
+    "banh tet": {"calories": 600, "protein": 20, "carbs": 65, "fat": 25},
+    "hu tieu": {"calories": 420, "protein": 18, "carbs": 55, "fat": 12},
+    "banh trang nuong": {"calories": 250, "protein": 10, "carbs": 20, "fat": 15},
+    "goi cuon": {"calories": 200, "protein": 12, "carbs": 25, "fat": 4},
+    "banh khot": {"calories": 250, "protein": 10, "carbs": 30, "fat": 10},
+    "canh chua": {"calories": 150, "protein": 10, "carbs": 15, "fat": 5},
+    "banh mi": {"calories": 400, "protein": 15, "carbs": 50, "fat": 15},
+    "com tam": {"calories": 650, "protein": 30, "carbs": 80, "fat": 20},
+    "bun rieu": {"calories": 400, "protein": 20, "carbs": 50, "fat": 12},
+    "bun thit nuong": {"calories": 550, "protein": 25, "carbs": 65, "fat": 22},
+    "banh xeo": {"calories": 450, "protein": 12, "carbs": 40, "fat": 25},
+    "chao long": {"calories": 450, "protein": 20, "carbs": 40, "fat": 20},
+    "bun bo hue": {"calories": 500, "protein": 22, "carbs": 65, "fat": 15},
+    "banh uot": {"calories": 350, "protein": 10, "carbs": 45, "fat": 10},
+    "banh beo": {"calories": 250, "protein": 8, "carbs": 40, "fat": 5},
 }
  
  
@@ -168,12 +198,36 @@ def predict_with_yolo(image_bytes):
     with open(temp_path, "wb") as f:
         f.write(image_bytes)
     try:
-        result = roboflow_client.infer(temp_path, model_id=MODEL_ID)
+        # Cập nhật dùng API run_workflow mới
+        result = roboflow_client.run_workflow(
+            workspace_name="tien-anh-vu-5dm0q",
+            workflow_id="vietnamese-food-yolo-vvietnamese-food-yolo-es0vg-1-yolo11n-t1-logic",
+            images={
+                "image": temp_path
+            },
+            use_cache=True
+        )
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
  
-    predictions = [p for p in result.get("predictions", []) if p["confidence"] >= CONFIDENCE_THRESHOLD]
+    # Phân tích kết quả từ Workflow (cấu trúc có thể nằm lồng bên trong dict trả về)
+    raw_predictions = []
+    if isinstance(result, list) and len(result) > 0:
+        result = result[0]
+        
+    if isinstance(result, dict):
+        if "predictions" in result:
+            raw_predictions = result["predictions"]
+        else:
+            # Tìm key chứa predictions trong workflow output
+            for k, v in result.items():
+                if isinstance(v, dict) and "predictions" in v:
+                    raw_predictions.extend(v["predictions"])
+                elif isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict) and "confidence" in v[0]:
+                    raw_predictions.extend(v)
+
+    predictions = [p for p in raw_predictions if p.get("confidence", 0) >= CONFIDENCE_THRESHOLD]
     if not predictions:
         return None   # không món nào đủ tin cậy -> rơi xuống Gemini
  
@@ -336,9 +390,9 @@ def predict_with_gemini(image_bytes):
                 "message": "Đã phân tích chi tiết từng món bằng Gemini!"
             }
         except Exception as e:
-            print(f"Lỗi Gemini Vision (lần {attempt + 1}): {e}")
+            print(f"Loi Gemini Vision (lan {attempt + 1}): {e}")
             if attempt == 2:
-                return {"error": f"Hệ thống AI đang quá tải (Lỗi 503) hoặc có lỗi: {str(e)}. Vui lòng tải lại ảnh sau ít phút!"}
+                return {"error": f"Hệ thống AI đang quá tải hoặc hết lượt (Quota). Vui lòng thử lại sau! Chi tiết: {str(e)}"}
             time.sleep(2)
  
  
@@ -350,7 +404,7 @@ def predict_image(image_bytes):
             if yolo_result:
                 return yolo_result
         except Exception as e:
-            print(f"Lỗi YOLO, chuyển sang Gemini: {e}")
+            print(f"Loi YOLO, chuyen sang Gemini: {e}")
  
     # Không nhận diện được / lỗi -> dùng Gemini (phân tích chi tiết mâm ăn)
     return predict_with_gemini(image_bytes)
