@@ -7,14 +7,16 @@ from routes.api import api_bp
 
 BASE_DIR = os.path.abspath(os.path.dirname(__name__))
 DB_PATH = os.path.join(BASE_DIR, 'data', 'balance_nutrition.db')
-CSV_PATH = os.path.join(BASE_DIR, 'data', 'vi-food-nutrition_vi.csv')
+
+# Cập nhật đường dẫn trỏ tới file dữ liệu mới
+EXCEL_PATH = os.path.join(BASE_DIR, 'data', 'mon_an.xlsx')
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.secret_key = os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(24)).decode())
 
-# Khởi tạo Hệ thống
-init_db(DB_PATH, CSV_PATH)
+# Khởi tạo Hệ thống với file Excel mới
+init_db(DB_PATH, EXCEL_PATH)
 init_vector_db(DB_PATH)
 
 # Kết nối toàn bộ API đã viết

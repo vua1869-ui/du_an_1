@@ -10,7 +10,7 @@ def get_db_connection():
     conn.execute('PRAGMA journal_mode=WAL;')
     return conn
 
-def init_db(db_path, csv_path):
+def init_db(db_path, file_path):
     conn = sqlite3.connect(db_path, timeout=15)
     conn.execute('PRAGMA journal_mode=WAL;')
     c = conn.cursor()
@@ -42,16 +42,31 @@ def init_db(db_path, csv_path):
     
     c.execute('SELECT COUNT(*) FROM foods')
     if c.fetchone()[0] == 0:
-        if os.path.exists(csv_path):
+        if os.path.exists(file_path):
             try:
-                df = pd.read_csv(csv_path)
+                df = pd.read_excel(file_path)
+                
+                # 2. Tạo bộ từ điển ánh xạ loại bữa ăn sang tiếng Anh để khớp logic hệ thống
+                meal_map = {
+                    'Sáng': 'breakfast',
+                    'Trưa': 'lunch',
+                    'Tối': 'dinner',
+                    'Ăn nhẹ': 'snack'
+                }
+
                 for index, row in df.iterrows():
-                    name = str(row.get('Name', f'Món ăn {index}'))
+                    # 3. Đọc dữ liệu theo tên cột mới trong file Excel
+                    name = str(row.get('ten_mon', f'Món ăn {index}')).strip()
+                    loai_bua_vn = str(row.get('loai_bua', 'Ăn nhẹ')).strip()
+                    
+                    meal_type = meal_map.get(loai_bua_vn, 'snack') 
+                    
                     c.execute('INSERT INTO foods (meal_type, name, calories, protein, carbs, fat) VALUES (?,?,?,?,?,?)', 
-                              (guess_meal_type(name), name, safe_int(row.get('Calories Kcal', 0)), safe_int(row.get('Protein G', 0)), safe_int(row.get('Carbohydrates G', 0)), safe_int(row.get('Fat G', 0))))
-            except Exception:
-                pass
+                              (meal_type, name, safe_int(row.get('calo', 0)), safe_int(row.get('protein', 0)), safe_int(row.get('carbs', 0)), safe_int(row.get('fat', 0))))
+            except Exception as e:
+                print(f"Lỗi khi import dữ liệu Excel: {e}")
         else:
+            # Dữ liệu mẫu dự phòng
             sample_data = [
                 ('breakfast', 'Trứng ốp la + Bánh mì', 350, 15, 30, 10),
                 ('lunch', 'Cơm gà xối mỡ', 700, 40, 60, 20),

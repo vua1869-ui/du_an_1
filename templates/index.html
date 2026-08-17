@@ -335,7 +335,7 @@
 
                     <div class="flex gap-4 pt-2">
                         <button type="button" onclick="goToLanding()" class="btn-press w-1/3 bg-surface2 text-slate-600 font-bold py-4 rounded-2xl hover:bg-line transition-colors">Trang chủ</button>
-                        <button type="button" onclick="nextStep(2)" class="btn-press w-2/3 bg-dark text-white font-bold py-4 rounded-2xl shadow-lg shadow-dark/20">Tiếp tục &rarr;</button>
+                        <button type="button" onclick="validateStep1()" class="btn-press w-2/3 bg-dark text-white font-bold py-4 rounded-2xl shadow-lg shadow-dark/20">Tiếp tục &rarr;</button>
                     </div>
                 </div>
 
@@ -355,7 +355,7 @@
                     </div>
                     <div class="flex gap-4 pt-2">
                         <button onclick="nextStep(1)" class="btn-press w-1/3 bg-surface2 text-slate-600 font-bold py-4 rounded-2xl hover:bg-line transition-colors">Quay lại</button>
-                        <button onclick="nextStep(3)" class="btn-press w-2/3 bg-dark text-white font-bold py-4 rounded-2xl shadow-lg shadow-dark/20">Tiếp tục &rarr;</button>
+                        <button onclick="validateStep2()" class="btn-press w-2/3 bg-dark text-white font-bold py-4 rounded-2xl shadow-lg shadow-dark/20">Tiếp tục &rarr;</button>
                     </div>
                 </div>
 
@@ -1087,6 +1087,64 @@
             document.getElementById('step-bar').style.width = `${step * 20}%`;
             updateDots(step);
         }
+
+                // --- HÀM VALIDATE BƯỚC 1 ---
+        function validateStep1() {
+            const fullname = document.getElementById('ob-fullname').value.trim();
+            const nickname = document.getElementById('ob-nickname').value.trim();
+            const email = document.getElementById('ob-email').value.trim();
+            const password = document.getElementById('ob-password').value;
+
+            // Kiểm tra rỗng
+            if (!fullname || !nickname || !email || !password) {
+                showToast("Vui lòng điền đầy đủ thông tin!", "error");
+                return;
+            }
+            
+            // Kiểm tra định dạng Email cơ bản
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast("Định dạng Email không hợp lệ!", "error");
+                return;
+            }
+
+            // Kiểm tra độ dài mật khẩu cho khớp với Backend
+            if (password.length < 6) {
+                showToast("Mật khẩu phải có ít nhất 6 ký tự!", "error");
+                return;
+            }
+
+            // Nếu qua hết các bài test, mới cho sang Bước 2
+            nextStep(2);
+        }
+
+        // --- HÀM VALIDATE BƯỚC 2 ---
+        function validateStep2() {
+            const year = document.getElementById('ob-birthyear').value;
+            const height = document.getElementById('ob-height').value;
+            const weight = document.getElementById('ob-weight').value;
+
+            // Kiểm tra rỗng
+            if (!year || !height || !weight) {
+                showToast("Vui lòng nhập đầy đủ thông số cơ thể!", "error");
+                return;
+            }
+
+            // Rào lỗi dữ liệu phi lý
+            const currentYear = new Date().getFullYear();
+            if (year < 1900 || year > currentYear) {
+                showToast(`Năm sinh phải từ 1900 đến ${currentYear}!`, "error");
+                return;
+            }
+            if (height < 50 || height > 250 || weight < 20 || weight > 200) {
+                showToast("Chiều cao hoặc cân nặng không hợp lý!", "error");
+                return;
+            }
+
+            // Hợp lệ thì sang Bước 3
+            nextStep(3);
+        }
+
         function renderOverviewStep() {
             const goal = document.getElementById('ob-goal').value;
             const goalLabels = {'giam_can': 'Giảm cân', 'duy_tri': 'Duy trì cân nặng', 'tang_can': 'Tăng cân'};

@@ -54,15 +54,24 @@ def chat():
 
 @api_bp.route('/api/log_food', methods=['POST'])
 def add_food_log():
-    return jsonify(log_food(request.json))
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(log_food(user_id, request.json))
 
 @api_bp.route('/api/today_logs', methods=['GET'])
 def today_logs():
-    return jsonify(get_today_logs())
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"foods": [], "totals": {"calories": 0, "protein": 0, "carbs": 0, "fat": 0}})
+    return jsonify(get_today_logs(user_id))
 
 @api_bp.route('/api/weekly_stats', methods=['GET'])
 def weekly_stats():
-    return jsonify(get_weekly_stats())
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"dates": [], "calories": []})
+    return jsonify(get_weekly_stats(user_id))
 
 @api_bp.route('/api/admin/foods', methods=['GET'])
 def admin_get_foods():
@@ -231,4 +240,7 @@ def logout():
 
 @api_bp.route('/api/log_food/<int:log_id>', methods=['DELETE'])
 def remove_food_log(log_id):
-    return jsonify(delete_log(log_id))
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(delete_log(user_id, log_id))
