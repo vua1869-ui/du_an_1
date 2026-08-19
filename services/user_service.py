@@ -52,3 +52,80 @@ def delete_log(user_id, log_id):
     conn.commit()
     conn.close()
     return {"status": "success", "message": "Đã xóa món ăn khỏi nhật ký!"}
+
+def search_foods(query, limit=20):
+    """Tìm món trong CSDL theo tên — hỗ trợ log nhanh không cần quét ảnh."""
+    conn = get_db_connection()
+    c = conn.cursor()
+    q = f"%{(query or '').strip()}%"
+    if query and query.strip():
+        c.execute("""SELECT id, meal_type, name, calories, protein, carbs, fat FROM foods
+                     WHERE name LIKE ? ORDER BY name LIMIT ?""", (q, limit))
+    else:
+        c.execute("""SELECT id, meal_type, name, calories, protein, carbs, fat FROM foods
+                     ORDER BY id DESC LIMIT ?""", (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return {
+        "status": "success",
+        "foods": [{"id": r[0], "meal_type": r[1], "name": r[2], "calories": r[3],
+                   "protein": r[4], "carbs": r[5], "fat": r[6]} for r in rows]
+    }
+
+def get_recent_foods(user_id, limit=8):
+    """Món gần đây / hay ăn — gợi ý log nhanh."""
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("""SELECT name, meal_type, calories, protein, carbs, fat, COUNT(*) as cnt
+                 FROM daily_logs WHERE user_id=?
+                 GROUP BY name ORDER BY cnt DESC, MAX(id) DESC LIMIT ?""", (user_id, limit))
+    rows = c.fetchall()
+    conn.close()
+    return {
+        "status": "success",
+        "foods": [{"name": r[0], "meal_type": r[1], "calories": r[2], "protein": r[3],
+                   "carbs": r[4], "fat": r[5], "times": r[6]} for r in rows]
+    }
+
+def get_day_comparison(user_id, target_calories=2000):
+    """So sánh hôm nay vs hôm qua — insight pro."""
+    conn = get_db_connection()
+    c = conn.cursor()
+    today = date.today().isoformat()
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+
+    def day_stats(d):
+        c.execute("""SELECT COALESCE(SUM(calories),0), COALESCE(SUM(protein),0),
+                            COALESCE(SUM(carbs),0), COALESCE(SUM(fat),0), COUNT(id)
+                     FROM daily_logs WHERE user_id=? AND date=?""", (user_id, d))
+        cal, pro, carb, fat, n = c.fetchone()
+        try:
+            c.execute("SELECT COALESCE(SUM(amount_ml),0) FROM water_logs WHERE user_id=? AND date=?", (user_id, d))
+            water = c.fetchone()[0] or 0
+        except Exception:
+            water = 0
+        return {"calories": cal, "protein": pro, "carbs": carb, "fat": fat, "meals": n, "water": water}
+
+    t = day_stats(today)
+    y = day_stats(yesterday)
+    conn.close()
+
+    cal_diff = t["calories"] - y["calories"]
+    if y["meals"] > 0 or y["calories"] > 0:
+        if cal_diff > 150:
+            insight = f"Hôm nay bạn đang nạp nhiều hơn hôm qua {abs(cal_diff)} kcal."
+        elif cal_diff < -150:
+            insight = f"Hôm nay bạn đang nạp ít hơn hôm qua {abs(cal_diff)} kcal — kiểm soát tốt!"
+        else:
+            insight = "Calo hôm nay tương đương hôm qua — duy trì ổn định."
+    else:
+        insight = "Chưa có dữ liệu hôm qua để so sánh."
+
+    return {
+        "status": "success",
+        "today": t,
+        "yesterday": y,
+        "cal_diff": cal_diff,
+        "insight": insight,
+        "target": target_calories
+    }

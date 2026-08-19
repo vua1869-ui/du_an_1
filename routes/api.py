@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, render_template
 from ai.vision import predict_image
 from ai.rag import get_chatbot_response, client
-from services.auth_service import verify_login, register_user, save_user_onboarding
+from services.auth_service import verify_login, register_user, save_user_onboarding, change_password, delete_account, export_user_data, get_security_info
 from services.diet_service import get_diet_plan
-from services.user_service import log_food, get_today_logs, get_weekly_stats, delete_log
+from services.user_service import log_food, get_today_logs, get_weekly_stats, delete_log, search_foods, get_recent_foods, get_day_comparison
 from services.admin_service import get_all_foods, add_new_food, delete_food, get_all_users, delete_user
 from services.recommendation_service import get_personalized_recommendations
 from services.weight_service import add_or_update_weight, delete_weight, get_weight_data
@@ -201,10 +201,13 @@ def register():
     if not email or not password or not fullname:
         return jsonify({"status": "error", "message": "Vui lòng nhập đầy đủ thông tin"}), 400
     
-    if len(password) < 6:
-        return jsonify({"status": "error", "message": "Mật khẩu phải có ít nhất 6 ký tự"}), 400
+    if len(password) < 8:
+        return jsonify({"status": "error", "message": "Mật khẩu phải có ít nhất 8 ký tự"}), 400
+    if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
+        return jsonify({"status": "error", "message": "Mật khẩu cần có cả chữ và số"}), 400
+    if not any(c in "!@#$%^&*()_+-=[]{}|;:',.<>?/`~\\" for c in password):
+        return jsonify({"status": "error", "message": "Mật khẩu cần có ít nhất 1 ký tự đặc biệt (!@#$%...)"}), 400
 
-    # Gọi hàm register_user từ services/auth_service.py
     result = register_user(fullname, email, password)
     
     if result["status"] == "success":
@@ -244,3 +247,62 @@ def remove_food_log(log_id):
     if not user_id:
         return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
     return jsonify(delete_log(user_id, log_id))
+
+# ========== SETTINGS & SECURITY ==========
+@api_bp.route('/api/change_password', methods=['POST'])
+def api_change_password():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    data = request.json or {}
+    result = change_password(user_id, data.get('current_password', ''), data.get('new_password', ''))
+    return jsonify(result), 200 if result["status"] == "success" else 400
+
+@api_bp.route('/api/delete_account', methods=['POST'])
+def api_delete_account():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    data = request.json or {}
+    result = delete_account(user_id, data.get('password', ''))
+    if result["status"] == "success":
+        session.clear()
+    return jsonify(result), 200 if result["status"] == "success" else 400
+
+@api_bp.route('/api/export_data', methods=['GET'])
+def api_export_data():
+    user_id = session.get('user_id')
+    if not user_id:
+        user_id = request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(export_user_data(user_id))
+
+@api_bp.route('/api/security_info', methods=['GET'])
+def api_security_info():
+    user_id = session.get('user_id')
+    if not user_id:
+        user_id = request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(get_security_info(user_id))
+
+@api_bp.route('/api/search_foods', methods=['GET'])
+def api_search_foods():
+    q = request.args.get('q', '')
+    return jsonify(search_foods(q))
+
+@api_bp.route('/api/recent_foods', methods=['GET'])
+def api_recent_foods():
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(get_recent_foods(user_id))
+
+@api_bp.route('/api/day_compare', methods=['GET'])
+def api_day_compare():
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
+    target = request.args.get('target', 2000, type=int)
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(get_day_comparison(user_id, target))
