@@ -33,7 +33,7 @@ roboflow_client = InferenceHTTPClient(
 ) if roboflow_key else None
  
 MODEL_ID = "vietnamese-food-flf5p/1"   # đổi đúng theo project của em nếu khác
-CONFIDENCE_THRESHOLD = 0.5   # dưới ngưỡng này thì chuyển sang hỏi Gemini
+CONFIDENCE_THRESHOLD = 0.25   # Giảm ngưỡng này xuống (từ 0.5 -> 0.25) để ưu tiên YOLO nhận diện hơn, hạn chế đẩy sang Gemini
  
 # Bảng tra dinh dưỡng ước lượng cho 35 món model YOLO đã học (calo/protein/carb/fat cho 1 phần ăn)
 NUTRITION_LOOKUP = {
@@ -218,7 +218,11 @@ def predict_with_yolo(image_bytes):
         
     if isinstance(result, dict):
         if "predictions" in result:
-            raw_predictions = result["predictions"]
+            preds = result["predictions"]
+            if isinstance(preds, dict) and "predictions" in preds:
+                raw_predictions = preds["predictions"]
+            elif isinstance(preds, list):
+                raw_predictions = preds
         else:
             # Tìm key chứa predictions trong workflow output
             for k, v in result.items():
@@ -227,7 +231,7 @@ def predict_with_yolo(image_bytes):
                 elif isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict) and "confidence" in v[0]:
                     raw_predictions.extend(v)
 
-    predictions = [p for p in raw_predictions if p.get("confidence", 0) >= CONFIDENCE_THRESHOLD]
+    predictions = [p for p in raw_predictions if isinstance(p, dict) and p.get("confidence", 0) >= CONFIDENCE_THRESHOLD]
     if not predictions:
         return None   # không món nào đủ tin cậy -> rơi xuống Gemini
  
@@ -375,7 +379,7 @@ def predict_with_gemini(image_bytes):
     for attempt in range(3):
         try:
             response = gemini_client.models.generate_content(
-                model="gemini-flash-latest",
+                model="gemini-3.6-flash",
                 contents=[
                     types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                     DETAILED_FOOD_PROMPT,

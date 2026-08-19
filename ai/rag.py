@@ -183,7 +183,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
     #         Không liệt kê lại chi tiết món (đã có sẵn trong UI). Trả lời tiếng Việt.
     #         """
     #         ai_text = client.models.generate_content(
-    #             model="gemini-flash-latest",
+    #             model="gemini-3.6-flash",
     #             contents=prompt,
     #         ).text
     #         explanation = (ai_text or "").strip() + "\n\n" + build_diet_summary(diet, goal)
@@ -220,7 +220,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model="gemini-flash-latest",
+                model="gemini-3.6-flash",
                 contents=prompt,
             )
             return {

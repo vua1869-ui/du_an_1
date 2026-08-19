@@ -104,7 +104,7 @@ def onboarding_api():
     if client:
         try:
             prompt = f"Phân tích ngắn gọn (3-4 câu tiếng Việt) hồ sơ: {m['nickname']}, {m['gender']}, {m['age']} tuổi, {m['height']}cm, {m['weight']}kg. BMR: {m['bmr']}, TDEE: {m['tdee']}. Mục tiêu: {m['goal']} ({m['target_calories']} kcal/ngày). Đưa ra 2 lời khuyên dinh dưỡng cốt lõi."
-            response = client.models.generate_content(model="gemini-flash-latest", contents=prompt)
+            response = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
             ai_advice = response.text.strip()
         except: pass
     m['ai_advice'] = ai_advice
