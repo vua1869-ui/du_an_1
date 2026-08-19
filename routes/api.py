@@ -31,7 +31,32 @@ def analyze():
         return jsonify({'error': 'No image provided'}), 400
     try:
         img_bytes = request.files['image'].read()
-        return jsonify(predict_image(img_bytes))
+        result = predict_image(img_bytes)
+        
+        # PROACTIVE ADVICE (Idea 2)
+        if "error" not in result and "analysis" in result:
+            user_id = session.get('user_id') or request.form.get('user_id')
+            tdee = int(request.form.get('tdee', 2000))
+            if user_id:
+                from services.user_service import get_today_logs
+                logs = get_today_logs(user_id)
+                current_cal = logs.get('totals', {}).get('calories', 0)
+                item_cal = result['analysis'].get('calories', 0)
+                
+                advice = ""
+                if item_cal > tdee * 0.4:
+                    advice = f"\n\n💡 Cố vấn AI: Món này chiếm hơn 40% lượng calo mỗi ngày của bạn ({item_cal} kcal). Hãy ăn bữa tiếp theo thật nhẹ nhàng nhé!"
+                elif current_cal + item_cal > tdee:
+                    advice = f"\n\n💡 Cố vấn AI: Cảnh báo! Ăn xong món này bạn sẽ nạp tổng cộng {current_cal + item_cal} kcal, vượt quá mức TDEE ({tdee} kcal). Cân nhắc chỉ ăn một nửa nhé!"
+                elif result['analysis'].get('carbs', 0) > 60:
+                    advice = f"\n\n💡 Cố vấn AI: Món này chứa khá nhiều tinh bột ({result['analysis'].get('carbs')}g). Buổi chiều nên vận động nhẹ để tiêu hao năng lượng."
+                elif item_cal < 200 and item_cal > 0:
+                    advice = f"\n\n💡 Cố vấn AI: Món này rất nhẹ bụng. Có thể dùng làm bữa phụ hoặc kết hợp thêm đạm thực vật."
+                
+                if advice:
+                    result['analysis']['description'] = result['analysis'].get('description', '') + advice
+
+        return jsonify(result)
     except Exception as e:
         return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
 
@@ -50,7 +75,13 @@ def chat():
     try: current_tdee = int(current_tdee)
     except: current_tdee = 2000
     
-    return jsonify(get_chatbot_response(message, current_tdee=current_tdee, profile=data.get('profile')))
+    user_id = session.get('user_id') or data.get('user_id')
+    today_logs_data = None
+    if user_id:
+        from services.user_service import get_today_logs
+        today_logs_data = get_today_logs(user_id)
+        
+    return jsonify(get_chatbot_response(message, current_tdee=current_tdee, profile=data.get('profile'), today_logs=today_logs_data))
 
 @api_bp.route('/api/log_food', methods=['POST'])
 def add_food_log():

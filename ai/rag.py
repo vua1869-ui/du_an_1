@@ -136,7 +136,7 @@ def build_diet_summary(diet: dict, goal: str) -> str:
     lines.append("Bạn có thể bấm **+ Thêm** trên từng món để đưa vào nhật ký, hoặc hỏi mình để chỉnh lại TDEE/mục tiêu.")
     return "\n".join(lines)
 
-def get_chatbot_response(user_message, current_tdee=2000, profile=None):
+def get_chatbot_response(user_message, current_tdee=2000, profile=None, today_logs=None):
     if not client:
         return {
             "response": "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env.",
@@ -146,59 +146,15 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
             "diet": None,
         }
 
-    # if is_diet_request(user_message):
-    #     if not profile or not profile.get('weight') or not profile.get('height'):
-    #         return {
-    #             "response": "Để lập thực đơn chính xác, mình cần biết thêm vài thông tin về bạn trước đã 👇",
-    #             "type": "clarify",
-    #             "tdee": None, "goal": None, "diet": None,
-    #         }
-    #     tdee = extract_tdee(user_message, default=current_tdee or 2000)
-    #     goal = extract_goal(user_message)
-    #     diet = get_diet_plan(tdee, goal)
-    # 
-    #     if diet.get("error"):
-    #         return {
-    #             "response": f"Xin lỗi, không lập được thực đơn: {diet['error']}",
-    #             "type": "chat",
-    #             "tdee": tdee,
-    #             "goal": goal,
-    #             "diet": None,
-    #         }
-    # 
-    #     explanation = build_diet_summary(diet, goal)
-    #     try:
-    #         prompt = f"""
-    #         Bạn là chuyên gia dinh dưỡng. Người dùng vừa hỏi: "{user_message}"
-    #         Hệ thống đã lập thực đơn với TDEE={tdee} kcal, mục tiêu={goal}.
-    #         Tổng calo: {diet.get('total_calories')}.
-    #         Sáng: {diet['meals']['breakfast']['name']} ({diet['meals']['breakfast']['cals']} kcal)
-    #         Trưa: {diet['meals']['lunch']['name']} ({diet['meals']['lunch']['cals']} kcal)
-    #         Tối: {diet['meals']['dinner']['name']} ({diet['meals']['dinner']['cals']} kcal)
-    # 
-    #         Hãy viết 2-3 câu thân thiện:
-    #         1) Xác nhận đã hiểu mục tiêu của họ
-    #         2) Giải thích ngắn vì sao mức calo/mục tiêu này hợp lý
-    #         3) Khuyến khích xem thực đơn bên dưới
-    #         Không liệt kê lại chi tiết món (đã có sẵn trong UI). Trả lời tiếng Việt.
-    #         """
-    #         ai_text = client.models.generate_content(
-    #             model="gemini-3.6-flash",
-    #             contents=prompt,
-    #         ).text
-    #         explanation = (ai_text or "").strip() + "\n\n" + build_diet_summary(diet, goal)
-    #     except Exception:
-    #         pass
-    # 
-    #     return {
-    #         "response": explanation,
-    #         "type": "diet",
-    #         "tdee": tdee,
-    #         "goal": goal,
-    #         "diet": diet,
-    #     }
-
     retrieved_context = retrieve_nutrition_data_vector(user_message)
+    
+    # Chuẩn bị dữ liệu lịch sử ăn uống hôm nay (Idea 1)
+    logs_context = ""
+    if today_logs and today_logs.get('foods'):
+        foods = today_logs['foods']
+        totals = today_logs.get('totals', {})
+        food_list = ", ".join([f"{f['name']} ({f['calories']} kcal)" for f in foods])
+        logs_context = f"\n\nLỊCH SỬ ĂN UỐNG HÔM NAY CỦA USER:\n- Các món đã ăn (quét ảnh hoặc tự nhập): {food_list}\n- Tổng calo đã nạp: {totals.get('calories', 0)} kcal (P: {totals.get('protein', 0)}g, C: {totals.get('carbs', 0)}g, F: {totals.get('fat', 0)}g)\n- Mức TDEE: {current_tdee} kcal\n=> Dựa vào lịch sử này, hãy đưa ra lời khuyên thực tế. Ví dụ: Nếu họ hỏi tối nay ăn gì, hãy nhìn xem sáng/trưa họ đã ăn gì và nạp bao nhiêu calo để bù trừ cho hợp lý."
 
     prompt = f"""
     Bạn là một chuyên gia dinh dưỡng thông minh và thân thiện.
@@ -206,6 +162,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
 
     Dưới đây là dữ liệu thức ăn được truy xuất từ Cơ sở dữ liệu Vector (RAG) (nếu có):
     {retrieved_context if retrieved_context else "(Không tìm thấy dữ liệu liên quan trong DB, hãy dùng kiến thức chung của bạn)"}
+    {logs_context}
 
     Yêu cầu:
     1. Nếu có dữ liệu DB, hãy ưu tiên sử dụng chính xác số liệu đó để trả lời.

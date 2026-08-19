@@ -322,7 +322,7 @@ Bạn là chuyên gia dinh dưỡng Việt Nam. Hãy phân tích ẢNH MÓN ĂN 
   "protein": 0,
   "carbs": 0,
   "fat": 0,
-  "description": "1-2 câu nhận xét tổng quan (cách chế biến nổi bật, độ dầu mỡ...)",
+    "description": "Một đoạn văn bản phân tích ngắn (2-3 câu) nhận xét chi tiết về mâm cơm này: có nhiều dầu mỡ không, cân bằng dinh dưỡng chưa (nhiều tinh bột/rau/thịt), và món ăn này có phù hợp để giảm cân hay không.",
   "items": [
     {
       "name": "Cá lóc kho tộ",
@@ -408,7 +408,22 @@ def predict_image(image_bytes):
             if yolo_result:
                 return yolo_result
         except Exception as e:
-            print(f"Loi YOLO, chuyen sang Gemini: {e}")
+            print(f"Loi YOLO: {e}")
  
     # Không nhận diện được / lỗi -> dùng Gemini (phân tích chi tiết mâm ăn)
-    return predict_with_gemini(image_bytes)
+    gemini_result = predict_with_gemini(image_bytes)
+    
+    # Nếu Gemini trả về lỗi (hết Quota/quá tải), fallback về một kết quả mặc định thay vì báo lỗi đỏ màn hình
+    if "error" in gemini_result:
+        return {
+            "detections": [],
+            "analysis": {
+                "dish_name": "Chưa nhận diện được món",
+                "calories": 0, "protein": 0, "carbs": 0, "fat": 0,
+                "description": "YOLO chưa học món này và AI phân tích sâu đã hết lượt miễn phí. Vui lòng nhập tay tạm thời nhé!",
+                "items": []
+            },
+            "message": "Không nhận diện được bằng cả YOLO và Gemini."
+        }
+        
+    return gemini_result

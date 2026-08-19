@@ -307,7 +307,7 @@
                     </div>
                     <div class="relative z-10 flex flex-col items-center">
                         <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-2xl font-display font-bold mb-6 shadow-[0_0_40px_rgba(30,110,76,0.5)]">2</div>
-                        <h3 class="text-xl font-bold mb-2 font-display">Quét Món Ăn</h3>
+                        <h3 class="text-xl font-bold mb-2 font-display">Hỏi NutriBot</h3>
                         <p class="text-white/50 font-medium">Chụp ảnh bữa ăn trước khi thưởng thức.</p>
                     </div>
                     <div class="relative z-10 flex flex-col items-center">
@@ -521,10 +521,7 @@
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 <span class="fz-nav-label">Trang chủ</span>
             </button>
-            <button onclick="switchAppTab('scan')" id="nav-scan" class="fz-nav-item">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
-                <span class="fz-nav-label">Quét AI</span>
-            </button>
+            
             <button onclick="switchAppTab('chat')" id="nav-chat" class="fz-nav-item">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                 <span class="fz-nav-label">Trợ lý AI</span>
@@ -559,10 +556,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 Home
             </button>
-            <button onclick="switchAppTab('scan')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-scan">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
-                Quét
-            </button>
+            
             <button onclick="switchAppTab('chat')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-chat">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                 Chat
@@ -608,7 +602,7 @@
                     </div>
                     
                     <div class="flex gap-3 overflow-x-auto hide-scrollbar w-full md:w-auto pb-2 md:pb-0">
-                        <button onclick="switchAppTab('scan')" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
+                        <button onclick="switchAppTab('chat')" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
                             <span class="bg-primary/10 text-primary w-7 h-7 rounded-full flex items-center justify-center">📷</span> Quét Món
                         </button>
                         <button onclick="openWeightModal()" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
@@ -870,50 +864,6 @@
                 </div>
             </div>
 
-            <div id="view-scan" class="hidden space-y-6 sm:space-y-8 animate-fade-in-up">
-                <div class="bg-white p-8 sm:p-12 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-line text-center flex flex-col items-center">
-                    <div class="w-20 h-20 bg-ocean/10 text-ocean rounded-full flex items-center justify-center text-4xl mb-6 shadow-sm border border-ocean/15">📷</div>
-                    <h2 class="text-3xl font-display font-bold text-dark mb-3">AI Quét Món Ăn</h2>
-                    <p class="text-inkmute font-medium mb-8 max-w-sm">Chụp hoặc tải ảnh món ăn của bạn lên, AI sẽ bóc tách và tính toán calo tự động.</p>
-
-                    <!-- KHU VỰC CAMERA -->
-                    <div id="camera-container" class="hidden w-full max-w-sm mx-auto mb-6 relative rounded-[2rem] overflow-hidden shadow-lg border border-line bg-black animate-scale-in">
-                        <video id="camera-stream" autoplay playsinline class="w-full h-auto object-cover aspect-[4/3]"></video>
-                        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-6 items-center">
-                            <button onclick="closeCamera()" class="w-10 h-10 bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Đóng Camera">✖</button>
-                            <button onclick="captureCamera()" class="w-16 h-16 bg-white/30 backdrop-blur-md rounded-full border-4 border-white flex items-center justify-center shadow-lg active:scale-90 transition-transform">
-                                <span class="w-12 h-12 bg-white rounded-full shadow-inner"></span>
-                            </button>
-                            <div class="w-10"></div>
-                        </div>
-                        <canvas id="camera-canvas" class="hidden"></canvas>
-                    </div>
-
-                    <!-- CÁC NÚT TƯƠNG TÁC -->
-                    <div id="scan-buttons" class="flex flex-col sm:flex-row justify-center gap-4 w-full">
-                        <button onclick="openCamera()" class="btn-press w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-primary text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-primary/25 text-lg flex items-center justify-center gap-2">
-                            📸 Mở Camera
-                        </button>
-                        
-                        <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="uploadImage(event)">
-                        <button onclick="document.getElementById('image-upload').click()" class="btn-press w-full sm:w-auto bg-white text-dark border border-line font-bold py-4 px-8 rounded-2xl shadow-sm text-lg flex items-center justify-center gap-2 hover:bg-surface2 transition-colors">
-                            🖼️ Tải ảnh lên
-                        </button>
-                    </div>
-                    <p class="text-[11px] text-inkmute/70 font-medium mt-4">Hỗ trợ Camera Trực tiếp · JPG, PNG</p>
-                </div>
-
-                <div id="loading-scan" class="py-10 text-center hidden">
-                    <div class="relative w-16 h-16 mx-auto mb-6">
-                        <div class="absolute inset-0 rounded-full border-4 border-surface2"></div>
-                        <div class="absolute inset-0 rounded-full border-4 border-ocean border-t-transparent animate-spin"></div>
-                    </div>
-                    <p class="text-inkmute font-bold animate-pulse text-sm">AI đang "nhìn" và bóc tách dữ liệu...</p>
-                </div>
-
-                <div id="scan-result" class="hidden mt-6 bg-white p-6 rounded-[2rem] shadow-sm border border-line"></div>
-            </div>
-
             <!-- TAB 3: TRỢ LÝ CHAT (GIAO DIỆN PRO) -->
             <div id="view-chat" class="hidden h-[calc(100vh-140px)] sm:h-[75vh] max-h-[800px] flex-col bg-white rounded-[2rem] shadow-[0_12px_40px_-15px_rgba(30,110,76,0.15)] border border-line overflow-hidden animate-fade-in-up">
                 
@@ -950,7 +900,11 @@
                 <!-- Khu vực nhập liệu -->
                 <div class="p-4 sm:p-5 bg-white border-t border-line shrink-0 relative z-20">
                     <div class="max-w-3xl mx-auto relative flex items-center bg-surface2/50 border border-line rounded-[1.25rem] focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm">
-                        <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Hỏi AI tại đây (VD: Lên thực đơn giảm mỡ bụng...)" class="flex-1 bg-transparent border-none py-3.5 pl-5 pr-14 text-sm font-medium outline-none text-dark placeholder-inkmute/70">
+                        <label for="chat-image-upload" class="btn-press absolute left-2 w-10 h-10 flex items-center justify-center text-inkmute hover:bg-surface2 rounded-xl transition-colors cursor-pointer" title="Gửi ảnh">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                        </label>
+                        <input type="file" id="chat-image-upload" accept="image/*" class="hidden" onchange="uploadImageForChat(event)">
+                        <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Hỏi AI tại đây hoặc tải ảnh mâm cơm lên..." class="flex-1 bg-transparent border-none py-3.5 pl-14 pr-14 text-sm font-medium outline-none text-dark placeholder-inkmute/70">
                         <button onclick="sendChatMessage()" class="btn-press absolute right-2 w-10 h-10 flex items-center justify-center bg-primary text-white rounded-xl shadow-md hover:bg-primary_hover transition-colors">
                             <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                         </button>
@@ -1457,7 +1411,7 @@
 
         // -- CHUYỂN ĐỔI TAB (HỖ TRỢ 4 TAB) --
         function switchAppTab(tab) {
-            const views = ['dashboard', 'account', 'scan', 'chat', 'settings'];
+            const views = ['dashboard', 'account', 'chat', 'settings'];
 
             views.forEach(v => {
                 const el = document.getElementById(`view-${v}`);
@@ -2320,6 +2274,121 @@
                 loadTodayLogs();
                 checkAchievements();
             });
+        }
+
+        
+        
+        function uploadImageForChat(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            let chatBox = document.getElementById('chat-box');
+            const imgURL = URL.createObjectURL(file);
+            chatBox.innerHTML += `
+            <div class="flex justify-end items-end gap-3 mb-4 animate-fade-in-up">
+                <div class="chat-bubble-user p-4 max-w-[85%] text-sm font-medium">
+                    <img src="${imgURL}" class="max-w-full h-auto rounded-lg mb-2" style="max-height: 200px;">
+                    <p>Hãy phân tích món ăn này giúp tôi!</p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-surface2 flex items-center justify-center text-sm shrink-0 mb-1">👤</div>
+            </div>`;
+            
+            const loadingId = 'loading-' + Date.now();
+            chatBox.innerHTML += `
+            <div id="${loadingId}" class="flex justify-start items-end gap-3 mb-4">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm border border-line shrink-0 mb-1">🤖</div>
+                <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium border border-line">
+                    <div class="flex gap-1 items-center px-2 py-1">
+                        <span class="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
+                        <span class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                        <span class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+                    </div>
+                </div>
+            </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const formData = new FormData(); 
+            formData.append('image', file);
+            if(onboardingData && onboardingData.user_id) formData.append('user_id', onboardingData.user_id);
+            if(onboardingData && onboardingData.tdee) formData.append('tdee', onboardingData.tdee);
+
+            fetch('/api/analyze', { method: 'POST', body: formData }).then(res => res.json()).then(data => {
+                document.getElementById(loadingId).remove();
+                let html = '';
+                
+                if(data.analysis && data.analysis.items && Object.keys(data.analysis.items).length > 0) {
+                    let itemsArray = Array.isArray(data.analysis.items) ? data.analysis.items : Object.values(data.analysis.items);
+                    
+                    let totalCals = 0;
+                    let foodNames = [];
+                    itemsArray.forEach(f => {
+                        totalCals += (f.calories || f.cals || 0);
+                        foodNames.push(f.name);
+                    });
+                    
+                    html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tôi đã phân tích hình ảnh bạn gửi. Mâm cơm của bạn bao gồm: <b>${foodNames.join(", ")}</b>.</p>`;
+                    html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tổng lượng calo ước tính là <b>${totalCals} kcal</b>.</p>`;
+                    if(data.analysis.description) {
+                        html += `<p class="text-sm font-medium text-slate-700 bg-surface2/50 p-3 rounded-lg mb-4 border border-line leading-relaxed">${data.analysis.description.replace(/\n/g, '<br>')}</p>`;
+                    }
+                    
+                    html += `
+                    <div class="mt-2 pt-4 border-t border-line text-center">
+                        <button onclick='addMultipleFoodsToLog(${JSON.stringify(itemsArray).replace(/'/g, "&#39;")})' class="bg-gradient-to-r from-ocean to-primary text-white px-5 py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all w-full flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            Thêm tất cả vào nhật ký
+                        </button>
+                    </div>`;
+                    
+                } else if (data.analysis && data.analysis.dish_name) {
+                    let f = data.analysis;
+                    f.name = f.dish_name;
+                    html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tôi nhận diện đây là: <b>${f.name}</b> với khoảng <b>${f.calories || 0} kcal</b>.</p>`;
+                    if(f.description) {
+                        html += `<p class="text-sm font-medium text-slate-700 bg-surface2/50 p-3 rounded-lg mb-4 border border-line leading-relaxed">${f.description.replace(/\n/g, '<br>')}</p>`;
+                    }
+                    html += `
+                    <div class="mt-2 pt-4 border-t border-line text-center">
+                        <button onclick='addMultipleFoodsToLog([${JSON.stringify(f).replace(/'/g, "&#39;")}])' class="bg-gradient-to-r from-ocean to-primary text-white px-5 py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all w-full flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            Thêm vào nhật ký
+                        </button>
+                    </div>`;
+                } else {
+                    html = `<p class="text-sm text-dark">Xin lỗi, tôi không thể nhận diện được bức ảnh này.</p>`;
+                }
+
+                chatBox.innerHTML += `
+                <div class="flex justify-start items-end gap-3 mb-4 animate-fade-in-up">
+                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
+                    <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium shadow-[0_4px_16px_rgba(0,0,0,0.04)] border border-line max-w-[85%] leading-relaxed">
+                        ${html}
+                    </div>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }).catch(err => {
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `
+                <div class="flex justify-start items-end gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
+                    <div class="bg-white text-red-600 p-4 rounded-2xl rounded-bl-sm text-sm font-medium border border-red-200">
+                        Đã có lỗi xảy ra: ${err.message}
+                    </div>
+                </div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+            // Reset input
+            e.target.value = '';
+        }
+
+        async function addMultipleFoodsToLog(foods) {
+            for (let f of foods) {
+                await fetch('/api/log_food', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(f) });
+            }
+            showToast("Đã thêm toàn bộ món vào nhật ký thành công!", "success");
+            switchAppTab('dashboard');
+            loadTodayLogs();
+            checkAchievements();
         }
 
         function sendChatMessage() {
