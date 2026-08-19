@@ -7,151 +7,204 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Inter"', 'sans-serif'],
-                        serif: ['"Fraunces"', 'serif'],
+                        sans: ['"Quicksand"', 'sans-serif'],
+                        display: ['"Montserrat"', 'sans-serif'],
                         mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     colors: {
-                        primary: '#1E6E4C',
-                        primary_hover: '#154F37',
-                        dark: '#152420',
-                        paper: '#FAF7F1',
-                        surface2: '#F3EFE5',
-                        line: '#E6E0D2',
-                        gold: '#AD8752',
-                        clay: '#BE6B49',
-                        ocean: '#2C5A6E',
-                        inkmute: '#5B6660',
+                        primary: '#3B82F6',
+                        primary_hover: '#2563EB',
+                        dark: '#1A1D24',
+                        paper: '#EEF1F6',
+                        surface2: '#E4E9F0',
+                        line: '#D8DEE8',
+                        gold: '#F59E0B',
+                        clay: '#F97316',
+                        ocean: '#06B6D4',
+                        inkmute: '#6B7280',
+                        sidebar: '#FFFFFF',
+                        accent: '#22C55E',
                     },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'scale-in': 'scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'toast-in': 'toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in-up': 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'toast-in': 'toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'shimmer': 'shimmer 1.6s ease-in-out infinite',
                         'float-slow': 'floatSlow 7s ease-in-out infinite',
                     },
                     keyframes: {
-                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(18px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(14px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
                         scaleIn: { '0%': { opacity: '0', transform: 'scale(0.96)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-                        toastIn: { '0%': { opacity: '0', transform: 'translateY(-12px) scale(0.95)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+                        toastIn: { '0%': { opacity: '0', transform: 'translateY(-10px) scale(0.96)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
                         shimmer: { '0%': { backgroundPosition: '-400px 0' }, '100%': { backgroundPosition: '400px 0' } },
-                        floatSlow: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        floatSlow: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
                     }
                 }
             }
         }
     </script>
     <style>
-        :root{
-            --ring: rgba(30,110,76,0.14);
-        }
-        body { background-color: #FAF7F1; color: #152420; -webkit-font-smoothing: antialiased; }
+        :root { --ring: rgba(59,130,246,0.18); --sidebar-w: 72px; --sidebar-w-exp: 220px; }
+        body { background-color: #EEF1F6; color: #1A1D24; -webkit-font-smoothing: antialiased; font-family: 'Quicksand', sans-serif; }
         .hidden { display: none !important; }
-        .font-display{ font-family: 'Fraunces', serif; font-feature-settings: "ss01" on; }
-        .font-num{ font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-        .btn-press { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .font-display { font-family: 'Montserrat', sans-serif; letter-spacing: -0.02em; }
+        .font-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+        .btn-press { transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-press:active { transform: scale(0.96); }
-        .hairline{ border: 1px solid #E6E0D2; }
-        .card-pro{ background:#fff; border:1px solid #E6E0D2; border-radius:1.75rem; box-shadow: 0 1px 2px rgba(21,36,32,0.04), 0 12px 32px -20px rgba(21,36,32,0.18); }
-        .glass { background: rgba(250, 247, 241, 0.82); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); border-bottom: 1px solid rgba(230,224,210,0.7); }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        .hairline { border: 1px solid #D8DEE8; }
+        .card-pro {
+            background: #fff;
+            border: 1px solid #E5EAF1;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(26,29,36,0.04), 0 8px 24px -12px rgba(26,29,36,0.08);
+        }
+        .glass {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            border-bottom: 1px solid #E5EAF1;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #D8D0BC; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #C2B89E; }
-        .chat-bubble-ai { background-color: #F3EFE5; color: #2C352F; border-bottom-left-radius: 6px; border:1px solid #E9E2D1; }
-        .chat-bubble-user { background: linear-gradient(135deg, #1E6E4C, #2C5A6E); color: white; border-bottom-right-radius: 6px; box-shadow: 0 8px 20px -8px rgba(30,110,76,0.55); }
+        ::-webkit-scrollbar-thumb { background: #C5CDD8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A8B3C2; }
+        .chat-bubble-ai { background: #F0F4FA; color: #1A1D24; border-bottom-left-radius: 4px; border: 1px solid #E5EAF1; }
+        .chat-bubble-user { background: linear-gradient(135deg, #3B82F6, #06B6D4); color: white; border-bottom-right-radius: 4px; box-shadow: 0 6px 16px -6px rgba(59,130,246,0.45); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .link-underline{ position:relative; }
-        .link-underline::after{ content:''; position:absolute; left:0; right:100%; bottom:-4px; height:2px; background:#1E6E4C; transition:right .28s cubic-bezier(.4,0,.2,1); }
-        .link-underline:hover::after{ right:0; }
+        .link-underline { position: relative; }
+        .link-underline::after { content:''; position:absolute; left:0; right:100%; bottom:-3px; height:2px; background:#3B82F6; transition:right .25s cubic-bezier(.4,0,.2,1); }
+        .link-underline:hover::after { right:0; }
 
-        .noise-overlay{ position:absolute; inset:0; opacity:.035; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        .noise-overlay { position:absolute; inset:0; opacity:.03; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-        .skeleton{ position:relative; overflow:hidden; background:#EFEAE0; }
-        .skeleton::after{ content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); background-size:400px 100%; animation: shimmer 1.6s ease-in-out infinite; }
+        .skeleton { position:relative; overflow:hidden; background:#E4E9F0; }
+        .skeleton::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent); background-size:400px 100%; animation: shimmer 1.6s ease-in-out infinite; }
 
-        .switch{ width:42px; height:24px; border-radius:999px; background:#E6E0D2; position:relative; transition:background .25s; cursor:pointer; flex-shrink:0; }
-        .switch.on{ background:#1E6E4C; }
-        .switch .knob{ position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:999px; background:#fff; transition:transform .25s cubic-bezier(.4,0,.2,1); box-shadow:0 1px 3px rgba(0,0,0,0.25); }
-        .switch.on .knob{ transform:translateX(18px); }
+        .switch { width:42px; height:24px; border-radius:999px; background:#D8DEE8; position:relative; transition:background .25s; cursor:pointer; flex-shrink:0; }
+        .switch.on { background:#3B82F6; }
+        .switch .knob { position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:999px; background:#fff; transition:transform .25s cubic-bezier(.4,0,.2,1); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+        .switch.on .knob { transform:translateX(18px); }
 
-        #toast-stack{ position:fixed; top:1.25rem; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:.6rem; align-items:center; width:100%; padding:0 1rem; pointer-events:none; }
-        .toast-item{ pointer-events:auto; }
+        #toast-stack { position:fixed; top:1.25rem; left:50%; transform:translateX(-50%); z-index:100; display:flex; flex-direction:column; gap:.6rem; align-items:center; width:100%; padding:0 1rem; pointer-events:none; }
+        .toast-item { pointer-events:auto; }
 
-        .dot-progress span{ width:8px; height:8px; border-radius:999px; background:#E6E0D2; display:inline-block; transition:all .3s; }
-        .dot-progress span.active{ background:#1E6E4C; width:22px; border-radius:999px; }
+        .dot-progress span { width:8px; height:8px; border-radius:999px; background:#D8DEE8; display:inline-block; transition:all .3s; }
+        .dot-progress span.active { background:#3B82F6; width:22px; border-radius:999px; }
 
-        /* ================= GIAO DIỆN TỐI (DARK MODE) HOÀN CHỈNH ================= */
-        [data-theme="dark"] body, [data-theme="dark"] .bg-paper { background-color: #0F1A16 !important; color: #F1EEE4 !important; }
-        [data-theme="dark"] .bg-white, [data-theme="dark"] .card-pro { background-color: #16261F !important; color: #F1EEE4 !important; border-color: #243B30 !important; }
-        
-        /* Ép toàn bộ chữ sang màu sáng */
-        [data-theme="dark"] .text-dark, [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: #FFFFFF !important; }
-        [data-theme="dark"] .text-inkmute, [data-theme="dark"] p, [data-theme="dark"] span { color: #D1D5DB !important; }
-        [data-theme="dark"] .text-slate-500, [data-theme="dark"] .text-slate-600, [data-theme="dark"] .text-slate-700, [data-theme="dark"] .text-slate-800 { color: #E5E7EB !important; }
-        [data-theme="dark"] .text-primary { color: #34D399 !important; } /* Làm sáng màu xanh lá một chút để nổi trên nền đen */
-        
-        [data-theme="dark"] .border-line { border-color: #243B30 !important; }
-        [data-theme="dark"] .bg-surface2 { background-color: #1E332A !important; }
-        [data-theme="dark"] .glass { background: rgba(15, 26, 22, 0.85) !important; border-color: #243B30 !important; }
-        [data-theme="dark"] input, [data-theme="dark"] select { background-color: #0F1A16 !important; color: #FFFFFF !important; border-color: #243B30 !important; }
-        [data-theme="dark"] .bg-\[\#FBF9F4\] { background-color: #0A120F !important; } /* Nền khung Chat */
-
-        /* Bắt buộc hiển thị thanh cuộn cho khung Chat */
-        #chat-box {
-            overflow-y: scroll !important; /* Dùng scroll thay vì auto để luôn chừa chỗ cho thanh cuộn */
-            scrollbar-width: thin !important; /* Dành cho Firefox */
-            scrollbar-color: #1E6E4C transparent !important;
+        /* ===== FLUENTEZ-STYLE SIDEBAR ===== */
+        .fz-sidebar {
+            width: var(--sidebar-w);
+            background: #fff;
+            border-right: 1px solid #E5EAF1;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 12px 0; gap: 4px;
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+            transition: width .25s cubic-bezier(.4,0,.2,1);
+            overflow: hidden;
         }
-        
-        #chat-box::-webkit-scrollbar {
-            display: block !important;
-            width: 8px !important;
-            background-color: rgba(0,0,0,0.02) !important; /* Tạo một rãnh cuộn mờ mờ để dễ nhìn */
+        .fz-sidebar:hover, .fz-sidebar.expanded { width: var(--sidebar-w-exp); align-items: stretch; padding: 12px 10px; }
+        .fz-nav-item {
+            display: flex; align-items: center; gap: 12px;
+            width: 48px; height: 48px; border-radius: 14px;
+            color: #6B7280; font-weight: 600; font-size: 13px;
+            transition: all .2s; cursor: pointer; position: relative;
+            justify-content: center; flex-shrink: 0;
+            border: none; background: transparent;
         }
-        
-        #chat-box::-webkit-scrollbar-thumb {
-            display: block !important;
-            background-color: #1E6E4C !important; /* Thanh cuộn màu xanh lá đậm */
-            border-radius: 10px !important;
-            border: 2px solid #FAF7F1 !important; /* Tạo viền trắng xung quanh thanh cuộn */
+        .fz-sidebar:hover .fz-nav-item, .fz-sidebar.expanded .fz-nav-item {
+            width: 100%; justify-content: flex-start; padding: 0 14px;
+        }
+        .fz-nav-item:hover { background: #F0F4FA; color: #3B82F6; }
+        .fz-nav-item.active {
+            background: #EFF6FF; color: #3B82F6;
+        }
+        .fz-nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 24px; background: #22C55E; border-radius: 0 4px 4px 0;
+        }
+        .fz-sidebar:hover .fz-nav-item.active::before,
+        .fz-sidebar.expanded .fz-nav-item.active::before { left: -10px; }
+        .fz-nav-label { display: none; white-space: nowrap; font-family: 'Montserrat', sans-serif; font-weight: 600; }
+        .fz-sidebar:hover .fz-nav-label, .fz-sidebar.expanded .fz-nav-label { display: block; }
+        .fz-nav-section {
+            display: none; font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: #9CA3AF; padding: 12px 14px 4px; width: 100%;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .fz-sidebar:hover .fz-nav-section, .fz-sidebar.expanded .fz-nav-section { display: block; }
+        .fz-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; transition: margin-left .25s; }
+        .fz-topbar {
+            height: 60px; background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #E5EAF1; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; position: sticky; top: 0; z-index: 40;
         }
 
-        /* ================= PREMIUM BENTO UI STYLES ================= */
+        /* Dark mode — Fluentez style */
+        [data-theme="dark"] body, [data-theme="dark"] .bg-paper { background-color: #0F131A !important; color: #E5E7EB !important; }
+        [data-theme="dark"] .bg-white, [data-theme="dark"] .card-pro, [data-theme="dark"] .bento-card { background-color: #1A1D24 !important; color: #E5E7EB !important; border-color: #2A2F3A !important; }
+        [data-theme="dark"] .text-dark, [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: #F9FAFB !important; }
+        [data-theme="dark"] .text-inkmute { color: #9CA3AF !important; }
+        [data-theme="dark"] .text-primary { color: #60A5FA !important; }
+        [data-theme="dark"] .border-line { border-color: #2A2F3A !important; }
+        [data-theme="dark"] .bg-surface2 { background-color: #232833 !important; }
+        [data-theme="dark"] .glass, [data-theme="dark"] .fz-topbar { background: rgba(26,29,36,0.9) !important; border-color: #2A2F3A !important; }
+        [data-theme="dark"] .fz-sidebar { background: #1A1D24 !important; border-color: #2A2F3A !important; }
+        [data-theme="dark"] .fz-nav-item { color: #9CA3AF; }
+        [data-theme="dark"] .fz-nav-item:hover { background: #232833; color: #60A5FA; }
+        [data-theme="dark"] .fz-nav-item.active { background: #1E3A5F; color: #60A5FA; }
+        [data-theme="dark"] input, [data-theme="dark"] select { background-color: #0F131A !important; color: #F9FAFB !important; border-color: #2A2F3A !important; }
+        [data-theme="dark"] .bg-\[\#FBF9F4\] { background-color: #0F131A !important; }
+
+        #chat-box { overflow-y: scroll !important; scrollbar-width: thin !important; scrollbar-color: #3B82F6 transparent !important; }
+        #chat-box::-webkit-scrollbar { display: block !important; width: 6px !important; background: transparent !important; }
+        #chat-box::-webkit-scrollbar-thumb { display: block !important; background: #3B82F6 !important; border-radius: 10px !important; }
+
         .bento-card {
             background: #ffffff;
-            border: 1px solid rgba(230, 224, 210, 0.6);
-            border-radius: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid #E5EAF1;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(26,29,36,0.04), 0 6px 20px -10px rgba(26,29,36,0.08);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
             position: relative;
         }
         .bento-card:hover {
-            box-shadow: 0 20px 40px -10px rgba(30, 110, 76, 0.08);
+            box-shadow: 0 12px 32px -8px rgba(59,130,246,0.12);
             transform: translateY(-2px);
-            border-color: rgba(30, 110, 76, 0.15);
+            border-color: rgba(59,130,246,0.2);
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        [data-theme="dark"] .bento-card { background: #16261F; border-color: #243B30; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-        [data-theme="dark"] .glass-panel { background: rgba(22, 38, 31, 0.65); border-color: rgba(255,255,255,0.05); }
-        .action-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .action-btn:hover { transform: scale(1.05) translateY(-2px); }
-        .action-btn:active { transform: scale(0.95); }
+        [data-theme="dark"] .bento-card { background: #1A1D24; border-color: #2A2F3A; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+        [data-theme="dark"] .glass-panel { background: rgba(26,29,36,0.7); border-color: rgba(255,255,255,0.05); }
+        .action-btn { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn:hover { transform: scale(1.03) translateY(-1px); }
+        .action-btn:active { transform: scale(0.97); }
 
+        @media (max-width: 768px) {
+            .fz-sidebar { display: none; }
+            .fz-main { margin-left: 0; }
+            .fz-mobile-nav { display: flex !important; }
+        }
+        .fz-mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            background: #fff; border-top: 1px solid #E5EAF1;
+            padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+            justify-content: space-around; align-items: center;
+        }
+        [data-theme="dark"] .fz-mobile-nav { background: #1A1D24; border-color: #2A2F3A; }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -165,20 +218,20 @@
 
     <!-- ================= LANDING ================= -->
     <div id="landing-screen" class="min-h-screen bg-paper flex flex-col font-sans">
-        <header class="bg-paper/90 backdrop-blur-md sticky top-0 z-50 border-b border-line">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-line shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-xl shadow-md shadow-primary/20">🥑</div>
-                    <h1 class="text-2xl font-display font-black text-dark tracking-tight">Nutrition<span class="text-primary">AI</span></h1>
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-lg shadow-md shadow-primary/25">🥑</div>
+                    <h1 class="text-xl font-display font-bold text-dark tracking-tight">Nutrition<span class="text-primary">AI</span></h1>
                 </div>
                 <nav class="hidden md:flex gap-8 font-semibold text-inkmute text-sm">
                     <a href="#features" class="link-underline hover:text-primary transition-colors pb-1">Tính năng</a>
                     <a href="#how-it-works" class="link-underline hover:text-primary transition-colors pb-1">Quy trình</a>
                     <a href="#faq" class="link-underline hover:text-primary transition-colors pb-1">FAQ</a>
                 </nav>
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <button onclick="goToAuth('login')" class="btn-press font-bold text-inkmute hover:text-primary px-3 sm:px-4 py-2 transition-colors text-sm sm:text-base">Đăng nhập</button>
-                    <button onclick="goToAuth('register')" class="btn-press bg-dark text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-bold hover:bg-black transition-colors shadow-lg text-sm sm:text-base">Bắt đầu ngay</button>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="goToAuth('login')" class="btn-press font-bold text-inkmute hover:text-primary px-3 sm:px-4 py-2 transition-colors text-sm">Đăng nhập</button>
+                    <button onclick="goToAuth('register')" class="btn-press bg-primary text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold hover:bg-primary_hover transition-colors shadow-md shadow-primary/20 text-sm">Bắt đầu ngay</button>
                 </div>
             </div>
         </header>
@@ -330,7 +383,21 @@
                         <div><label class="block text-sm font-bold text-slate-600 mb-1.5">Họ tên đầy đủ</label><input type="text" id="ob-fullname" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"></div>
                         <div><label class="block text-sm font-bold text-slate-600 mb-1.5">Biệt danh</label><input type="text" id="ob-nickname" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"></div>
                         <div><label class="block text-sm font-bold text-slate-600 mb-1.5">Email</label><input type="email" id="ob-email" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"></div>
-                        <div><label class="block text-sm font-bold text-slate-600 mb-1.5">Mật khẩu</label><input type="password" id="ob-password" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"></div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-1.5">Mật khẩu</label>
+                            <input type="password" id="ob-password" required oninput="checkObPassStrength(this.value)" class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="≥8 ký tự, chữ + số + ký tự đặc biệt">
+                            <div class="mt-2 flex gap-1">
+                                <div id="ob-pw-1" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                <div id="ob-pw-2" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                <div id="ob-pw-3" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                <div id="ob-pw-4" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                            </div>
+                            <p id="ob-pw-label" class="text-[10px] text-inkmute mt-1 font-medium">Cần: 8+ ký tự · chữ · số · ký tự đặc biệt (!@#$...)</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-1.5">Nhập lại mật khẩu</label>
+                            <input type="password" id="ob-password-confirm" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="Xác nhận mật khẩu">
+                        </div>
                     </div>
 
                     <div class="flex gap-4 pt-2">
@@ -441,55 +508,103 @@
         </div>
     </div>
 
-    <!-- ================= APP ================= -->
-    <div id="app-screen" class="hidden min-h-screen flex flex-col bg-paper">
+    <!-- ================= APP (Fluentez-style layout) ================= -->
+    <div id="app-screen" class="hidden min-h-screen bg-paper">
 
-        <header class="glass sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16 sm:h-20">
-                <div class="flex items-center overflow-hidden">
-                    <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="switchAppTab('dashboard')">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-xl shadow-md shadow-primary/20">🥑</div>
-                        <h1 class="text-xl font-display font-bold text-dark hidden lg:block tracking-tight">Nutrition<span class="text-primary">AI</span></h1>
-                    </div>
-
-                    <nav class="flex items-center gap-4 sm:gap-6 font-bold text-xs sm:text-sm text-inkmute ml-4 sm:ml-8 border-l border-line pl-4 sm:pl-8 overflow-x-auto hide-scrollbar">
-                        <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-5 h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                            Trang chủ
-                        </button>
-                        <button onclick="switchAppTab('scan')" id="nav-scan" class="hover:text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-5 h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
-                            Quét AI
-                        </button>
-                        <button onclick="switchAppTab('chat')" id="nav-chat" class="hover:text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-5 h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                            Trợ lý
-                        </button>
-                        <button onclick="switchAppTab('account')" id="nav-account" class="hover:text-primary transition-colors flex items-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-5 h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            Hồ sơ
-                        </button>
-                    </nav>
-                </div>
-
-                <div class="flex items-center gap-2 sm:gap-3 shrink-0 pl-2">
-                    <button onclick="toggleTheme()" title="Chuyển giao diện sáng/tối" class="btn-press flex items-center justify-center w-10 h-10 rounded-xl bg-white hairline shadow-sm text-slate-500 hover:text-primary transition-colors">
-                        <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    </button>
-                    <button id="admin-btn" onclick="showAdminPanel()" class="hidden btn-press text-xs sm:text-sm font-bold text-white bg-dark px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-black shadow-md items-center gap-1.5">👑 <span class="hidden sm:inline">Admin</span></button>
-                    <button onclick="logout()" class="btn-press text-xs sm:text-sm font-bold text-inkmute hover:text-rose-500 bg-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-line shadow-sm transition-all hover:border-rose-200 hover:bg-rose-50">Đăng Xuất</button>
-                </div>
+        <!-- Left Sidebar -->
+        <aside class="fz-sidebar" id="fz-sidebar">
+            <div class="mb-3 flex items-center justify-center cursor-pointer" onclick="switchAppTab('dashboard')" style="width:48px;height:48px;flex-shrink:0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-lg shadow-md shadow-primary/25">🥑</div>
             </div>
-        </header>
+            <div class="fz-nav-section">Menu</div>
+            <button onclick="switchAppTab('dashboard')" id="nav-dashboard" class="fz-nav-item active">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="fz-nav-label">Trang chủ</span>
+            </button>
+            <button onclick="switchAppTab('scan')" id="nav-scan" class="fz-nav-item">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                <span class="fz-nav-label">Quét AI</span>
+            </button>
+            <button onclick="switchAppTab('chat')" id="nav-chat" class="fz-nav-item">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                <span class="fz-nav-label">Trợ lý AI</span>
+            </button>
+            <button onclick="switchAppTab('account')" id="nav-account" class="fz-nav-item">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="fz-nav-label">Hồ sơ</span>
+            </button>
+            <button onclick="switchAppTab('settings')" id="nav-settings" class="fz-nav-item">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="fz-nav-label">Cài đặt</span>
+            </button>
+            <div class="flex-1"></div>
+            <div class="fz-nav-section">Hệ thống</div>
+            <button onclick="toggleTheme()" class="fz-nav-item" title="Sáng / Tối">
+                <svg id="theme-icon" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <span class="fz-nav-label">Giao diện</span>
+            </button>
+            <button id="admin-btn" onclick="showAdminPanel()" class="hidden fz-nav-item">
+                <span class="text-base shrink-0">👑</span>
+                <span class="fz-nav-label">Admin</span>
+            </button>
+            <button onclick="logout()" class="fz-nav-item hover:!text-rose-500 hover:!bg-rose-50">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span class="fz-nav-label">Đăng xuất</span>
+            </button>
+        </aside>
 
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 relative">
+        <!-- Mobile bottom nav -->
+        <nav class="fz-mobile-nav">
+            <button onclick="switchAppTab('dashboard')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-dashboard">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Home
+            </button>
+            <button onclick="switchAppTab('scan')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-scan">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                Quét
+            </button>
+            <button onclick="switchAppTab('chat')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-chat">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                Chat
+            </button>
+            <button onclick="switchAppTab('account')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-account">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                Hồ sơ
+            </button>
+            <button onclick="switchAppTab('settings')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-settings">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Cài đặt
+            </button>
+        </nav>
+
+        <div class="fz-main">
+            <!-- Top bar -->
+            <header class="fz-topbar">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-display font-bold text-dark tracking-tight">Nutrition<span class="text-primary">AI</span></h1>
+                    <span class="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-full">SaaS</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="btn-press w-9 h-9 rounded-xl bg-surface2 flex items-center justify-center text-inkmute hover:text-primary transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-xs font-bold shadow-sm font-display tracking-tight" id="topbar-avatar" title="Hồ sơ">?</div>
+                </div>
+            </header>
+
+            <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 relative pb-24 md:pb-8">
 
             <div id="view-dashboard" class="block space-y-6 sm:space-y-8 animate-fade-in-up pb-10">
 
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h2 class="text-3xl sm:text-4xl font-display font-bold text-dark tracking-tight" id="greeting-text">Xin chào 👋</h2>
-                        <p class="text-inkmute mt-1.5 font-medium text-sm sm:text-base">Sẵn sàng hoàn thành mục tiêu sức khỏe hôm nay chưa?</p>
+                        <p class="text-inkmute mt-1.5 font-medium text-sm sm:text-base" id="greeting-sub">Sẵn sàng hoàn thành mục tiêu sức khỏe hôm nay chưa?</p>
+                        <div id="smart-status-row" class="flex flex-wrap gap-2 mt-3">
+                            <span id="smart-cal-badge" class="hidden text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border"></span>
+                            <span id="smart-bmi-badge" class="hidden text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-primary/10 text-primary border-primary/20"></span>
+                            <span id="smart-meal-tip" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-full border bg-ocean/10 text-ocean border-ocean/20"></span>
+                        </div>
                     </div>
                     
                     <div class="flex gap-3 overflow-x-auto hide-scrollbar w-full md:w-auto pb-2 md:pb-0">
@@ -499,19 +614,19 @@
                         <button onclick="openWeightModal()" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
                             <span class="bg-ocean/10 text-ocean w-7 h-7 rounded-full flex items-center justify-center">⚖️</span> Cân Nặng
                         </button>
-                        <button onclick="openWeeklyReport()" class="action-btn flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2.5 rounded-2xl shadow-md font-bold text-sm shrink-0">
+                        <button onclick="openWeeklyReport()" class="action-btn flex items-center gap-2 bg-gradient-to-r from-primary to-ocean text-white px-4 py-2.5 rounded-2xl shadow-md shadow-primary/20 font-bold text-sm shrink-0">
                             <span class="animate-pulse">✨</span> Phân Tích Tuần
                         </button>
                     </div>
                 </div>
 
-                <div id="ai-coach-widget" class="bento-card bg-gradient-to-r from-emerald-600 to-primary text-white p-5 sm:p-6 flex items-center gap-5 relative overflow-hidden group">
-                    <div class="absolute -right-4 -top-4 text-8xl opacity-5 group-hover:scale-110 transition-transform duration-700">🧠</div>
-                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\\'20\\' height=\\'20\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Ccircle cx=\\'2\\' cy=\\'2\\' r=\\'1\\' fill=\\'%23ffffff\\' fill-opacity=\\'0.1\\'/%3E%3C/svg%3E')] opacity-30"></div>
+                <div id="ai-coach-widget" class="bento-card bg-gradient-to-r from-primary via-blue-500 to-ocean text-white p-5 sm:p-6 flex items-center gap-5 relative overflow-hidden group">
+                    <div class="absolute -right-4 -top-4 text-8xl opacity-10 group-hover:scale-110 transition-transform duration-700">🧠</div>
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\\'20\\' height=\\'20\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Ccircle cx=\\'2\\' cy=\\'2\\' r=\\'1\\' fill=\\'%23ffffff\\' fill-opacity=\\'0.12\\'/%3E%3C/svg%3E')] opacity-40"></div>
                     
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl shrink-0 backdrop-blur-md border border-white/30 relative z-10 shadow-inner group-hover:-rotate-12 transition-transform">📣</div>
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl shrink-0 backdrop-blur-md border border-white/30 relative z-10 shadow-inner group-hover:-rotate-6 transition-transform">📣</div>
                     <div class="flex-1 relative z-10">
-                        <h3 class="text-[10px] uppercase font-black tracking-widest text-white/80 mb-1 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_#fff]"></span> AI Coach Insight</h3>
+                        <h3 class="text-[10px] uppercase font-black tracking-widest text-white/80 mb-1 flex items-center gap-1.5 font-display"><span class="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_#fff]"></span> AI Coach Insight</h3>
                         <p id="ai-coach-msg" class="font-medium text-sm sm:text-base leading-relaxed text-white/95">Đang tổng hợp dữ liệu và sinh lời khuyên...</p>
                     </div>
                 </div>
@@ -536,33 +651,73 @@
                         </div>
                     </div>
 
-                    <div class="bento-card bg-dark text-white md:col-span-4 p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="bento-card bg-gradient-to-br from-slate-800 to-slate-900 text-white md:col-span-4 p-6 flex flex-col justify-between relative overflow-hidden">
                         <div class="absolute inset-0 noise-overlay"></div>
-                        <h3 class="text-sm font-bold text-white/70 mb-5 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-white/30"></span> Phân bổ Đa lượng</h3>
+                        <div class="flex items-center justify-between mb-4 relative z-10">
+                            <h3 class="text-sm font-bold text-white/80 flex items-center gap-2 font-display"><span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#3B82F6]"></span> Phân bổ Đa lượng</h3>
+                            <span id="macro-ratio-label" class="text-[9px] font-bold uppercase tracking-wider text-white/40 bg-white/10 px-2 py-0.5 rounded-md">30/40/30</span>
+                        </div>
                         
-                        <div class="space-y-5 relative z-10 flex-1 flex flex-col justify-center">
+                        <div class="space-y-4 relative z-10 flex-1 flex flex-col justify-center">
+                            <!-- Protein -->
                             <div class="group">
-                                <div class="flex justify-between items-end mb-2">
-                                    <div class="flex items-center gap-2"><span class="bg-[#E4785A]/20 p-1.5 rounded-lg text-[#E4785A] text-xs">⚡</span><span class="text-xs font-bold text-white/80">Chất đạm</span></div>
-                                    <p class="text-xs font-bold font-num"><span id="val-p" class="text-white text-sm">0</span> <span class="text-white/40" id="max-p">/ 0g</span></p>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-[#E4785A]/25 p-1.5 rounded-lg text-[#E4785A] text-xs leading-none">⚡</span>
+                                        <div>
+                                            <span class="text-xs font-bold text-white/90 block">Protein</span>
+                                            <span id="pct-p" class="text-[9px] text-white/40 font-medium">0%</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs font-bold font-num text-right">
+                                        <span id="val-p" class="text-white text-sm">0</span>
+                                        <span class="text-white/40" id="max-p">/ 0g</span>
+                                    </p>
                                 </div>
-                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner"><div id="bar-p-dark" class="bg-gradient-to-r from-[#E4785A] to-[#f6977d] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_10px_#E4785A]" style="width: 0%"></div></div>
+                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner">
+                                    <div id="bar-p-dark" class="bg-gradient-to-r from-[#E4785A] to-[#f6977d] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_12px_#E4785A]" style="width: 0%"></div>
+                                </div>
                             </div>
+                            <!-- Carbs -->
                             <div class="group">
-                                <div class="flex justify-between items-end mb-2">
-                                    <div class="flex items-center gap-2"><span class="bg-[#4E9BB5]/20 p-1.5 rounded-lg text-[#4E9BB5] text-xs">🌾</span><span class="text-xs font-bold text-white/80">Đường bột</span></div>
-                                    <p class="text-xs font-bold font-num"><span id="val-c" class="text-white text-sm">0</span> <span class="text-white/40" id="max-c">/ 0g</span></p>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-[#4E9BB5]/25 p-1.5 rounded-lg text-[#4E9BB5] text-xs leading-none">🌾</span>
+                                        <div>
+                                            <span class="text-xs font-bold text-white/90 block">Carbs</span>
+                                            <span id="pct-c" class="text-[9px] text-white/40 font-medium">0%</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs font-bold font-num text-right">
+                                        <span id="val-c" class="text-white text-sm">0</span>
+                                        <span class="text-white/40" id="max-c">/ 0g</span>
+                                    </p>
                                 </div>
-                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner"><div id="bar-c-dark" class="bg-gradient-to-r from-[#4E9BB5] to-[#6bc1de] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_10px_#4E9BB5]" style="width: 0%"></div></div>
+                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner">
+                                    <div id="bar-c-dark" class="bg-gradient-to-r from-[#4E9BB5] to-[#6bc1de] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_12px_#4E9BB5]" style="width: 0%"></div>
+                                </div>
                             </div>
+                            <!-- Fat -->
                             <div class="group">
-                                <div class="flex justify-between items-end mb-2">
-                                    <div class="flex items-center gap-2"><span class="bg-[#D6AE58]/20 p-1.5 rounded-lg text-[#D6AE58] text-xs">💧</span><span class="text-xs font-bold text-white/80">Chất béo</span></div>
-                                    <p class="text-xs font-bold font-num"><span id="val-f" class="text-white text-sm">0</span> <span class="text-white/40" id="max-f">/ 0g</span></p>
+                                <div class="flex justify-between items-end mb-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-[#D6AE58]/25 p-1.5 rounded-lg text-[#D6AE58] text-xs leading-none">🧈</span>
+                                        <div>
+                                            <span class="text-xs font-bold text-white/90 block">Fat</span>
+                                            <span id="pct-f" class="text-[9px] text-white/40 font-medium">0%</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs font-bold font-num text-right">
+                                        <span id="val-f" class="text-white text-sm">0</span>
+                                        <span class="text-white/40" id="max-f">/ 0g</span>
+                                    </p>
                                 </div>
-                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner"><div id="bar-f-dark" class="bg-gradient-to-r from-[#D6AE58] to-[#f4ce75] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_10px_#D6AE58]" style="width: 0%"></div></div>
+                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden shadow-inner">
+                                    <div id="bar-f-dark" class="bg-gradient-to-r from-[#D6AE58] to-[#f4ce75] h-full rounded-full transition-all duration-1000 ease-out group-hover:shadow-[0_0_12px_#D6AE58]" style="width: 0%"></div>
+                                </div>
                             </div>
                         </div>
+                        <p id="macro-tip" class="relative z-10 mt-4 text-[10px] text-white/45 font-medium leading-relaxed border-t border-white/10 pt-3">Tỷ lệ tối ưu theo mục tiêu của bạn.</p>
                     </div>
 
                     <div class="bento-card md:col-span-3 bg-gradient-to-b from-ocean/10 to-[#e2f1f8] p-5 flex flex-col justify-between items-center text-center relative overflow-hidden group">
@@ -570,23 +725,25 @@
                         <div class="flex flex-col items-center z-10 w-full">
                             <span class="text-3xl mb-1 animate-float-slow">💧</span>
                             <p class="text-ocean font-bold text-sm font-display mb-1">Nước uống</p>
-                            <p class="text-ocean/60 text-[10px] font-bold uppercase tracking-widest bg-white/50 px-2 py-0.5 rounded-full">Hôm nay</p>
+                            <p class="text-ocean/60 text-[10px] font-bold uppercase tracking-widest bg-white/50 px-2 py-0.5 rounded-full">Mục tiêu 2L</p>
                         </div>
                         
-                        <div class="z-10 w-full my-4">
+                        <div class="z-10 w-full my-3">
                             <p class="text-ocean/80 font-bold text-xs mb-2">
-                                <span id="water-current" class="text-3xl text-ocean font-num font-black tracking-tighter">0</span><span class="text-sm">/2L</span>
+                                <span id="water-current" class="text-3xl text-ocean font-num font-black tracking-tighter">0</span><span class="text-sm font-num"> ml</span>
                             </p>
                             <div class="w-full bg-white/60 h-3 rounded-full overflow-hidden shadow-inner border border-white/50 p-0.5">
                                 <div id="water-bar" class="bg-gradient-to-r from-[#5ab1d6] to-ocean h-full rounded-full transition-all duration-700 ease-out relative" style="width: 0%">
                                     <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\\'10\\' height=\\'10\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cpath d=\\'M0 10L10 0z\\' stroke=\\'rgba(255,255,255,0.2)\\' stroke-width=\\'2\\'/%3E%3C/svg%3E')]"></div>
                                 </div>
                             </div>
+                            <p id="water-remaining" class="text-[10px] text-ocean/50 font-medium mt-1.5">Còn 2000 ml</p>
                         </div>
 
-                        <div class="flex gap-2 w-full z-10 mt-auto">
+                        <div class="flex gap-1.5 w-full z-10 mt-auto">
+                            <button onclick="updateWater(-250)" class="btn-press flex-1 bg-white/80 text-ocean/70 text-[11px] font-bold py-2 rounded-xl shadow-sm hover:bg-rose-50 hover:text-rose-500 transition-colors border border-ocean/10" title="Trừ 250ml">−250</button>
                             <button onclick="updateWater(250)" class="btn-press flex-1 bg-white text-ocean text-[11px] font-bold py-2 rounded-xl shadow-sm hover:bg-ocean hover:text-white transition-colors border border-ocean/10">+250</button>
-                            <button onclick="updateWater(500)" class="btn-press flex-1 bg-white text-ocean text-[11px] font-bold py-2 rounded-xl shadow-sm hover:bg-ocean hover:text-white transition-colors border border-ocean/10">+500</button>
+                            <button onclick="updateWater(500)" class="btn-press flex-1 bg-ocean text-white text-[11px] font-bold py-2 rounded-xl shadow-sm hover:bg-ocean/90 transition-colors">+500</button>
                         </div>
                         <p id="water-congrats" class="hidden absolute top-3 right-3 text-emerald-600 text-lg animate-pulse" title="Đã đủ mục tiêu">🎉</p>
                     </div>
@@ -603,7 +760,25 @@
                         <div class="bento-card p-5 flex-1 bg-gradient-to-br from-gold/10 to-surface2 border-gold/20 flex flex-col justify-center items-center text-center cursor-pointer group hover:bg-gold/15 transition-colors" onclick="switchAppTab('account')">
                             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gold/30 mb-3 group-hover:scale-110 transition-transform">🏆</div>
                             <h3 class="font-bold text-gold text-sm font-display mb-1">Tủ Huy Hiệu</h3>
-                            <p class="text-inkmute font-medium text-xs">Vào hồ sơ để xem các thành tựu bạn đã đạt được.</p>
+                            <p class="text-inkmute font-medium text-xs mb-2">Vào hồ sơ để xem thành tựu.</p>
+                            <p id="badge-progress" class="text-[11px] font-bold text-gold/80 font-num">0 / 0 mở khóa</p>
+                        </div>
+
+                        <!-- Daily AI Nutrition Score -->
+                        <div class="bento-card p-5 bg-gradient-to-br from-primary/5 to-ocean/5 border-primary/15">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-bold text-dark text-sm font-display flex items-center gap-1.5">🧠 Điểm Dinh dưỡng</h3>
+                                <span class="text-[9px] font-bold uppercase tracking-wider text-primary/60 bg-primary/10 px-2 py-0.5 rounded-md">AI Score</span>
+                            </div>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span id="daily-score-value" class="text-3xl font-num font-black text-primary tracking-tighter">0</span>
+                                <span class="text-sm text-inkmute font-bold mb-1">/100</span>
+                            </div>
+                            <div class="w-full bg-surface2 h-2 rounded-full overflow-hidden mb-2">
+                                <div id="daily-score-bar" class="bg-gradient-to-r from-primary to-ocean h-full rounded-full transition-all duration-700" style="width:0%"></div>
+                            </div>
+                            <p id="daily-score-label" class="text-xs font-bold text-inkmute">Chưa bắt đầu</p>
+                            <p id="streak-display" class="text-[10px] text-inkmute mt-2 font-medium">🔥 Streak: — ngày</p>
                         </div>
                     </div>
 
@@ -639,6 +814,51 @@
                     <div id="ai-recommends-list" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="skeleton h-36 rounded-3xl"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div>
                     </div>
+                </div>
+
+                <!-- So sánh hôm nay vs hôm qua -->
+                <div class="bento-card p-5 sm:p-6" id="compare-widget">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-dark font-display flex items-center gap-2">📊 Hôm nay vs Hôm qua</h3>
+                        <button onclick="loadDayCompare()" class="text-[10px] font-bold text-primary hover:underline">Làm mới</button>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                            <p class="text-[9px] uppercase font-bold text-inkmute mb-1">Calo hôm nay</p>
+                            <p id="cmp-today-cal" class="font-num font-black text-dark text-lg">—</p>
+                        </div>
+                        <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                            <p class="text-[9px] uppercase font-bold text-inkmute mb-1">Calo hôm qua</p>
+                            <p id="cmp-yest-cal" class="font-num font-black text-inkmute text-lg">—</p>
+                        </div>
+                        <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                            <p class="text-[9px] uppercase font-bold text-inkmute mb-1">Chênh lệch</p>
+                            <p id="cmp-diff" class="font-num font-black text-primary text-lg">—</p>
+                        </div>
+                        <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                            <p class="text-[9px] uppercase font-bold text-inkmute mb-1">Số món HN</p>
+                            <p id="cmp-meals" class="font-num font-black text-dark text-lg">—</p>
+                        </div>
+                    </div>
+                    <p id="cmp-insight" class="text-xs text-inkmute font-medium leading-relaxed">Đang phân tích...</p>
+                </div>
+
+                <!-- Log nhanh từ CSDL -->
+                <div class="bento-card p-5 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-dark font-display">⚡ Log nhanh</h3>
+                            <p class="text-[11px] text-inkmute font-medium">Tìm món trong CSDL hoặc chọn món hay ăn</p>
+                        </div>
+                        <button onclick="openDailySummary()" class="btn-press text-xs font-bold bg-primary/10 text-primary px-3 py-2 rounded-xl border border-primary/15 hover:bg-primary hover:text-white transition-colors shrink-0">📋 Tóm tắt ngày</button>
+                    </div>
+                    <div class="relative mb-3">
+                        <input type="text" id="quick-food-search" oninput="debounceFoodSearch()" placeholder="Tìm món: cơm, trứng, salad..." class="w-full pl-11 pr-4 py-3 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-inkmute" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <div id="quick-search-results" class="space-y-2 mb-4 max-h-48 overflow-y-auto hide-scrollbar"></div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-inkmute mb-2">Món hay ăn</p>
+                    <div id="recent-foods-chips" class="flex flex-wrap gap-2"></div>
                 </div>
 
                 <div class="bento-card p-6">
@@ -773,14 +993,231 @@
                         </div>
                     </div>
                     <!-- KHU VỰC TRƯNG BÀY THÀNH TỰU -->
-                    <h4 class="font-bold text-slate-800 text-lg mb-4 mt-8 flex items-center gap-2 font-display">🏆 Tủ huy hiệu</h4>
-                    <div id="achievements-list" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <h4 class="font-bold text-slate-800 text-lg mb-4 mt-8 flex items-center gap-2 font-display">🏆 Tủ huy hiệu <span id="badge-count-header" class="text-xs font-sans font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full ml-1"></span></h4>
+                    <p class="text-xs text-inkmute mb-4 -mt-2">Mở khóa huy hiệu bằng cách duy trì thói quen lành mạnh mỗi ngày.</p>
+                    <div id="achievements-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         <!-- Huy hiệu sẽ được JS sinh ra tại đây -->
                     </div>
                 </div>
             </div>
 
+            <!-- ================= SETTINGS + SECURITY ================= -->
+            <div id="view-settings" class="hidden space-y-6 sm:space-y-8 animate-fade-in-up">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-3xl sm:text-4xl font-display font-bold text-dark tracking-tight">Cài đặt</h2>
+                        <p class="text-inkmute text-sm mt-1 font-medium">Tùy chỉnh trải nghiệm & bảo mật tài khoản</p>
+                    </div>
+                    <div class="flex gap-2 bg-surface2 p-1 rounded-xl border border-line">
+                        <button onclick="switchSettingsTab('prefs')" id="stab-prefs" class="px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-primary">Tùy chọn</button>
+                        <button onclick="switchSettingsTab('security')" id="stab-security" class="px-4 py-2 rounded-lg text-xs font-bold text-inkmute hover:text-dark">Bảo mật</button>
+                        <button onclick="switchSettingsTab('data')" id="stab-data" class="px-4 py-2 rounded-lg text-xs font-bold text-inkmute hover:text-dark">Dữ liệu</button>
+                    </div>
+                </div>
+
+                <!-- TAB: Preferences -->
+                <div id="settings-prefs" class="space-y-5">
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1 flex items-center gap-2">🎨 Giao diện</h3>
+                        <p class="text-xs text-inkmute mb-5">Tùy chỉnh cách hiển thị ứng dụng</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-line">
+                                <div>
+                                    <p class="font-bold text-sm text-dark">Chế độ tối</p>
+                                    <p class="text-[11px] text-inkmute">Giảm mỏi mắt vào ban đêm</p>
+                                </div>
+                                <div id="set-theme-switch" class="switch" onclick="toggleTheme(); syncSettingsUI()">
+                                    <div class="knob"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-line">
+                                <div>
+                                    <p class="font-bold text-sm text-dark">Ẩn số calo (Privacy)</p>
+                                    <p class="text-[11px] text-inkmute">Che số liệu nhạy cảm trên dashboard</p>
+                                </div>
+                                <div id="set-privacy" class="switch" onclick="toggleSetting('privacy_mode')">
+                                    <div class="knob"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-bold text-sm text-dark">Hiệu ứng chuyển động</p>
+                                    <p class="text-[11px] text-inkmute">Animation mượt khi đổi tab</p>
+                                </div>
+                                <div id="set-motion" class="switch on" onclick="toggleSetting('motion')">
+                                    <div class="knob"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1 flex items-center gap-2">💧 Mục tiêu nước</h3>
+                        <p class="text-xs text-inkmute mb-4">Tùy chỉnh lượng nước mục tiêu mỗi ngày</p>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="set-water-goal" min="1000" max="4000" step="250" value="2000" class="flex-1 accent-primary" oninput="document.getElementById('water-goal-label').innerText=this.value+' ml'; saveSetting('water_goal', this.value)">
+                            <span id="water-goal-label" class="font-num font-bold text-primary text-sm w-20 text-right">2000 ml</span>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="setWaterGoal(1500)" class="btn-press text-[11px] font-bold px-3 py-1.5 rounded-lg bg-surface2 border border-line hover:border-primary text-inkmute">1.5L</button>
+                            <button onclick="setWaterGoal(2000)" class="btn-press text-[11px] font-bold px-3 py-1.5 rounded-lg bg-surface2 border border-line hover:border-primary text-inkmute">2L</button>
+                            <button onclick="setWaterGoal(2500)" class="btn-press text-[11px] font-bold px-3 py-1.5 rounded-lg bg-surface2 border border-line hover:border-primary text-inkmute">2.5L</button>
+                            <button onclick="setWaterGoal(3000)" class="btn-press text-[11px] font-bold px-3 py-1.5 rounded-lg bg-surface2 border border-line hover:border-primary text-inkmute">3L</button>
+                        </div>
+                    </div>
+
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1 flex items-center gap-2">🤖 AI & Thông báo</h3>
+                        <p class="text-xs text-inkmute mb-5">Cá nhân hóa trợ lý AI</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-inkmute mb-2 uppercase tracking-wider">Phong cách trả lời AI</label>
+                                <select id="set-ai-style" onchange="saveSetting('ai_style', this.value)" class="w-full p-3 rounded-xl border border-line bg-paper focus:bg-white font-bold text-sm outline-none focus:ring-4 focus:ring-primary/10">
+                                    <option value="balanced">Cân bằng (mặc định)</option>
+                                    <option value="concise">Ngắn gọn, đi thẳng vào vấn đề</option>
+                                    <option value="detailed">Chi tiết, giải thích sâu</option>
+                                    <option value="friendly">Thân thiện, động viên</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-line">
+                                <div>
+                                    <p class="font-bold text-sm text-dark">Nhắc uống nước</p>
+                                    <p class="text-[11px] text-inkmute">Toast nhắc mỗi 2 giờ (trong phiên)</p>
+                                </div>
+                                <div id="set-water-remind" class="switch" onclick="toggleSetting('water_remind')">
+                                    <div class="knob"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-bold text-sm text-dark">Nhắc log bữa ăn</p>
+                                    <p class="text-[11px] text-inkmute">Gợi ý ghi nhật ký vào buổi tối</p>
+                                </div>
+                                <div id="set-meal-remind" class="switch" onclick="toggleSetting('meal_remind')">
+                                    <div class="knob"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: Security -->
+                <div id="settings-security" class="hidden space-y-5">
+                    <div class="bento-card p-6 border-primary/20">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl shrink-0">🔒</div>
+                            <div>
+                                <h3 class="font-display font-bold text-dark text-lg">Bảo mật tài khoản</h3>
+                                <p class="text-xs text-inkmute mt-0.5">Mật khẩu được băm Bcrypt, session server-side</p>
+                            </div>
+                        </div>
+                        <div id="security-info-box" class="bg-paper rounded-2xl border border-line p-4 mb-5 space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-inkmute font-medium">Email</span><span id="sec-email" class="font-bold text-dark">--</span></div>
+                            <div class="flex justify-between"><span class="text-inkmute font-medium">Ngày tạo</span><span id="sec-created" class="font-bold text-dark font-num">--</span></div>
+                            <div class="flex justify-between"><span class="text-inkmute font-medium">Mã hóa mật khẩu</span><span class="font-bold text-emerald-600">Bcrypt ✓</span></div>
+                            <div class="flex justify-between"><span class="text-inkmute font-medium">Session</span><span class="font-bold text-primary">Flask Server-side</span></div>
+                        </div>
+                        <ul id="security-tips" class="text-[11px] text-inkmute space-y-1.5 mb-6 list-disc pl-5"></ul>
+                    </div>
+
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1">🔑 Đổi mật khẩu</h3>
+                        <p class="text-xs text-inkmute mb-4">≥8 ký tự · chữ · số · ký tự đặc biệt (!@#$...)</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-inkmute mb-1 uppercase">Mật khẩu hiện tại</label>
+                                <input type="password" id="sec-cur-pass" class="w-full p-3 rounded-xl border border-line bg-paper focus:bg-white outline-none focus:ring-4 focus:ring-primary/10 font-medium text-sm" placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-inkmute mb-1 uppercase">Mật khẩu mới</label>
+                                <input type="password" id="sec-new-pass" oninput="checkPassStrength(this.value)" class="w-full p-3 rounded-xl border border-line bg-paper focus:bg-white outline-none focus:ring-4 focus:ring-primary/10 font-medium text-sm" placeholder="Tối thiểu 8 ký tự">
+                                <div class="mt-2 flex gap-1">
+                                    <div id="pw-bar-1" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                    <div id="pw-bar-2" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                    <div id="pw-bar-3" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                    <div id="pw-bar-4" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
+                                </div>
+                                <p id="pw-strength-label" class="text-[10px] text-inkmute mt-1 font-medium">Độ mạnh mật khẩu</p>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-inkmute mb-1 uppercase">Xác nhận mật khẩu mới</label>
+                                <input type="password" id="sec-confirm-pass" class="w-full p-3 rounded-xl border border-line bg-paper focus:bg-white outline-none focus:ring-4 focus:ring-primary/10 font-medium text-sm" placeholder="Nhập lại mật khẩu mới">
+                            </div>
+                            <button onclick="submitChangePassword()" class="btn-press w-full bg-primary text-white font-bold py-3 rounded-xl shadow-md shadow-primary/20 hover:bg-primary_hover transition-colors mt-2">Cập nhật mật khẩu</button>
+                        </div>
+                    </div>
+
+                    <div class="bento-card p-6 border-rose-200/60">
+                        <h3 class="font-display font-bold text-rose-600 text-lg mb-1">⚠️ Vùng nguy hiểm</h3>
+                        <p class="text-xs text-inkmute mb-4">Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu (không thể hoàn tác)</p>
+                        <div class="space-y-3">
+                            <input type="password" id="sec-delete-pass" class="w-full p-3 rounded-xl border border-rose-200 bg-rose-50/50 focus:bg-white outline-none focus:ring-4 focus:ring-rose-200 font-medium text-sm" placeholder="Nhập mật khẩu để xác nhận xóa">
+                            <button onclick="submitDeleteAccount()" class="btn-press w-full bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 transition-colors">Xóa tài khoản vĩnh viễn</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: Data -->
+                <div id="settings-data" class="hidden space-y-5">
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1 flex items-center gap-2">📦 Xuất dữ liệu</h3>
+                        <p class="text-xs text-inkmute mb-4">Tải toàn bộ nhật ký, cân nặng, nước, huy hiệu dạng JSON (quyền riêng tư / backup)</p>
+                        <button onclick="exportMyData()" class="btn-press bg-gradient-to-r from-primary to-ocean text-white font-bold px-6 py-3 rounded-xl shadow-md shadow-primary/20 text-sm">⬇️ Tải file JSON</button>
+                        <p id="export-status" class="text-[11px] text-inkmute mt-3 font-medium"></p>
+                    </div>
+                    <div class="bento-card p-6">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1">🧹 Xóa cache cục bộ</h3>
+                        <p class="text-xs text-inkmute mb-4">Xóa cài đặt localStorage (theme, mục tiêu nước…) — không xóa dữ liệu server</p>
+                        <button onclick="clearLocalCache()" class="btn-press bg-surface2 border border-line text-dark font-bold px-5 py-2.5 rounded-xl text-sm hover:border-primary transition-colors">Xóa cache trình duyệt</button>
+                    </div>
+                    <div class="bento-card p-6 bg-gradient-to-br from-primary/5 to-ocean/5 border-primary/15">
+                        <h3 class="font-display font-bold text-dark text-lg mb-1">✨ Pro Tips</h3>
+                        <ul class="text-sm text-inkmute space-y-2 mt-3 list-disc pl-5 font-medium">
+                            <li>Xuất dữ liệu định kỳ để backup cá nhân</li>
+                            <li>Đổi mật khẩu mỗi 3–6 tháng</li>
+                            <li>Bật Privacy mode khi trình chiếu trước người khác</li>
+                            <li>Mục tiêu nước 2–3L phù hợp hầu hết người lớn</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
         </main>
+        </div><!-- /.fz-main -->
+    </div><!-- /#app-screen -->
+
+    <!-- MODAL TÓM TẮT NGÀY -->
+    <div id="daily-summary-modal" class="hidden fixed inset-0 bg-dark/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] w-full max-w-md p-6 sm:p-8 relative animate-scale-in max-h-[90vh] overflow-y-auto">
+            <button onclick="document.getElementById('daily-summary-modal').classList.add('hidden')" class="btn-press absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-paper rounded-full text-inkmute hover:text-dark font-bold">X</button>
+            <div id="daily-summary-card" class="space-y-4">
+                <div class="text-center mb-2">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-2xl text-white shadow-lg shadow-primary/25 mb-3">🥑</div>
+                    <h3 class="font-display font-bold text-xl text-dark">Tóm tắt dinh dưỡng</h3>
+                    <p id="sum-date" class="text-xs text-inkmute font-medium mt-1"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-paper rounded-2xl border border-line p-4 text-center">
+                        <p class="text-[10px] uppercase font-bold text-inkmute">Calo</p>
+                        <p id="sum-cals" class="font-num font-black text-2xl text-primary">0</p>
+                    </div>
+                    <div class="bg-paper rounded-2xl border border-line p-4 text-center">
+                        <p class="text-[10px] uppercase font-bold text-inkmute">Điểm AI</p>
+                        <p id="sum-score" class="font-num font-black text-2xl text-dark">0</p>
+                    </div>
+                    <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-inkmute">Protein</p>
+                        <p id="sum-p" class="font-num font-bold text-lg text-dark">0g</p>
+                    </div>
+                    <div class="bg-paper rounded-2xl border border-line p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-inkmute">Nước</p>
+                        <p id="sum-w" class="font-num font-bold text-lg text-ocean">0ml</p>
+                    </div>
+                </div>
+                <p id="sum-insight" class="text-sm text-inkmute font-medium text-center leading-relaxed bg-primary/5 rounded-2xl p-4 border border-primary/10"></p>
+                <button onclick="copyDailySummary()" class="btn-press w-full bg-dark text-white font-bold py-3 rounded-xl text-sm">📋 Sao chép tóm tắt</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL NHẬP CÂN NẶNG -->
@@ -1020,38 +1457,36 @@
 
         // -- CHUYỂN ĐỔI TAB (HỖ TRỢ 4 TAB) --
         function switchAppTab(tab) {
-            const views = ['dashboard', 'account', 'scan', 'chat'];
+            const views = ['dashboard', 'account', 'scan', 'chat', 'settings'];
 
             views.forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 const nav = document.getElementById(`nav-${v}`);
+                const mnav = document.getElementById(`mnav-${v}`);
                 if (el) {
                     el.classList.add('hidden');
-                    el.classList.remove('flex'); 
+                    el.classList.remove('flex');
                 }
-                if (nav) { nav.classList.remove('text-primary'); nav.classList.add('text-inkmute'); }
+                if (nav) nav.classList.remove('active');
+                if (mnav) { mnav.classList.remove('text-primary'); mnav.classList.add('text-inkmute'); }
             });
 
             const activeEl = document.getElementById(`view-${tab}`);
             const activeNav = document.getElementById(`nav-${tab}`);
-            
+            const activeMnav = document.getElementById(`mnav-${tab}`);
+
             if (activeEl) {
                 activeEl.classList.remove('hidden');
-
-                if (tab === 'chat') {
-                    activeEl.classList.add('flex');
-                }
-                
-                activeEl.classList.remove('animate-fade-in-up'); 
-                void activeEl.offsetWidth; 
+                if (tab === 'chat') activeEl.classList.add('flex');
+                activeEl.classList.remove('animate-fade-in-up');
+                void activeEl.offsetWidth;
                 activeEl.classList.add('animate-fade-in-up');
             }
-            if (activeNav) {
-                activeNav.classList.add('text-primary'); 
-                activeNav.classList.remove('text-inkmute');
-            }
+            if (activeNav) activeNav.classList.add('active');
+            if (activeMnav) { activeMnav.classList.add('text-primary'); activeMnav.classList.remove('text-inkmute'); }
 
-            if(tab === 'chat') setTimeout(() => document.getElementById('chat-input').focus(), 100);
+            if (tab === 'chat') setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+            if (tab === 'settings') { loadSettingsUI(); loadSecurityInfo(); }
         }
 
         function handleGoalChange() {
@@ -1088,33 +1523,60 @@
             updateDots(step);
         }
 
-                // --- HÀM VALIDATE BƯỚC 1 ---
+        function isStrongPassword(pw) {
+            if (!pw || pw.length < 8) return { ok: false, msg: 'Mật khẩu phải có ít nhất 8 ký tự!' };
+            if (!/[A-Za-z]/.test(pw)) return { ok: false, msg: 'Mật khẩu cần có ít nhất 1 chữ cái!' };
+            if (!/\d/.test(pw)) return { ok: false, msg: 'Mật khẩu cần có ít nhất 1 chữ số!' };
+            if (!/[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/`~\\"]/.test(pw)) return { ok: false, msg: 'Mật khẩu cần có ít nhất 1 ký tự đặc biệt (!@#$%...)!' };
+            return { ok: true };
+        }
+
+        function checkObPassStrength(pw) {
+            let score = 0;
+            if (pw.length >= 8) score++;
+            if (/[A-Za-z]/.test(pw) && /\d/.test(pw)) score++;
+            if (/[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/`~\\"]/.test(pw)) score++;
+            if (pw.length >= 12) score++;
+            const colors = ['#E4E9F0', '#F97316', '#F59E0B', '#3B82F6', '#22C55E'];
+            const labels = ['Cần: 8+ ký tự · chữ · số · ký tự đặc biệt', 'Yếu', 'Trung bình', 'Khá tốt', 'Mạnh ✓'];
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById('ob-pw-' + i);
+                if (bar) bar.style.background = i <= score ? colors[Math.max(score, 1)] : '#E4E9F0';
+            }
+            const lbl = document.getElementById('ob-pw-label');
+            if (lbl) { lbl.innerText = labels[score]; lbl.className = 'text-[10px] mt-1 font-medium ' + (score >= 3 ? 'text-emerald-600' : 'text-inkmute'); }
+        }
+
+        // --- HÀM VALIDATE BƯỚC 1 ---
         function validateStep1() {
             const fullname = document.getElementById('ob-fullname').value.trim();
             const nickname = document.getElementById('ob-nickname').value.trim();
             const email = document.getElementById('ob-email').value.trim();
             const password = document.getElementById('ob-password').value;
+            const confirm = document.getElementById('ob-password-confirm').value;
 
-            // Kiểm tra rỗng
-            if (!fullname || !nickname || !email || !password) {
+            if (!fullname || !nickname || !email || !password || !confirm) {
                 showToast("Vui lòng điền đầy đủ thông tin!", "error");
                 return;
             }
-            
-            // Kiểm tra định dạng Email cơ bản
+
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 showToast("Định dạng Email không hợp lệ!", "error");
                 return;
             }
 
-            // Kiểm tra độ dài mật khẩu cho khớp với Backend
-            if (password.length < 6) {
-                showToast("Mật khẩu phải có ít nhất 6 ký tự!", "error");
+            const strength = isStrongPassword(password);
+            if (!strength.ok) {
+                showToast(strength.msg, "error");
                 return;
             }
 
-            // Nếu qua hết các bài test, mới cho sang Bước 2
+            if (password !== confirm) {
+                showToast("Mật khẩu nhập lại không khớp!", "error");
+                return;
+            }
+
             nextStep(2);
         }
 
@@ -1193,12 +1655,15 @@
         }
 
         function finishOnboarding() {
+            const nick = onboardingData.nickname || document.getElementById('ob-nickname')?.value || 'Bạn';
+            const full = document.getElementById('ob-fullname')?.value || nick;
             localStorage.setItem('currentUser', JSON.stringify({
                 id: registeredUserId,
-                fullname: onboardingData.nickname || 'Người dùng',
+                fullname: full,
+                nickname: nick,
                 role: 'user',
                 gender: onboardingData.gender,
-                birth_year: onboardingData.birth_year,
+                birth_year: onboardingData.birth_year || document.getElementById('ob-birthyear')?.value,
                 height: onboardingData.height,
                 weight: onboardingData.weight,
                 goal: onboardingData.goal,
@@ -1220,23 +1685,103 @@
             });
         }
 
+        function getNicknameInitials(user) {
+            const name = (user.nickname || user.fullname || 'U').trim();
+            const parts = name.split(/\s+/).filter(Boolean);
+            if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            return name.slice(0, 2).toUpperCase();
+        }
+
+        function smartGreeting(user) {
+            const h = new Date().getHours();
+            let period = 'Xin chào';
+            if (h < 5) period = 'Khuya rồi';
+            else if (h < 11) period = 'Chào buổi sáng';
+            else if (h < 14) period = 'Chào buổi trưa';
+            else if (h < 18) period = 'Chào buổi chiều';
+            else period = 'Chào buổi tối';
+            const nick = user.role === 'admin' ? 'Admin' : (user.nickname || user.fullname || 'bạn');
+            return `${period}, ${nick} 👋`;
+        }
+
+        function smartSubline(user) {
+            const h = new Date().getHours();
+            const tips = {
+                morning: 'Bữa sáng giàu protein giúp kiểm soát thèm ăn cả ngày.',
+                noon: 'Đừng bỏ bữa trưa — cơ thể cần năng lượng để tập trung.',
+                afternoon: 'Uống nước và vận động nhẹ 5 phút giúp tỉnh táo hơn.',
+                evening: 'Bữa tối nhẹ, cách giờ ngủ ≥ 2–3 giờ sẽ ngon giấc hơn.',
+                night: 'Hãy nghỉ ngơi. Log bữa ăn hôm nay nếu chưa ghi nhé.'
+            };
+            if (h < 5 || h >= 22) return tips.night;
+            if (h < 11) return tips.morning;
+            if (h < 14) return tips.noon;
+            if (h < 18) return tips.afternoon;
+            return tips.evening;
+        }
+
+        function calcBMI(heightCm, weightKg) {
+            const h = Number(heightCm) / 100;
+            const w = Number(weightKg);
+            if (!h || !w || h <= 0) return null;
+            const bmi = w / (h * h);
+            let label = 'Bình thường', color = 'text-primary';
+            if (bmi < 18.5) { label = 'Thiếu cân'; color = 'text-ocean'; }
+            else if (bmi < 25) { label = 'Bình thường'; color = 'text-emerald-600'; }
+            else if (bmi < 30) { label = 'Thừa cân'; color = 'text-gold'; }
+            else { label = 'Béo phì'; color = 'text-rose-500'; }
+            return { bmi: Math.round(bmi * 10) / 10, label, color };
+        }
+
         // ÁP DỤNG TRẠNG THÁI & HIỂN THỊ HỒ SƠ
         function applyLoginState() {
             const userStr = localStorage.getItem('currentUser');
             if (!userStr) return;
             const user = JSON.parse(userStr);
 
-            document.getElementById('greeting-text').innerText = `Xin chào, ${user.role === 'admin' ? 'Admin' : escapeHtml(user.nickname || user.fullname)}`;
-            if(user.role === 'admin') document.getElementById('admin-btn').classList.remove('hidden');
+            document.getElementById('greeting-text').innerText = smartGreeting(user);
+            const sub = document.getElementById('greeting-sub');
+            if (sub) sub.innerText = smartSubline(user);
 
-            if(user.role !== 'admin' && user.height) {
+            // Avatar = initials biệt danh
+            const av = document.getElementById('topbar-avatar');
+            if (av) {
+                av.innerText = getNicknameInitials(user);
+                av.title = user.nickname || user.fullname || 'Hồ sơ';
+                av.onclick = () => switchAppTab('account');
+                av.style.cursor = 'pointer';
+            }
+
+            if (user.role === 'admin') document.getElementById('admin-btn').classList.remove('hidden');
+
+            // BMI badge
+            const bmiBadge = document.getElementById('smart-bmi-badge');
+            if (bmiBadge && user.height && user.weight) {
+                const b = calcBMI(user.height, user.weight);
+                if (b) {
+                    bmiBadge.classList.remove('hidden');
+                    bmiBadge.innerText = `BMI ${b.bmi} · ${b.label}`;
+                }
+            }
+
+            // Meal timing tip by hour
+            const mealTip = document.getElementById('smart-meal-tip');
+            if (mealTip) {
+                const h = new Date().getHours();
+                let tip = '';
+                if (h >= 6 && h < 10) tip = '⏰ Khung bữa sáng lý tưởng';
+                else if (h >= 11 && h < 14) tip = '⏰ Khung bữa trưa lý tưởng';
+                else if (h >= 17 && h < 20) tip = '⏰ Khung bữa tối lý tưởng';
+                else if (h >= 15 && h < 17) tip = '🍎 Có thể thêm bữa phụ nhẹ';
+                if (tip) { mealTip.classList.remove('hidden'); mealTip.innerText = tip; }
+            }
+
+            if (user.role !== 'admin' && user.height) {
                 const currentYear = new Date().getFullYear();
                 const age = currentYear - parseInt(user.birth_year || 2000);
                 const genderStr = user.gender === 'male' ? 'Nam' : 'Nữ';
                 const goalLabels = {'giam_can': '🔥 Giảm cân', 'duy_tri': '⚖️ Duy trì', 'tang_can': '💪 Tăng cân'};
 
-                // (4 dòng code gây lỗi đã được gỡ bỏ ở đây)
-                
                 document.getElementById('acc-fullname').innerText = escapeHtml(user.fullname);
                 document.getElementById('acc-gender').innerText = genderStr;
                 document.getElementById('acc-age').innerText = age;
@@ -1246,6 +1791,12 @@
                 document.getElementById('acc-bmr').innerText = user.bmr || '--';
                 document.getElementById('acc-tdee').innerText = user.tdee || '--';
                 document.getElementById('acc-target').innerText = user.target_calories || '--';
+
+                // Show nickname on account
+                const roleEl = document.getElementById('acc-role');
+                if (roleEl && user.nickname) {
+                    roleEl.innerText = `@${user.nickname}`;
+                }
             }
 
             document.getElementById('auth-screen').classList.add('hidden');
@@ -1258,6 +1809,8 @@
             loadTodayWater();
             loadAICoach();
             checkAchievements();
+            loadDayCompare();
+            loadRecentFoods();
         }
 
         function logout() {
@@ -1334,9 +1887,10 @@
             const listEl = document.getElementById('today-logs-list');
             listEl.innerHTML = `<div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div>`;
             fetch('/api/today_logs').then(res => res.json()).then(data => {
+                window._todayMealCount = (data.foods || []).length;
                 renderDashboard(data.totals);
                 let html = '';
-                if(data.foods.length > 0){
+                if (data.foods && data.foods.length > 0) {
                     data.foods.forEach(f => {
                         html += `<div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-line shadow-sm hover:shadow-md transition-shadow group">
                             <div class="flex items-center gap-4">
@@ -1346,7 +1900,9 @@
                             <button onclick="deleteFoodLog(${f.id})" class="btn-press opacity-0 group-hover:opacity-100 text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-xl font-bold text-xs transition-all">Xóa</button>
                         </div>`;
                     });
-                } else { html = `<div class="text-center p-8 text-inkmute bg-white rounded-3xl border border-dashed border-line font-medium">Chưa có dữ liệu ăn uống hôm nay.</div>`; }
+                } else {
+                    html = `<div class="text-center p-8 text-inkmute bg-white rounded-3xl border border-dashed border-line font-medium">Chưa có dữ liệu ăn uống hôm nay.</div>`;
+                }
                 listEl.innerHTML = html;
             });
         }
@@ -1434,44 +1990,168 @@
             requestAnimationFrame(tick);
         }
 
+        function getMacroTargets(targetCals, goal) {
+            // Tỷ lệ khoa học theo mục tiêu (AMDR + tối ưu cho goal)
+            // Protein 4 kcal/g, Carbs 4 kcal/g, Fat 9 kcal/g
+            let rp = 0.30, rc = 0.40, rf = 0.30;
+            let tip = 'Cân bằng chuẩn cho duy trì sức khỏe.';
+            if (goal === 'giam_can') {
+                rp = 0.35; rc = 0.35; rf = 0.30;
+                tip = 'Protein cao giúp no lâu & bảo vệ cơ khi deficit.';
+            } else if (goal === 'tang_can') {
+                rp = 0.25; rc = 0.50; rf = 0.25;
+                tip = 'Carbs cao cung cấp năng lượng xây cơ & tập luyện.';
+            }
+            const maxP = Math.max(1, Math.round((targetCals * rp) / 4));
+            const maxC = Math.max(1, Math.round((targetCals * rc) / 4));
+            const maxF = Math.max(1, Math.round((targetCals * rf) / 9));
+            const label = `${Math.round(rp*100)}/${Math.round(rc*100)}/${Math.round(rf*100)}`;
+            return { maxP, maxC, maxF, label, tip, rp, rc, rf };
+        }
+
         function renderDashboard(totals) {
             animateNumber(document.getElementById('total-cals'), totals.calories);
 
             const userStr = localStorage.getItem('currentUser');
             let targetCals = 2000;
-            if(userStr) {
+            let goal = 'duy_tri';
+            if (userStr) {
                 const u = JSON.parse(userStr);
-                if(u.target_calories) targetCals = u.target_calories;
+                if (u.target_calories) targetCals = Number(u.target_calories) || 2000;
+                if (u.goal) goal = u.goal;
             }
 
-            const maxP = Math.round((targetCals * 0.3) / 4);
-            const maxC = Math.round((targetCals * 0.45) / 4);
-            const maxF = Math.round((targetCals * 0.25) / 9);
+            const { maxP, maxC, maxF, label, tip } = getMacroTargets(targetCals, goal);
 
-            document.getElementById('val-p').innerText = totals.protein;
-            document.getElementById('val-c').innerText = totals.carbs;
-            document.getElementById('val-f').innerText = totals.fat;
+            const el = (id) => document.getElementById(id);
+            el('val-p').innerText = Math.round(totals.protein || 0);
+            el('val-c').innerText = Math.round(totals.carbs || 0);
+            el('val-f').innerText = Math.round(totals.fat || 0);
 
-            document.getElementById('max-p').innerText = `/ ${maxP}g`;
-            document.getElementById('max-c').innerText = `/ ${maxC}g`;
-            document.getElementById('max-f').innerText = `/ ${maxF}g`;
+            el('max-p').innerText = `/ ${maxP}g`;
+            el('max-c').innerText = `/ ${maxC}g`;
+            el('max-f').innerText = `/ ${maxF}g`;
 
-            document.getElementById('bar-p-dark').style.width = Math.min((totals.protein / maxP) * 100, 100) + '%';
-            document.getElementById('bar-c-dark').style.width = Math.min((totals.carbs / maxC) * 100, 100) + '%';
-            document.getElementById('bar-f-dark').style.width = Math.min((totals.fat / maxF) * 100, 100) + '%';
+            const pctP = Math.min(((totals.protein || 0) / maxP) * 100, 100);
+            const pctC = Math.min(((totals.carbs || 0) / maxC) * 100, 100);
+            const pctF = Math.min(((totals.fat || 0) / maxF) * 100, 100);
 
-            const ctx = document.getElementById('todayCalorieChart').getContext('2d');
-            if(todayChartInstance) todayChartInstance.destroy();
+            el('bar-p-dark').style.width = pctP + '%';
+            el('bar-c-dark').style.width = pctC + '%';
+            el('bar-f-dark').style.width = pctF + '%';
 
-            const remainingCals = targetCals - totals.calories;
-            const dataValues = totals.calories > 0 ? [totals.calories, remainingCals > 0 ? remainingCals : 0] : [0, 1];
-            const dataColors = totals.calories > 0 ? ['#1E6E4C', '#F3EFE5'] : ['#F3EFE5', '#F3EFE5'];
+            if (el('pct-p')) el('pct-p').innerText = Math.round(pctP) + '% mục tiêu';
+            if (el('pct-c')) el('pct-c').innerText = Math.round(pctC) + '% mục tiêu';
+            if (el('pct-f')) el('pct-f').innerText = Math.round(pctF) + '% mục tiêu';
+            if (el('macro-ratio-label')) el('macro-ratio-label').innerText = label;
+            if (el('macro-tip')) el('macro-tip').innerText = tip;
+
+            // Color bars when over target
+            el('bar-p-dark').style.filter = (totals.protein || 0) > maxP * 1.15 ? 'saturate(1.4) brightness(1.1)' : '';
+            el('bar-c-dark').style.filter = (totals.carbs || 0) > maxC * 1.15 ? 'saturate(1.4) brightness(1.1)' : '';
+            el('bar-f-dark').style.filter = (totals.fat || 0) > maxF * 1.15 ? 'saturate(1.4) brightness(1.1)' : '';
+
+            const ctx = el('todayCalorieChart').getContext('2d');
+            if (todayChartInstance) todayChartInstance.destroy();
+
+            const remainingCals = targetCals - (totals.calories || 0);
+            const over = remainingCals < 0;
+            const dataValues = (totals.calories || 0) > 0
+                ? [Math.min(totals.calories, targetCals), over ? 0 : remainingCals]
+                : [0, 1];
+            const dataColors = (totals.calories || 0) > 0
+                ? [over ? '#F97316' : '#3B82F6', '#E4E9F0']
+                : ['#F3EFE5', '#F3EFE5'];
 
             todayChartInstance = new Chart(ctx, {
                 type: 'doughnut',
-                data: { datasets: [{ data: dataValues, backgroundColor: dataColors, cutout: '85%', borderRadius: totals.calories > 0 ? 30 : 0, borderWidth: 0 }] },
-                options: { responsive: true, plugins: { legend: { display: false }, tooltip: {enabled: false} }, animation: { animateScale: true } }
+                data: { datasets: [{ data: dataValues, backgroundColor: dataColors, cutout: '85%', borderRadius: (totals.calories || 0) > 0 ? 30 : 0, borderWidth: 0 }] },
+                options: { responsive: true, plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { animateScale: true } }
             });
+
+            // Daily Nutrition Score (AI-style composite)
+            updateDailyScore(totals, targetCals, maxP, maxC, maxF, goal);
+
+            // Smart calorie status badge
+            const badge = document.getElementById('smart-cal-badge');
+            if (badge) {
+                const cal = totals.calories || 0;
+                badge.classList.remove('hidden');
+                if (cal === 0) {
+                    badge.innerText = '📝 Chưa log món nào';
+                    badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-surface2 text-inkmute border-line';
+                } else if (cal < targetCals * 0.85) {
+                    const left = Math.round(targetCals - cal);
+                    badge.innerText = `⬇️ Còn ${left} kcal`;
+                    badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-ocean/10 text-ocean border-ocean/25';
+                } else if (cal <= targetCals * 1.1) {
+                    badge.innerText = '🎯 Đúng mục tiêu';
+                    badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-600 border-emerald-200';
+                } else {
+                    const overAmt = Math.round(cal - targetCals);
+                    badge.innerText = `⬆️ Vượt ${overAmt} kcal`;
+                    badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-rose-50 text-rose-500 border-rose-200';
+                }
+            }
+
+            // Update target display
+            const tcd = document.getElementById('target-calo-display');
+            if (tcd) tcd.innerText = targetCals;
+        }
+
+        function updateDailyScore(totals, targetCals, maxP, maxC, maxF, goal) {
+            const scoreEl = document.getElementById('daily-score-value');
+            const labelEl = document.getElementById('daily-score-label');
+            const barEl = document.getElementById('daily-score-bar');
+            if (!scoreEl) return;
+
+            let score = 0;
+            const cal = totals.calories || 0;
+            const p = totals.protein || 0, c = totals.carbs || 0, f = totals.fat || 0;
+
+            // Calorie adherence (0-40 pts)
+            if (cal === 0) {
+                score += 0;
+            } else {
+                const ratio = cal / targetCals;
+                if (ratio >= 0.9 && ratio <= 1.1) score += 40;
+                else if (ratio >= 0.8 && ratio <= 1.2) score += 28;
+                else if (ratio >= 0.7 && ratio <= 1.3) score += 18;
+                else score += 8;
+            }
+
+            // Macro balance (0-35 pts)
+            const pScore = Math.min(1, p / maxP);
+            const cScore = Math.min(1, c / maxC);
+            const fScore = Math.min(1, f / maxF);
+            score += Math.round(((pScore + cScore + fScore) / 3) * 35);
+
+            // Water (0-15) — from global
+            const waterGoal = (typeof getWaterGoal === 'function') ? getWaterGoal() : 2000;
+            const waterPct = Math.min(1, (globalWaterMl || 0) / waterGoal);
+            score += Math.round(waterPct * 15);
+
+            // Logging activity (0-10)
+            const mealCount = (window._todayMealCount || 0);
+            score += Math.min(10, mealCount * 3);
+
+            score = Math.min(100, Math.max(0, score));
+
+            animateNumber(scoreEl, score);
+            if (barEl) barEl.style.width = score + '%';
+
+            let label = 'Chưa bắt đầu';
+            let color = 'text-inkmute';
+            if (score >= 85) { label = 'Xuất sắc'; color = 'text-emerald-600'; }
+            else if (score >= 70) { label = 'Tốt'; color = 'text-primary'; }
+            else if (score >= 50) { label = 'Khá'; color = 'text-gold'; }
+            else if (score >= 25) { label = 'Cần cố gắng'; color = 'text-clay'; }
+            else if (cal > 0) { label = 'Mới bắt đầu'; color = 'text-inkmute'; }
+
+            if (labelEl) {
+                labelEl.innerText = label;
+                labelEl.className = `text-xs font-bold ${color}`;
+            }
         }
 
         // ================= AI VISION & SCORING LOGIC =================
@@ -2018,33 +2698,45 @@
         }
 
         function updateWater(amount) {
-            const uid = JSON.parse(localStorage.getItem('currentUser')).id || 1;
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            const uid = JSON.parse(userStr).id || 1;
             const dateStr = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-            
+
             fetch('/api/water', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({user_id: uid, amount_ml: amount, date: dateStr})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid, amount_ml: amount, date: dateStr })
             })
             .then(res => res.json())
-            .then(data => renderWater(data.total_ml));
+            .then(data => {
+                renderWater(data.total_ml);
+                // Refresh daily score (water component)
+                loadTodayLogs();
+            });
             checkAchievements();
         }
 
         function renderWater(total) {
-            globalWaterMl = total;
-            
-            // Hiển thị số chạy mượt mà
+            globalWaterMl = Math.max(0, total || 0);
+            const goal = (typeof getWaterGoal === 'function') ? getWaterGoal() : 2000;
+
             animateNumber(document.getElementById('water-current'), globalWaterMl);
-            
-            const pct = Math.min((globalWaterMl / 2000) * 100, 100);
-            document.getElementById('water-bar').style.width = pct + '%';
-            
+
+            const pct = Math.min((globalWaterMl / goal) * 100, 100);
+            const bar = document.getElementById('water-bar');
+            if (bar) bar.style.width = pct + '%';
+
+            const remainEl = document.getElementById('water-remaining');
+            if (remainEl) {
+                const left = Math.max(0, goal - globalWaterMl);
+                remainEl.innerText = left === 0 ? `Đã đạt mục tiêu ${goal}ml 🎉` : `Còn ${left} ml`;
+            }
+
             const congratsEl = document.getElementById('water-congrats');
-            if (globalWaterMl >= 2000) {
-                congratsEl.classList.remove('hidden');
-            } else {
-                congratsEl.classList.add('hidden');
+            if (congratsEl) {
+                if (globalWaterMl >= goal) congratsEl.classList.remove('hidden');
+                else congratsEl.classList.add('hidden');
             }
         }
 
@@ -2161,47 +2853,68 @@
 
         function loadAchievements() {
             const userStr = localStorage.getItem('currentUser');
-            if(!userStr) return;
+            if (!userStr) return;
             const uid = JSON.parse(userStr).id || 1;
 
             fetch(`/api/achievements?user_id=${uid}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success') {
+                if (data.status === 'success') {
                     let html = '';
                     data.achievements.forEach(ach => {
-                        const styleClass = ach.unlocked ? 'bg-gradient-to-br from-gold/20 to-yellow-100 border-gold shadow-md' : 'bg-surface2 border-line opacity-50 grayscale';
+                        const styleClass = ach.unlocked
+                            ? 'bg-gradient-to-br from-gold/20 to-yellow-50 border-gold/40 shadow-md ring-1 ring-gold/20'
+                            : 'bg-surface2 border-line opacity-55 grayscale';
                         const textClass = ach.unlocked ? 'text-dark' : 'text-inkmute';
-                        
+                        const dateHint = ach.unlocked && ach.date
+                            ? `<p class="text-[8px] text-gold/70 font-medium mt-1">${ach.date}</p>`
+                            : '';
+
                         html += `
-                        <div class="p-4 rounded-2xl border ${styleClass} flex flex-col items-center text-center transition-all hover:scale-105">
-                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm mb-3 border border-white">${ach.icon}</div>
-                            <h5 class="font-bold text-xs font-display ${textClass} mb-1">${ach.name}</h5>
+                        <div class="p-4 rounded-2xl border ${styleClass} flex flex-col items-center text-center transition-all hover:scale-[1.03] hover:shadow-lg">
+                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm mb-2.5 border border-white">${ach.icon}</div>
+                            <h5 class="font-bold text-xs font-display ${textClass} mb-0.5 leading-tight">${ach.name}</h5>
                             <p class="text-[9px] font-medium text-slate-500 leading-tight">${ach.desc}</p>
+                            ${dateHint}
                         </div>`;
                     });
                     const container = document.getElementById('achievements-list');
-                    if(container) container.innerHTML = html;
+                    if (container) container.innerHTML = html;
+
+                    const unlocked = data.unlocked_count || data.achievements.filter(a => a.unlocked).length;
+                    const total = data.total || data.achievements.length;
+                    const progress = document.getElementById('badge-progress');
+                    if (progress) progress.innerText = `${unlocked} / ${total} mở khóa`;
+                    const headerCount = document.getElementById('badge-count-header');
+                    if (headerCount) headerCount.innerText = `${unlocked}/${total}`;
                 }
             });
         }
 
         function checkAchievements() {
             const userStr = localStorage.getItem('currentUser');
-            if(!userStr) return;
+            if (!userStr) return;
             const uid = JSON.parse(userStr).id || 1;
 
             fetch('/api/achievements/check', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({user_id: uid})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid })
             })
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success' && data.new_achievements.length > 0) {
-                    data.new_achievements.forEach(ach => achievementQueue.push(ach));
-                    showNextAchievement();
-                    loadAchievements(); // Cập nhật lại tủ huy hiệu
+                if (data.status === 'success') {
+                    if (data.new_achievements && data.new_achievements.length > 0) {
+                        data.new_achievements.forEach(ach => achievementQueue.push(ach));
+                        showNextAchievement();
+                    }
+                    loadAchievements();
+                    const streakEl = document.getElementById('streak-display');
+                    if (streakEl && typeof data.streak === 'number') {
+                        streakEl.innerText = data.streak > 0
+                            ? `🔥 Streak nhật ký: ${data.streak} ngày`
+                            : '🔥 Streak: Hãy log món ăn hôm nay!';
+                    }
                 }
             });
         }
@@ -2262,6 +2975,170 @@
             });
         }
 
+        // ================= PRO: QUICK LOG + COMPARE + SUMMARY =================
+        let _foodSearchTimer = null;
+        let _lastTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+        function debounceFoodSearch() {
+            clearTimeout(_foodSearchTimer);
+            _foodSearchTimer = setTimeout(runFoodSearch, 280);
+        }
+
+        function runFoodSearch() {
+            const q = (document.getElementById('quick-food-search')?.value || '').trim();
+            const box = document.getElementById('quick-search-results');
+            if (!box) return;
+            if (!q) { box.innerHTML = ''; return; }
+            box.innerHTML = `<div class="text-xs text-inkmute font-medium py-2">Đang tìm...</div>`;
+            fetch(`/api/search_foods?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const foods = data.foods || [];
+                    if (!foods.length) {
+                        box.innerHTML = `<div class="text-xs text-inkmute py-2">Không tìm thấy món phù hợp.</div>`;
+                        return;
+                    }
+                    window._searchFoodCache = foods;
+                    box.innerHTML = foods.map((f, i) => `
+                        <div class="flex items-center justify-between p-3 bg-paper rounded-xl border border-line hover:border-primary/30 transition-colors">
+                            <div class="min-w-0">
+                                <p class="font-bold text-sm text-dark truncate">${escapeHtml(f.name)}</p>
+                                <p class="text-[10px] text-inkmute font-num">${f.calories} kcal · P${f.protein} C${f.carbs} F${f.fat}</p>
+                            </div>
+                            <button onclick="quickLogFoodByIndex('search',${i})" class="btn-press shrink-0 ml-3 bg-primary text-white text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-primary_hover">+ Log</button>
+                        </div>
+                    `).join('');
+                })
+                .catch(() => { box.innerHTML = `<div class="text-xs text-rose-500 py-2">Lỗi tìm kiếm</div>`; });
+        }
+
+        function guessMealTypeNow() {
+            const h = new Date().getHours();
+            if (h < 10) return 'breakfast';
+            if (h < 14) return 'lunch';
+            if (h < 17) return 'snack';
+            return 'dinner';
+        }
+
+        function quickLogFoodByIndex(source, idx) {
+            const list = source === 'recent' ? (window._recentFoodCache || []) : (window._searchFoodCache || []);
+            if (!list[idx]) return;
+            quickLogFood(list[idx]);
+        }
+
+        function quickLogFood(f) {
+            const food = {
+                name: f.name,
+                calories: f.calories || 0,
+                protein: f.protein || 0,
+                carbs: f.carbs || 0,
+                fat: f.fat || 0,
+                meal_type: f.meal_type || guessMealTypeNow()
+            };
+            fetch('/api/log_food', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(food)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(`Đã log: ${food.name}`, 'success');
+                    const inp = document.getElementById('quick-food-search');
+                    if (inp) inp.value = '';
+                    const box = document.getElementById('quick-search-results');
+                    if (box) box.innerHTML = '';
+                    loadTodayLogs();
+                    loadDayCompare();
+                    loadRecentFoods();
+                    checkAchievements();
+                } else showToast(data.message || 'Lỗi log món', 'error');
+            })
+            .catch(() => showToast('Không kết nối được server', 'error'));
+        }
+
+        function loadRecentFoods() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            const uid = JSON.parse(userStr).id;
+            const box = document.getElementById('recent-foods-chips');
+            if (!box) return;
+            fetch(`/api/recent_foods?user_id=${uid}`)
+                .then(r => r.json())
+                .then(data => {
+                    const foods = data.foods || [];
+                    if (!foods.length) {
+                        box.innerHTML = `<span class="text-xs text-inkmute">Log vài món để hiện gợi ý tại đây.</span>`;
+                        return;
+                    }
+                    window._recentFoodCache = foods;
+                    box.innerHTML = foods.map((f, i) => `
+                        <button onclick="quickLogFoodByIndex('recent',${i})" class="btn-press inline-flex items-center gap-1.5 bg-white border border-line hover:border-primary/40 hover:bg-primary/5 px-3 py-1.5 rounded-full text-xs font-bold text-dark transition-colors">
+                            ${escapeHtml(f.name)} <span class="text-inkmute font-num font-medium">${f.calories}kcal</span>
+                        </button>
+                    `).join('');
+                })
+                .catch(() => {});
+        }
+
+        function loadDayCompare() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            const u = JSON.parse(userStr);
+            const target = u.target_calories || 2000;
+            fetch(`/api/day_compare?user_id=${u.id}&target=${target}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+                    const t = data.today || {}, y = data.yesterday || {};
+                    const el = id => document.getElementById(id);
+                    if (el('cmp-today-cal')) el('cmp-today-cal').innerText = t.calories || 0;
+                    if (el('cmp-yest-cal')) el('cmp-yest-cal').innerText = y.calories || 0;
+                    if (el('cmp-meals')) el('cmp-meals').innerText = t.meals || 0;
+                    const diff = data.cal_diff || 0;
+                    const diffEl = el('cmp-diff');
+                    if (diffEl) {
+                        diffEl.innerText = (diff > 0 ? '+' : '') + diff;
+                        diffEl.className = 'font-num font-black text-lg ' + (diff > 100 ? 'text-rose-500' : diff < -100 ? 'text-emerald-600' : 'text-primary');
+                    }
+                    if (el('cmp-insight')) el('cmp-insight').innerText = data.insight || '';
+                })
+                .catch(() => {});
+        }
+
+        function openDailySummary() {
+            const userStr = localStorage.getItem('currentUser');
+            const u = userStr ? JSON.parse(userStr) : {};
+            const score = document.getElementById('daily-score-value')?.innerText || '0';
+            const cals = document.getElementById('total-cals')?.innerText || '0';
+            const p = document.getElementById('val-p')?.innerText || '0';
+            const water = typeof globalWaterMl !== 'undefined' ? globalWaterMl : 0;
+            const insight = document.getElementById('cmp-insight')?.innerText || document.getElementById('daily-score-label')?.innerText || '';
+            const today = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            document.getElementById('sum-date').innerText = today;
+            document.getElementById('sum-cals').innerText = cals;
+            document.getElementById('sum-score').innerText = score;
+            document.getElementById('sum-p').innerText = p + 'g';
+            document.getElementById('sum-w').innerText = water + 'ml';
+            document.getElementById('sum-insight').innerText = insight || `Mục tiêu ${u.target_calories || 2000} kcal · ${u.nickname || u.fullname || ''}`;
+            document.getElementById('daily-summary-modal').classList.remove('hidden');
+        }
+
+        function copyDailySummary() {
+            const text = [
+                `🥑 NutritionAI — Tóm tắt ngày`,
+                document.getElementById('sum-date')?.innerText,
+                `Calo: ${document.getElementById('sum-cals')?.innerText}`,
+                `Protein: ${document.getElementById('sum-p')?.innerText}`,
+                `Nước: ${document.getElementById('sum-w')?.innerText}`,
+                `Điểm AI: ${document.getElementById('sum-score')?.innerText}/100`,
+                document.getElementById('sum-insight')?.innerText
+            ].join('\n');
+            navigator.clipboard.writeText(text).then(() => showToast('Đã sao chép tóm tắt!', 'success'))
+                .catch(() => showToast('Không copy được', 'error'));
+        }
+
         // ================= XSS SANITIZATION HELPER =================
         function escapeHtml(str) {
             if (typeof str !== 'string') return str;
@@ -2273,6 +3150,272 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // ================= SETTINGS + SECURITY =================
+        const SETTINGS_KEY = 'nutriai_settings';
+        const defaultSettings = {
+            privacy_mode: false,
+            motion: true,
+            water_goal: 2000,
+            ai_style: 'balanced',
+            water_remind: false,
+            meal_remind: false
+        };
+
+        function getSettings() {
+            try {
+                return { ...defaultSettings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+            } catch { return { ...defaultSettings }; }
+        }
+
+        function saveSetting(key, value) {
+            const s = getSettings();
+            s[key] = value;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+            if (key === 'water_goal') applyWaterGoalUI();
+            if (key === 'privacy_mode') applyPrivacyMode();
+            showToast('Đã lưu cài đặt', 'info');
+        }
+
+        function toggleSetting(key) {
+            const s = getSettings();
+            s[key] = !s[key];
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+            syncSettingsUI();
+            if (key === 'privacy_mode') applyPrivacyMode();
+            if (key === 'water_remind' && s.water_remind) startWaterReminder();
+            showToast(s[key] ? 'Đã bật' : 'Đã tắt', 'info');
+        }
+
+        function setWaterGoal(v) {
+            document.getElementById('set-water-goal').value = v;
+            document.getElementById('water-goal-label').innerText = v + ' ml';
+            saveSetting('water_goal', v);
+        }
+
+        function syncSettingsUI() {
+            const s = getSettings();
+            const theme = localStorage.getItem('nutriai_theme') || 'light';
+            const themeSw = document.getElementById('set-theme-switch');
+            if (themeSw) themeSw.classList.toggle('on', theme === 'dark');
+
+            const map = {
+                'set-privacy': s.privacy_mode,
+                'set-motion': s.motion,
+                'set-water-remind': s.water_remind,
+                'set-meal-remind': s.meal_remind
+            };
+            Object.entries(map).forEach(([id, on]) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('on', !!on);
+            });
+            const wg = document.getElementById('set-water-goal');
+            if (wg) { wg.value = s.water_goal; document.getElementById('water-goal-label').innerText = s.water_goal + ' ml'; }
+            const ai = document.getElementById('set-ai-style');
+            if (ai) ai.value = s.ai_style || 'balanced';
+        }
+
+        function loadSettingsUI() {
+            syncSettingsUI();
+            switchSettingsTab('prefs');
+        }
+
+        function switchSettingsTab(tab) {
+            ['prefs', 'security', 'data'].forEach(t => {
+                const panel = document.getElementById('settings-' + t);
+                const btn = document.getElementById('stab-' + t);
+                if (panel) panel.classList.toggle('hidden', t !== tab);
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = 'px-4 py-2 rounded-lg text-xs font-bold bg-white shadow-sm text-primary';
+                    } else {
+                        btn.className = 'px-4 py-2 rounded-lg text-xs font-bold text-inkmute hover:text-dark';
+                    }
+                }
+            });
+            if (tab === 'security') loadSecurityInfo();
+        }
+
+        function applyWaterGoalUI() {
+            // Water goal is read by renderWater via getSettings
+            if (typeof globalWaterMl !== 'undefined') renderWater(globalWaterMl);
+        }
+
+        function applyPrivacyMode() {
+            const s = getSettings();
+            document.body.classList.toggle('privacy-mode', !!s.privacy_mode);
+        }
+
+        // Patch renderWater to use custom goal
+        const _origRenderWater = typeof renderWater === 'function' ? renderWater : null;
+        function getWaterGoal() {
+            return Number(getSettings().water_goal) || 2000;
+        }
+
+        // Override remaining water display if already defined later - we hook via load
+        function loadSecurityInfo() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            const uid = JSON.parse(userStr).id;
+            fetch(`/api/security_info?user_id=${uid}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+                    const em = document.getElementById('sec-email');
+                    const cr = document.getElementById('sec-created');
+                    if (em) em.innerText = data.email || '--';
+                    if (cr) cr.innerText = data.created_at || '--';
+                    const tips = document.getElementById('security-tips');
+                    if (tips && data.tips) {
+                        tips.innerHTML = data.tips.map(t => `<li>${escapeHtml(t)}</li>`).join('');
+                    }
+                }).catch(() => {});
+        }
+
+        function checkPassStrength(pw) {
+            let score = 0;
+            if (pw.length >= 8) score++;
+            if (/[A-Za-z]/.test(pw) && /\d/.test(pw)) score++;
+            if (/[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/`~\\"]/.test(pw)) score++;
+            if (pw.length >= 12) score++;
+            const colors = ['#E5EAF1', '#F97316', '#F59E0B', '#3B82F6', '#22C55E'];
+            const labels = ['Cần: 8+ · chữ · số · đặc biệt', 'Yếu', 'Trung bình', 'Khá', 'Mạnh ✓'];
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById('pw-bar-' + i);
+                if (bar) bar.style.background = i <= score ? colors[Math.max(score, 1)] : '#E4E9F0';
+            }
+            const lbl = document.getElementById('pw-strength-label');
+            if (lbl) lbl.innerText = labels[score] || labels[0];
+        }
+
+        function submitChangePassword() {
+            const cur = document.getElementById('sec-cur-pass').value;
+            const neu = document.getElementById('sec-new-pass').value;
+            const conf = document.getElementById('sec-confirm-pass').value;
+            if (!cur || !neu) { showToast('Vui lòng nhập đầy đủ', 'error'); return; }
+            if (neu !== conf) { showToast('Mật khẩu xác nhận không khớp', 'error'); return; }
+            if (neu.length < 8) { showToast('Mật khẩu mới ≥ 8 ký tự', 'error'); return; }
+
+            fetch('/api/change_password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ current_password: cur, new_password: neu })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Đã đổi mật khẩu thành công!', 'success');
+                    document.getElementById('sec-cur-pass').value = '';
+                    document.getElementById('sec-new-pass').value = '';
+                    document.getElementById('sec-confirm-pass').value = '';
+                    checkPassStrength('');
+                } else {
+                    showToast(data.message || 'Lỗi đổi mật khẩu', 'error');
+                }
+            })
+            .catch(() => showToast('Không kết nối được server', 'error'));
+        }
+
+        function submitDeleteAccount() {
+            const pw = document.getElementById('sec-delete-pass').value;
+            if (!pw) { showToast('Nhập mật khẩu để xác nhận', 'error'); return; }
+            if (!confirm('Bạn chắc chắn muốn XÓA VĨNH VIỄN tài khoản? Hành động này không thể hoàn tác.')) return;
+            if (!confirm('Xác nhận lần cuối: toàn bộ nhật ký, cân nặng, huy hiệu sẽ bị xóa.')) return;
+
+            fetch('/api/delete_account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Tài khoản đã bị xóa', 'info');
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem(SETTINGS_KEY);
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showToast(data.message || 'Không thể xóa', 'error');
+                }
+            })
+            .catch(() => showToast('Lỗi kết nối', 'error'));
+        }
+
+        function exportMyData() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) return;
+            const uid = JSON.parse(userStr).id;
+            const st = document.getElementById('export-status');
+            if (st) st.innerText = 'Đang xuất dữ liệu...';
+
+            fetch(`/api/export_data?user_id=${uid}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        showToast(data.message || 'Lỗi xuất', 'error');
+                        if (st) st.innerText = '';
+                        return;
+                    }
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `nutritionai_export_${data.exported_at || 'data'}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('Đã tải file JSON!', 'success');
+                    if (st) st.innerText = `Xuất lúc ${data.exported_at} — ${data.food_logs?.length || 0} món, ${data.water_logs?.length || 0} log nước.`;
+                })
+                .catch(() => { showToast('Lỗi xuất dữ liệu', 'error'); if (st) st.innerText = ''; });
+        }
+
+        function clearLocalCache() {
+            if (!confirm('Xóa theme, mục tiêu nước và cài đặt local?')) return;
+            localStorage.removeItem(SETTINGS_KEY);
+            localStorage.removeItem('nutriai_theme');
+            localStorage.removeItem('nutri_target_weight');
+            document.documentElement.removeAttribute('data-theme');
+            showToast('Đã xóa cache cục bộ', 'info');
+            syncSettingsUI();
+        }
+
+        let _waterRemindTimer = null;
+        function startWaterReminder() {
+            if (_waterRemindTimer) clearInterval(_waterRemindTimer);
+            _waterRemindTimer = setInterval(() => {
+                if (!getSettings().water_remind) return;
+                if (typeof globalWaterMl !== 'undefined' && globalWaterMl < getWaterGoal()) {
+                    showToast('💧 Nhắc nhẹ: hãy uống thêm nước nhé!', 'info');
+                }
+            }, 2 * 60 * 60 * 1000); // 2 hours
+        }
+
+        // Init privacy + water goal on load
+        document.addEventListener('DOMContentLoaded', () => {
+            applyPrivacyMode();
+            if (getSettings().water_remind) startWaterReminder();
+        });
+        // Also run now in case DOM already loaded
+        try { applyPrivacyMode(); } catch(e) {}
+
     </script>
+    <style>
+        /* Privacy mode: blur sensitive numbers */
+        body.privacy-mode #total-cals,
+        body.privacy-mode #target-calo-display,
+        body.privacy-mode #water-current,
+        body.privacy-mode #val-p,
+        body.privacy-mode #val-c,
+        body.privacy-mode #val-f,
+        body.privacy-mode #daily-score-value,
+        body.privacy-mode #acc-weight,
+        body.privacy-mode #acc-bmr,
+        body.privacy-mode #acc-tdee,
+        body.privacy-mode #acc-target {
+            filter: blur(6px);
+            user-select: none;
+        }
+    </style>
+</body>
+</html>
 </body>
 </html>

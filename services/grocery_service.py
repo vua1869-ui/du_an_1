@@ -26,7 +26,7 @@ def generate_grocery_list(meals_data):
     """
     try:
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-3.6-flash",
             contents=prompt
         )
         raw_text = response.text.strip()
