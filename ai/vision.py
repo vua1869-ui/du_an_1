@@ -19,18 +19,44 @@ def safe_json_parse(text):
     return json.loads(text)
  
  
-load_dotenv()
-gemini_key = os.getenv("GEMINI_API_KEY")
-roboflow_key = os.getenv("ROBOFLOW_API_KEY")
- 
-# Client Gemini (dự phòng / phân tích chi tiết)
-gemini_client = genai.Client(api_key=gemini_key) if gemini_key and gemini_key != 'your_api_key_here' else None
- 
-# Client Roboflow (model YOLO tự train)
-roboflow_client = InferenceHTTPClient(
-    api_url="https://serverless.roboflow.com",
-    api_key=roboflow_key
-) if roboflow_key else None
+load_dotenv(override=True)
+gemini_client = None
+roboflow_client = None
+
+def get_gemini_client():
+    global gemini_client
+    load_dotenv(override=True)
+    key = os.getenv("GEMINI_API_KEY", "").strip()
+    if key and key != 'your_api_key_here':
+        if not gemini_client or getattr(gemini_client, '_api_key', None) != key:
+            try:
+                gemini_client = genai.Client(api_key=key)
+                gemini_client._api_key = key
+            except Exception as e:
+                print(f"Lỗi khởi tạo Gemini Vision Client: {e}")
+                gemini_client = None
+    return gemini_client
+
+def get_roboflow_client():
+    global roboflow_client
+    load_dotenv(override=True)
+    key = os.getenv("ROBOFLOW_API_KEY", "").strip()
+    if key and key != 'your_api_key_here':
+        if not roboflow_client or getattr(roboflow_client, '_api_key', None) != key:
+            try:
+                roboflow_client = InferenceHTTPClient(
+                    api_url="https://serverless.roboflow.com",
+                    api_key=key
+                )
+                roboflow_client._api_key = key
+            except Exception as e:
+                print(f"Lỗi khởi tạo Roboflow Client: {e}")
+                roboflow_client = None
+    return roboflow_client
+
+# Khởi tạo lần đầu
+get_gemini_client()
+get_roboflow_client()
  
 MODEL_ID = "vietnamese-food-flf5p/1"   # đổi đúng theo project của em nếu khác
 CONFIDENCE_THRESHOLD = 0.5   # dưới ngưỡng này thì chuyển sang hỏi Gemini
@@ -194,12 +220,15 @@ def normalize_analysis(raw):
  
  
 def predict_with_yolo(image_bytes):
+    rf_client = get_roboflow_client()
+    if not rf_client:
+        return None
     temp_path = "temp_upload.jpg"
     with open(temp_path, "wb") as f:
         f.write(image_bytes)
     try:
         # Cập nhật dùng API run_workflow mới
-        result = roboflow_client.run_workflow(
+        result = rf_client.run_workflow(
             workspace_name="tien-anh-vu-5dm0q",
             workflow_id="vietnamese-food-yolo-vvietnamese-food-yolo-es0vg-1-yolo11n-t1-logic",
             images={

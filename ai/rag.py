@@ -7,14 +7,27 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from services.diet_service import get_diet_plan
 
-load_dotenv()
+load_dotenv(override=True)
 api_key = os.getenv("GEMINI_API_KEY")
 
-# 1. Khởi tạo Gemini Client
-if api_key and api_key != 'your_api_key_here':
-    client = genai.Client(api_key=api_key)
-else:
-    client = None
+client = None
+
+def get_client():
+    global client
+    load_dotenv(override=True)
+    key = os.getenv("GEMINI_API_KEY", "").strip()
+    if key and key != 'your_api_key_here':
+        if not client or getattr(client, '_api_key', None) != key:
+            try:
+                client = genai.Client(api_key=key)
+                client._api_key = key
+            except Exception as e:
+                print(f"Lỗi khởi tạo Gemini Client: {e}")
+                client = None
+    return client
+
+# Khởi tạo lần đầu nếu đã có key
+get_client()
 
 # 2. Khởi tạo Model Embedding
 print("Đang tải model Embedding...")
@@ -137,9 +150,10 @@ def build_diet_summary(diet: dict, goal: str) -> str:
     return "\n".join(lines)
 
 def get_chatbot_response(user_message, current_tdee=2000, profile=None):
-    if not client:
+    current_client = get_client()
+    if not current_client:
         return {
-            "response": "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env.",
+            "response": "Lỗi: Chưa cấu hình hoặc chưa lưu GEMINI_API_KEY trong file .env (Hãy mở file .env, điền key và nhấn Cmd+S / Ctrl+S để lưu).",
             "type": "chat",
             "tdee": None,
             "goal": None,
@@ -219,7 +233,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
     import time
     for attempt in range(3):
         try:
-            response = client.models.generate_content(
+            response = current_client.models.generate_content(
                 model="gemini-flash-latest",
                 contents=prompt,
             )

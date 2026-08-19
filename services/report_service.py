@@ -1,9 +1,10 @@
 import json
 from datetime import date, timedelta
 from database.db_core import get_db_connection
-from ai.rag import client
+from ai.rag import get_client
 
 def generate_weekly_report(user_id, tdee, target_calories):
+    client = get_client()
     conn = get_db_connection()
     c = conn.cursor()
     seven_days_ago = (date.today() - timedelta(days=7)).isoformat()

@@ -1,9 +1,10 @@
 import json
 from datetime import date, timedelta
 from database.db_core import get_db_connection
-from ai.rag import client
+from ai.rag import get_client
 
 def generate_coach_message(user_id, target_calories):
+    client = get_client()
     if not client:
         return {"status": "error", "message": "Chưa kết nối Gemini AI"}
 

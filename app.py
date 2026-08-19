@@ -26,4 +26,5 @@ if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('data', exist_ok=True)
     os.makedirs('ai_models', exist_ok=True)
-    app.run(debug=True, port=5000, use_reloader=False)
+    port = int(os.getenv("PORT", 5001))
+    app.run(debug=True, port=port, use_reloader=False)

@@ -1,8 +1,8 @@
-# File: services/grocery_service.py
 import json
-from ai.rag import client
+from ai.rag import get_client
 
 def generate_grocery_list(meals_data):
+    client = get_client()
     if not client:
         return {"status": "error", "message": "Chưa kết nối Gemini AI"}
 

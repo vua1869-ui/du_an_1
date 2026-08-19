@@ -1,7 +1,8 @@
 import json
-from ai.rag import client
+from ai.rag import get_client
 
 def get_food_health_score(name, calories, protein, carbs, fat):
+    client = get_client()
     if not client:
         return {"score": 50, "explanation": "Chưa kết nối Gemini AI để đánh giá."}
     
