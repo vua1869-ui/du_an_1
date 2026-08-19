@@ -49,3 +49,17 @@
 # else:
 #     print("YOLO không nhận diện được món nào.")
 #     # CODE LOGIC CỦA EM Ở ĐÂY: Nếu rỗng, kích hoạt cơ chế Fallback gọi Google Gemini API!
+from modulefinder import test
+
+
+print:"Đang test thử xem như nào" 
+print:"test lần 1" 
+print:"test lần 2" 
+print:"test lần 3"
+print:"test lần 4"
+print:"test lần 5"
+print:"test lần 6"
+print:"test lần 7"
+print:"test lần 8"
+print:"test lần 9"
+print:"tlần 10"

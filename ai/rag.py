@@ -233,13 +233,8 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None):
     import time
     for attempt in range(3):
         try:
-<<<<<<< HEAD
             response = current_client.models.generate_content(
-                model="gemini-flash-latest",
-=======
-            response = client.models.generate_content(
                 model="gemini-3.6-flash",
->>>>>>> 18e3b4e23a740a643d68df3bfc4dcaffec1ecb45
                 contents=prompt,
             )
             return {
