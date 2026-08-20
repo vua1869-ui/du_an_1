@@ -943,4 +943,262 @@ safe_number_10 = 1000
 
 # ============================================================
 # END ADDITIONAL SAFE TEST CODE
+# ============================================================\
+# ============================================================
+# MORE SAFE TEST FUNCTIONS
+# ============================================================
+
+def safe_test_71():
+    return {
+        "test": 71,
+        "result": "success"
+    }
+
+
+def safe_test_72():
+    values = [1, 3, 5, 7, 9]
+    return [value * 2 for value in values]
+
+
+def safe_test_73():
+    values = [10, 20, 30, 40]
+    return [value / 10 for value in values]
+
+
+def safe_test_74():
+    names = ["Alice", "Bob", "Charlie"]
+    return ", ".join(names)
+
+
+def safe_test_75():
+    text = "Python Flask Application"
+    words = text.split()
+    return words
+
+
+def safe_test_76():
+    data = {
+        "python": True,
+        "flask": True,
+        "database": True,
+        "chatbot": True
+    }
+
+    return all(data.values())
+
+
+def safe_test_77():
+    data = {
+        "python": True,
+        "flask": False,
+        "database": True
+    }
+
+    return any(data.values())
+
+
+def safe_test_78():
+    numbers = [11, 22, 33, 44, 55]
+
+    result = {}
+
+    for index, number in enumerate(numbers):
+        result[index] = number
+
+    return result
+
+
+def safe_test_79():
+    first = ["A", "B", "C"]
+    second = [1, 2, 3]
+
+    return list(zip(first, second))
+
+
+def safe_test_80():
+    numbers = [1, 2, 3, 4, 5, 6]
+
+    even_numbers = [
+        number
+        for number in numbers
+        if number % 2 == 0
+    ]
+
+    return even_numbers
+
+
+def safe_test_81():
+    numbers = [1, 2, 3, 4, 5, 6]
+
+    odd_numbers = [
+        number
+        for number in numbers
+        if number % 2 != 0
+    ]
+
+    return odd_numbers
+
+
+def safe_test_82():
+    data = ["python", "flask", "ai"]
+
+    return sorted(data)
+
+
+def safe_test_83():
+    data = [5, 2, 9, 1, 7]
+
+    return sorted(data)
+
+
+def safe_test_84():
+    data = [5, 2, 9, 1, 7]
+
+    return sorted(data, reverse=True)
+
+
+def safe_test_85():
+    text = "testing"
+
+    return {
+        "length": len(text),
+        "upper": text.upper(),
+        "lower": text.lower()
+    }
+
+
+def safe_test_86():
+    numbers = [10, 20, 30]
+
+    average = sum(numbers) / len(numbers)
+
+    return average
+
+
+def safe_test_87():
+    products = [
+        {"name": "A", "price": 100},
+        {"name": "B", "price": 200},
+        {"name": "C", "price": 300}
+    ]
+
+    return products
+
+
+def safe_test_88():
+    active_users = [
+        {"name": "User 1", "active": True},
+        {"name": "User 2", "active": False},
+        {"name": "User 3", "active": True}
+    ]
+
+    return [
+        user
+        for user in active_users
+        if user["active"]
+    ]
+
+
+def safe_test_89():
+    values = [100, 200, 300]
+
+    result = {
+        "count": len(values),
+        "sum": sum(values),
+        "max": max(values),
+        "min": min(values)
+    }
+
+    return result
+
+
+def safe_test_90():
+    return {
+        "application": "DU_AN_1",
+        "language": "Python",
+        "framework": "Flask",
+        "branch": "main",
+        "status": "OK"
+    }
+
+
+# ============================================================
+# EXTRA SAMPLE DATA
+# ============================================================
+
+sample_data_01 = {
+    "id": 1,
+    "name": "Demo User",
+    "email": "demo@example.com"
+}
+
+sample_data_02 = {
+    "id": 2,
+    "name": "Test User",
+    "email": "test@example.com"
+}
+
+sample_data_03 = {
+    "id": 3,
+    "name": "Sample User",
+    "email": "sample@example.com"
+}
+
+sample_data_04 = {
+    "id": 4,
+    "name": "Developer",
+    "email": "developer@example.com"
+}
+
+sample_data_05 = {
+    "id": 5,
+    "name": "Administrator",
+    "email": "admin@example.com"
+}
+
+
+# ============================================================
+# EXTRA APPLICATION INFORMATION
+# ============================================================
+
+project_name = "DU_AN_1"
+project_language = "Python"
+project_framework = "Flask"
+project_status = "Development"
+project_version = "1.0"
+project_branch = "main"
+
+feature_python = True
+feature_flask = True
+feature_database = True
+feature_chatbot = True
+feature_testing = True
+
+
+# ============================================================
+# EXTRA CONFIGURATION DATA
+# ============================================================
+
+test_config = {
+    "debug": False,
+    "testing": True,
+    "version": "1.0",
+    "environment": "development",
+    "application": "DU_AN_1"
+}
+
+
+# ============================================================
+# EXTRA STATUS DATA
+# ============================================================
+
+status_ready = True
+status_testing = True
+status_database = True
+status_chatbot = True
+status_application = True
+
+
+# ============================================================
+# END MORE SAFE TEST CODE
 # ============================================================
