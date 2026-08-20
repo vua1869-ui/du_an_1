@@ -21,7 +21,7 @@ def get_food_health_score(name, calories, protein, carbs, fat):
     """
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash", 
+            model="gemini-flash-latest", 
             contents=prompt
         )
         raw_text = response.text.strip()
