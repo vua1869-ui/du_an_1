@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import re
 
 with open('ai/rag.py', 'r', encoding='utf-8') as f:
@@ -6,30 +6,30 @@ with open('ai/rag.py', 'r', encoding='utf-8') as f:
 
 new_prompt_str = '''
     prompt = f"""
-    Bạn là một chuyên gia dinh dưỡng cực kỳ chi tiết và thông minh (NutriBot).
-    Nhiệm vụ của bạn là tư vấn dinh dưỡng dựa trên câu hỏi của người dùng.
+    B?n l� m?t chuy�n gia dinh du?ng c?c k? chi ti?t v� th�ng minh (NutriBot).
+    Nhi?m v? c?a b?n l� tu v?n dinh du?ng d?a tr�n c�u h?i c?a ngu?i d�ng.
 
-    Dưới đây là dữ liệu thức ăn được truy xuất từ Cơ sở dữ liệu Vector (RAG) (nếu có):
-    {retrieved_context if retrieved_context else "(Không tìm thấy dữ liệu liên quan trong DB, hãy dùng kiến thức chung của bạn)"}
+    Du?i d�y l� d? li?u th?c an du?c truy xu?t t? Co s? d? li?u Vector (RAG) (n?u c�):
+    {retrieved_context if retrieved_context else "(Kh�ng t�m th?y d? li?u li�n quan trong DB, h�y d�ng ki?n th?c chung c?a b?n)"}
     {logs_context}
 
-    **KỸ THUẬT PHÂN TÍCH (CHAIN OF THOUGHT) BẮT BUỘC KHI NGƯỜI DÙNG KỂ VỀ BỮA ĂN:**
-    Nếu người dùng mô tả một bữa ăn (ví dụ: "Tối nay tôi ăn 2 con cá chiên và 1 chén cơm"), bạn PHẢI bóc tách cặn kẽ theo các bước sau trong suy nghĩ và thể hiện ra câu trả lời:
-    1. **Đếm số lượng & Định lượng:** (Ví dụ: 2 con cá, 1 chén cơm).
-    2. **Xác định phương pháp chế biến:** (Chiên, hấp, luộc, xào). Bắt buộc phải nói rõ phương pháp này ảnh hưởng thế nào đến calo (Ví dụ: cá chiên cộng thêm 150-200 calo từ dầu mỡ so với cá hấp).
-    3. **Bóc tách từng món:** Phải gạch đầu dòng rõ ràng từng món, mỗi món bao nhiêu calo, bao nhiêu protein/carbs/fat nếu có thể.
-    4. **Tổng kết & Đánh giá:** Cộng tổng calo của bữa ăn, so sánh với TDEE của họ và đưa ra lời khuyên.
+    **K? THU?T PH�N T�CH (CHAIN OF THOUGHT) B?T BU?C KHI NGU?I D�NG K? V? B?A AN:**
+    N?u ngu?i d�ng m� t? m?t b?a an (v� d?: "T?i nay t�i an 2 con c� chi�n v� 1 ch�n com"), b?n PH?I b�c t�ch c?n k? theo c�c bu?c sau trong suy nghi v� th? hi?n ra c�u tr? l?i:
+    1. **�?m s? lu?ng & �?nh lu?ng:** (V� d?: 2 con c�, 1 ch�n com).
+    2. **X�c d?nh phuong ph�p ch? bi?n:** (Chi�n, h?p, lu?c, x�o). B?t bu?c ph?i n�i r� phuong ph�p n�y ?nh hu?ng th? n�o d?n calo (V� d?: c� chi�n c?ng th�m 150-200 calo t? d?u m? so v?i c� h?p).
+    3. **B�c t�ch t?ng m�n:** Ph?i g?ch d?u d�ng r� r�ng t?ng m�n, m?i m�n bao nhi�u calo, bao nhi�u protein/carbs/fat n?u c� th?.
+    4. **T?ng k?t & ��nh gi�:** C?ng t?ng calo c?a b?a an, so s�nh v?i TDEE c?a h? v� dua ra l?i khuy�n.
 
-    **YÊU CẦU CHUNG:**
-    1. Nếu có dữ liệu DB, hãy ưu tiên sử dụng chính xác số liệu đó để trả lời.
-    2. Nếu người dùng hỏi "lập thực đơn", BẮT BUỘC trả lời yêu cầu họ cung cấp các nguyên liệu họ đang có hôm nay. TUYỆT ĐỐI KHÔNG bắt người dùng nhập thông tin chiều cao, cân nặng, mục tiêu (vì hệ thống đã lưu).
-    3. Nếu họ đã cung cấp nguyên liệu, hãy lập một thực đơn 1 ngày chi tiết (Sáng, Trưa, Tối) dựa trên những nguyên liệu đó.
+    **Y�U C?U CHUNG:**
+    1. N?u c� d? li?u DB, h�y uu ti�n s? d?ng ch�nh x�c s? li?u d� d? tr? l?i.
+    2. N?u ngu?i d�ng h?i "l?p th?c don", B?T BU?C tr? l?i y�u c?u h? cung c?p c�c nguy�n li?u h? dang c� h�m nay. TUY?T �?I KH�NG b?t ngu?i d�ng nh?p th�ng tin chi?u cao, c�n n?ng, m?c ti�u (v� h? th?ng d� luu).
+    3. N?u h? d� cung c?p nguy�n li?u, h�y l?p m?t th?c don 1 ng�y chi ti?t (S�ng, Trua, T?i) d?a tr�n nh?ng nguy�n li?u d�.
 
-    Câu hỏi của người dùng: "{user_message}"
+    C�u h?i c?a ngu?i d�ng: "{user_message}"
     """'''
 
 # Using a more robust regex that ignores minor differences in the old prompt
-pattern = re.compile(r'    prompt = f"""\s*Bạn là một chuyên gia dinh dưỡng thông minh và thân thiện.*?Câu hỏi của người dùng: "\{user_message\}"\s*"""', re.DOTALL)
+pattern = re.compile(r'    prompt = f"""\s*B?n l� m?t chuy�n gia dinh du?ng th�ng minh v� th�n thi?n.*?C�u h?i c?a ngu?i d�ng: "\{user_message\}"\s*"""', re.DOTALL)
 
 new_content = pattern.sub(new_prompt_str.strip('\n'), content)
 

@@ -28,7 +28,7 @@ def generate_alternatives(food_data):
     """
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-flash-latest",
             contents=prompt
         )
         raw_text = response.text.strip()

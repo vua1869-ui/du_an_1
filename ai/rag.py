@@ -202,7 +202,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None, today_lo
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-flash-latest",
                 contents=prompt,
             )
             return {

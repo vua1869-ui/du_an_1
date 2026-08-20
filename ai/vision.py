@@ -1,6 +1,8 @@
 import json
 import os
 import unicodedata
+import base64
+from openai import OpenAI
 try:
     from inference_sdk import InferenceHTTPClient
     HAS_INFERENCE_SDK = True
@@ -51,6 +53,11 @@ if HAS_INFERENCE_SDK and roboflow_key:
         print(f"[WARN] Roboflow: {_e}")
         roboflow_client = None
  
+# Client Groq (fallback lớp 3)
+groq_key = os.getenv("GROQ_API_KEY")
+groq_client = OpenAI(api_key=groq_key, base_url="https://api.groq.com/openai/v1") if groq_key else None
+GROQ_MODEL = "qwen/qwen3.6-27b"
+
 MODEL_ID = "vietnamese-food-flf5p/1"   # đổi đúng theo project của em nếu khác
 CONFIDENCE_THRESHOLD = 0.25   # Giảm ngưỡng này xuống (từ 0.5 -> 0.25) để ưu tiên YOLO nhận diện hơn, hạn chế đẩy sang Gemini
  
@@ -398,7 +405,7 @@ def predict_with_gemini(image_bytes):
     for attempt in range(3):
         try:
             response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-flash-latest",
                 contents=[
                     types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                     DETAILED_FOOD_PROMPT,
@@ -419,6 +426,36 @@ def predict_with_gemini(image_bytes):
             time.sleep(2)
  
  
+def predict_with_groq(image_bytes):
+    if not groq_client:
+        return {"error": "Chưa cấu hình GROQ_API_KEY trong file .env."}
+    try:
+        b64_image = base64.b64encode(image_bytes).decode('utf-8')
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": DETAILED_FOOD_PROMPT},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}}
+                    ]
+                }
+            ],
+            response_format={"type": "json_object"}
+        )
+        result = safe_json_parse(response.choices[0].message.content)
+        analysis = normalize_analysis(result)
+        return {
+            "detections": [],
+            "analysis": analysis,
+            "message": "Đã phân tích bằng Groq (lớp dự phòng)!"
+        }
+    except Exception as e:
+        print(f"Lỗi khi phân tích ảnh bằng Groq: {e}")
+        return {"error": f"Lỗi khi phân tích ảnh bằng Groq: {str(e)}"}
+ 
+ 
 def predict_image(image_bytes):
     # Ưu tiên model tự train trước (nhanh, 5 class đã học)
     if roboflow_client:
@@ -432,17 +469,9 @@ def predict_image(image_bytes):
     # Không nhận diện được / lỗi -> dùng Gemini (phân tích chi tiết mâm ăn)
     gemini_result = predict_with_gemini(image_bytes)
     
-    # Nếu Gemini trả về lỗi (hết Quota/quá tải), fallback về một kết quả mặc định thay vì báo lỗi đỏ màn hình
+    # Nếu Gemini trả về lỗi (hết Quota/quá tải), chuyển sang Groq
     if "error" in gemini_result:
-        return {
-            "detections": [],
-            "analysis": {
-                "dish_name": "Chưa nhận diện được món",
-                "calories": 0, "protein": 0, "carbs": 0, "fat": 0,
-                "description": "YOLO chưa học món này và AI phân tích sâu đã hết lượt miễn phí. Vui lòng nhập tay tạm thời nhé!",
-                "items": []
-            },
-            "message": "Không nhận diện được bằng cả YOLO và Gemini."
-        }
+        print(f"Lỗi Gemini ({gemini_result['error']}), chuyển sang Groq...")
+        return predict_with_groq(image_bytes)
         
     return gemini_result
