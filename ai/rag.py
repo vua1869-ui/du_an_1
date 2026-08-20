@@ -3,8 +3,6 @@ import sqlite3
 import os
 import re
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
-import chromadb
 from services.diet_service import get_diet_plan
 
 load_dotenv()
@@ -16,13 +14,27 @@ if api_key and api_key != 'your_api_key_here':
 else:
     client = None
 
-# 2. Khởi tạo Model Embedding
-print("Đang tải model Embedding...")
-embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
-# 3. Khởi tạo ChromaDB
-chroma_client = chromadb.Client()
-collection = chroma_client.get_or_create_collection(name="food_database")
+def get_client():
+    return client
+
+# 2. Embedding model (optional — không bắt buộc để chạy app)
+embed_model = None
+try:
+    from sentence_transformers import SentenceTransformer
+    print("Đang tải model Embedding...")
+    embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+except Exception as e:
+    print(f"[WARN] sentence_transformers không khả dụng: {e}")
+
+# 3. ChromaDB (optional)
+collection = None
+try:
+    import chromadb
+    chroma_client = chromadb.Client()
+    collection = chroma_client.get_or_create_collection(name="food_database")
+except Exception as e:
+    print(f"[WARN] ChromaDB không khả dụng: {e}")
 
 DIET_KEYWORDS = [
     "tdee", "thực đơn", "thuc don", "lập thực đơn", "lap thuc don",
@@ -35,7 +47,11 @@ DIET_KEYWORDS = [
 
 def init_vector_db(db_path):
     """Hàm này dùng để nạp dữ liệu từ SQLite vào ChromaDB"""
+    if collection is None:
+        return
     db_path = os.path.join('data', 'balance_nutrition.db')
+    if not os.path.exists(db_path):
+        return
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     # THÊM id VÀO CÂU TRUY VẤN
@@ -64,22 +80,23 @@ def init_vector_db(db_path):
         print(f"Đã nạp {len(foods)} món ăn vào Vector DB.")
 
 def retrieve_nutrition_data_vector(user_message):
-    if collection.count() == 0:
-        # Đường dẫn dự phòng nếu chưa có data
-        db_path = os.path.join('data', 'balance_nutrition.db')
-        init_vector_db(db_path)
-
-    results = collection.query(
-        query_texts=[user_message],
-        n_results=3
-    )
-
-    context = ""
-    for i in range(len(results['documents'][0])):
-        meta = results['metadatas'][0][i]
-        context += f"- {meta['name']} | Calo: {meta['calories']} | Protein: {meta['protein']}g | Carbs: {meta['carbs']}g | Fat: {meta['fat']}g\n"
-
-    return context
+    if collection is None:
+        return ""
+    try:
+        if collection.count() == 0:
+            db_path = os.path.join('data', 'balance_nutrition.db')
+            init_vector_db(db_path)
+        if collection.count() == 0:
+            return ""
+        results = collection.query(query_texts=[user_message], n_results=3)
+        context = ""
+        for i in range(len(results['documents'][0])):
+            meta = results['metadatas'][0][i]
+            context += f"- {meta['name']} | Calo: {meta['calories']} | Protein: {meta['protein']}g | Carbs: {meta['carbs']}g | Fat: {meta['fat']}g\n"
+        return context
+    except Exception as e:
+        print(f"[WARN] RAG query lỗi: {e}")
+        return ""
 
 def is_diet_request(user_message: str) -> bool:
     msg = user_message.lower()
@@ -177,7 +194,7 @@ def get_chatbot_response(user_message, current_tdee=2000, profile=None, today_lo
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-2.0-flash",
                 contents=prompt,
             )
             return {

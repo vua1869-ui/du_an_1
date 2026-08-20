@@ -1,58 +1,761 @@
+"""Admin business logic — quản lý users, foods, ingredients, meal plans, dashboard."""
 from database.db_core import get_db_connection
 from utils.helpers import safe_int
+from datetime import date
+from flask import session
 
-def get_all_foods():
+
+def _safe_float(val, default=0.0):
+    try:
+        v = float(val)
+        return max(0.0, v)
+    except (TypeError, ValueError):
+        return default
+
+
+def _validate_nutrition(data, require_name=True):
+    """Validate tên + dinh dưỡng không âm."""
+    errors = []
+    name = (data.get('name') or '').strip()
+    if require_name and not name:
+        errors.append('Tên không được để trống')
+    if len(name) > 200:
+        errors.append('Tên quá dài (tối đa 200 ký tự)')
+
+    for field in ('calories', 'protein', 'carbs', 'fat', 'fiber'):
+        raw = data.get(field, 0)
+        try:
+            v = float(raw)
+            if v < 0:
+                errors.append(f'{field} không được âm')
+            if v > 10000:
+                errors.append(f'{field} quá lớn')
+        except (TypeError, ValueError):
+            errors.append(f'{field} phải là số')
+
+    return errors, name
+
+
+# ═══════════════════════════════════════════
+# DASHBOARD STATS
+# ═══════════════════════════════════════════
+
+def get_dashboard_stats():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, meal_type, name, calories, protein, carbs, fat FROM foods ORDER BY id DESC')
-    foods = c.fetchall()
+
+    c.execute('SELECT COUNT(*) FROM users')
+    total_users = c.fetchone()[0]
+    c.execute("SELECT COUNT(*) FROM users WHERE role='admin'")
+    total_admins = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM users WHERE COALESCE(is_active,1)=1')
+    active_users = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM users WHERE COALESCE(is_active,1)=0')
+    locked_users = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM foods')
+    total_foods = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM ingredients')
+    total_ingredients = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM meal_plans')
+    total_plans = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM daily_logs')
+    total_logs = c.fetchone()[0]
+
+    # Đăng ký 7 ngày gần nhất
+    c.execute('''
+        SELECT created_at, COUNT(*) FROM users
+        WHERE created_at IS NOT NULL
+        GROUP BY created_at ORDER BY created_at DESC LIMIT 14
+    ''')
+    reg_rows = c.fetchall()
+    registrations = [{'date': r[0], 'count': r[1]} for r in reversed(reg_rows)]
+
+    # Phân bố meal_type
+    c.execute('SELECT meal_type, COUNT(*) FROM foods GROUP BY meal_type')
+    meal_dist = {r[0] or 'other': r[1] for r in c.fetchall()}
+
+    # Phân bố goal của user
+    c.execute("SELECT COALESCE(goal,'chua_set'), COUNT(*) FROM users GROUP BY goal")
+    goal_dist = {r[0]: r[1] for r in c.fetchall()}
+
     conn.close()
-    return [{"id": f[0], "meal_type": f[1], "name": f[2], "calories": f[3], "protein": f[4], "carbs": f[5], "fat": f[6]} for f in foods]
+    return {
+        'status': 'success',
+        'total_users': total_users,
+        'total_admins': total_admins,
+        'active_users': active_users,
+        'locked_users': locked_users,
+        'total_foods': total_foods,
+        'total_ingredients': total_ingredients,
+        'total_plans': total_plans,
+        'total_logs': total_logs,
+        'registrations': registrations,
+        'meal_distribution': meal_dist,
+        'goal_distribution': goal_dist,
+    }
+
+
+# ═══════════════════════════════════════════
+# USERS
+# ═══════════════════════════════════════════
+
+def get_all_users(q=None, status=None, role=None):
+    conn = get_db_connection()
+    c = conn.cursor()
+    sql = '''SELECT id, fullname, email, role, created_at,
+                    COALESCE(is_active,1) as is_active,
+                    nickname, gender, height, weight, goal, tdee, target_calories
+             FROM users WHERE 1=1'''
+    params = []
+    if q:
+        sql += ' AND (LOWER(fullname) LIKE ? OR LOWER(email) LIKE ? OR LOWER(COALESCE(nickname,"")) LIKE ?)'
+        like = f'%{q.lower()}%'
+        params.extend([like, like, like])
+    if status == 'active':
+        sql += ' AND COALESCE(is_active,1)=1'
+    elif status == 'locked':
+        sql += ' AND COALESCE(is_active,1)=0'
+    if role in ('admin', 'user'):
+        sql += ' AND role=?'
+        params.append(role)
+    sql += ' ORDER BY id DESC'
+    c.execute(sql, params)
+    rows = c.fetchall()
+    conn.close()
+    return [
+        {
+            'id': r[0], 'fullname': r[1], 'email': r[2], 'role': r[3],
+            'created_at': r[4], 'is_active': bool(r[5]),
+            'nickname': r[6], 'gender': r[7], 'height': r[8], 'weight': r[9],
+            'goal': r[10], 'tdee': r[11], 'target_calories': r[12],
+            'status': 'active' if r[5] else 'locked',
+        }
+        for r in rows
+    ]
+
+
+def get_user_detail(user_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''SELECT id, fullname, email, role, created_at,
+                        COALESCE(is_active,1), nickname, gender, birth_year,
+                        height, weight, goal, activity_level, weekly_goal,
+                        bmr, tdee, target_calories
+                 FROM users WHERE id=?''', (user_id,))
+    u = c.fetchone()
+    if not u:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    c.execute('SELECT COUNT(*) FROM daily_logs WHERE user_id=?', (user_id,))
+    log_count = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM water_logs WHERE user_id=?', (user_id,))
+    water_count = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM weight_logs WHERE user_id=?', (user_id,))
+    weight_count = c.fetchone()[0]
+    conn.close()
+
+    return {
+        'status': 'success',
+        'user': {
+            'id': u[0], 'fullname': u[1], 'email': u[2], 'role': u[3],
+            'created_at': u[4], 'is_active': bool(u[5]),
+            'status': 'active' if u[5] else 'locked',
+            'nickname': u[6], 'gender': u[7], 'birth_year': u[8],
+            'height': u[9], 'weight': u[10], 'goal': u[11],
+            'activity_level': u[12], 'weekly_goal': u[13],
+            'bmr': u[14], 'tdee': u[15], 'target_calories': u[16],
+            'stats': {
+                'food_logs': log_count,
+                'water_logs': water_count,
+                'weight_logs': weight_count,
+            },
+        },
+    }
+
+
+def toggle_user_lock(user_id, admin_id):
+    """Khóa / mở khóa. Không cho admin tự khóa chính mình."""
+    if int(user_id) == int(admin_id):
+        return {'status': 'error', 'message': 'Không thể khóa tài khoản của chính bạn'}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT role, COALESCE(is_active,1) FROM users WHERE id=?', (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    # Không cho khóa admin cuối cùng
+    if row[0] == 'admin' and row[1] == 1:
+        c.execute("SELECT COUNT(*) FROM users WHERE role IN ('admin','super_admin') AND COALESCE(is_active,1)=1")
+        if c.fetchone()[0] <= 1:
+            conn.close()
+            return {'status': 'error', 'message': 'Không thể khóa admin duy nhất còn hoạt động'}
+
+    new_status = 0 if row[1] else 1
+    c.execute('UPDATE users SET is_active=? WHERE id=?', (new_status, user_id))
+    conn.commit()
+    conn.close()
+    return {
+        'status': 'success',
+        'message': 'Đã khóa tài khoản' if new_status == 0 else 'Đã mở khóa tài khoản',
+        'is_active': bool(new_status),
+    }
+
+
+def set_user_role(user_id, new_role, admin_id):
+    if new_role not in ('admin', 'user'):
+        return {'status': 'error', 'message': 'Role chỉ chấp nhận admin hoặc user'}
+    if int(user_id) == int(admin_id) and new_role != 'admin':
+        return {'status': 'error', 'message': 'Không thể tự hạ quyền admin của chính bạn'}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT role FROM users WHERE id=?', (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    if row[0] == 'admin' and new_role == 'user':
+        c.execute("SELECT COUNT(*) FROM users WHERE role IN ('admin','super_admin') AND COALESCE(is_active,1)=1")
+        if c.fetchone()[0] <= 1:
+            conn.close()
+            return {'status': 'error', 'message': 'Không thể hạ quyền admin duy nhất'}
+
+    c.execute('UPDATE users SET role=? WHERE id=?', (new_role, user_id))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': f'Đã đổi role thành {new_role}'}
+
+
+def delete_user(user_id, admin_id=None):
+    """Xóa user. Không cho xóa chính mình / admin cuối."""
+    if admin_id is not None and int(user_id) == int(admin_id):
+        return {'status': 'error', 'message': 'Không thể xóa tài khoản của chính bạn'}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT role FROM users WHERE id=?', (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    if row[0] == 'admin':
+        c.execute("SELECT COUNT(*) FROM users WHERE role='admin'")
+        if c.fetchone()[0] <= 1:
+            conn.close()
+            return {'status': 'error', 'message': 'Không thể xóa admin duy nhất'}
+
+    for table in ('daily_logs', 'water_logs', 'weight_logs', 'weight_history', 'user_achievements'):
+        try:
+            c.execute(f'DELETE FROM {table} WHERE user_id=?', (user_id,))
+        except Exception:
+            pass
+    c.execute('DELETE FROM users WHERE id=?', (user_id,))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã xóa tài khoản'}
+
+
+# ═══════════════════════════════════════════
+# FOODS
+# ═══════════════════════════════════════════
+
+def get_all_foods(q=None, meal_type=None, page=1, per_page=50):
+    conn = get_db_connection()
+    c = conn.cursor()
+    sql = '''SELECT id, meal_type, name, calories, protein, carbs, fat,
+                    COALESCE(fiber,0), COALESCE(unit,'phần'), COALESCE(description,'')
+             FROM foods WHERE 1=1'''
+    params = []
+    if q:
+        sql += ' AND LOWER(name) LIKE ?'
+        params.append(f'%{q.lower()}%')
+    if meal_type and meal_type != 'all':
+        sql += ' AND meal_type=?'
+        params.append(meal_type)
+
+    # count
+    count_sql = 'SELECT COUNT(*) FROM foods WHERE 1=1'
+    count_params = []
+    if q:
+        count_sql += ' AND LOWER(name) LIKE ?'
+        count_params.append(f'%{q.lower()}%')
+    if meal_type and meal_type != 'all':
+        count_sql += ' AND meal_type=?'
+        count_params.append(meal_type)
+    c.execute(count_sql, count_params)
+    total = c.fetchone()[0]
+
+    sql += ' ORDER BY id DESC LIMIT ? OFFSET ?'
+    page = max(1, int(page or 1))
+    per_page = min(200, max(1, int(per_page or 50)))
+    params.extend([per_page, (page - 1) * per_page])
+    c.execute(sql, params)
+    rows = c.fetchall()
+    conn.close()
+
+    foods = [
+        {
+            'id': r[0], 'meal_type': r[1], 'name': r[2],
+            'calories': r[3], 'protein': r[4], 'carbs': r[5], 'fat': r[6],
+            'fiber': r[7], 'unit': r[8], 'description': r[9],
+        }
+        for r in rows
+    ]
+    return {
+        'status': 'success',
+        'foods': foods,
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'pages': max(1, (total + per_page - 1) // per_page),
+    }
+
 
 def add_new_food(data):
+    errors, name = _validate_nutrition(data)
+    if errors:
+        return {'status': 'error', 'message': '; '.join(errors)}
+
+    meal_type = data.get('meal_type', 'snack')
+    if meal_type not in ('breakfast', 'lunch', 'dinner', 'snack'):
+        meal_type = 'snack'
+
+    cal = _safe_float(data.get('calories'))
+    pro = _safe_float(data.get('protein'))
+    carbs = _safe_float(data.get('carbs'))
+    fat = _safe_float(data.get('fat'))
+    fiber = _safe_float(data.get('fiber'))
+    unit = (data.get('unit') or 'phần').strip()[:30]
+    desc = (data.get('description') or '').strip()[:500]
+
     try:
         conn = get_db_connection()
         c = conn.cursor()
-        c.execute('''INSERT INTO foods (meal_type, name, calories, protein, carbs, fat) VALUES (?, ?, ?, ?, ?, ?)''', (data.get('meal_type', 'snack'), data.get('name'), safe_int(data.get('calories', 0)), safe_int(data.get('protein', 0)), safe_int(data.get('carbs', 0)), safe_int(data.get('fat', 0))))
+        c.execute(
+            '''INSERT INTO foods (meal_type, name, calories, protein, carbs, fat, fiber, unit, description)
+               VALUES (?,?,?,?,?,?,?,?,?)''',
+            (meal_type, name, cal, pro, carbs, fat, fiber, unit, desc),
+        )
         new_id = c.lastrowid
         conn.commit()
         conn.close()
+
         try:
             from ai.rag import collection
-            doc_text = f"{data.get('name')} chứa {data.get('calories', 0)} calo."
-            # SỬA PREFIX ID ĐỂ ĐỒNG BỘ
-            collection.add(documents=[doc_text], metadatas=[{"name": data.get('name'), "calories": safe_int(data.get('calories', 0)), "protein": safe_int(data.get('protein', 0)), "carbs": safe_int(data.get('carbs', 0)), "fat": safe_int(data.get('fat', 0))}], ids=[f"food_{new_id}"])
-        except: pass
-        return {"status": "success", "message": "Đã thêm món ăn mới thành công!"}
-    except Exception as e: return {"error": f"Có lỗi: {str(e)}"}
+            if collection is not None:
+                doc = f"{name} chứa {cal} calo, {pro}g protein, {carbs}g carbs, {fat}g fat."
+                collection.add(
+                    documents=[doc],
+                    metadatas=[{'name': name, 'calories': cal, 'protein': pro, 'carbs': carbs, 'fat': fat}],
+                    ids=[f'food_{new_id}'],
+                )
+        except Exception:
+            pass
 
-def delete_food(food_id):
+        return {'status': 'success', 'message': 'Đã thêm món ăn thành công!', 'id': new_id}
+    except Exception as e:
+        return {'status': 'error', 'message': f'Lỗi: {str(e)}'}
+
+
+def update_food(food_id, data):
+    errors, name = _validate_nutrition(data)
+    if errors:
+        return {'status': 'error', 'message': '; '.join(errors)}
+
+    meal_type = data.get('meal_type', 'snack')
+    if meal_type not in ('breakfast', 'lunch', 'dinner', 'snack'):
+        meal_type = 'snack'
+
+    cal = _safe_float(data.get('calories'))
+    pro = _safe_float(data.get('protein'))
+    carbs = _safe_float(data.get('carbs'))
+    fat = _safe_float(data.get('fat'))
+    fiber = _safe_float(data.get('fiber'))
+    unit = (data.get('unit') or 'phần').strip()[:30]
+    desc = (data.get('description') or '').strip()[:500]
+
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('DELETE FROM foods WHERE id=?', (food_id,))
+    c.execute('SELECT id FROM foods WHERE id=?', (food_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy món ăn'}
+
+    c.execute(
+        '''UPDATE foods SET meal_type=?, name=?, calories=?, protein=?, carbs=?, fat=?,
+           fiber=?, unit=?, description=? WHERE id=?''',
+        (meal_type, name, cal, pro, carbs, fat, fiber, unit, desc, food_id),
+    )
     conn.commit()
     conn.close()
 
     try:
         from ai.rag import collection
-        collection.delete(ids=[f"food_{food_id}"])
-    except Exception as e: 
+        if collection is not None:
+            collection.delete(ids=[f'food_{food_id}'])
+            doc = f"{name} chứa {cal} calo, {pro}g protein, {carbs}g carbs, {fat}g fat."
+            collection.add(
+                documents=[doc],
+                metadatas=[{'name': name, 'calories': cal, 'protein': pro, 'carbs': carbs, 'fat': fat}],
+                ids=[f'food_{food_id}'],
+            )
+    except Exception:
         pass
 
-    return {"status": "success", "message": "Đã xóa món ăn!"}
+    return {'status': 'success', 'message': 'Đã cập nhật món ăn!'}
 
-def get_all_users():
+
+def delete_food(food_id):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, fullname, email, role, created_at FROM users ORDER BY id DESC')
-    users = c.fetchall()
-    conn.close()
-    return [{"id": u[0], "fullname": u[1], "email": u[2], "role": u[3], "created_at": u[4]} for u in users]
-
-def delete_user(user_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('DELETE FROM users WHERE id=?', (user_id,))
+    c.execute('DELETE FROM foods WHERE id=?', (food_id,))
+    # Gỡ khỏi meal_plan_items nếu có
+    try:
+        c.execute('DELETE FROM meal_plan_items WHERE food_id=?', (food_id,))
+    except Exception:
+        pass
     conn.commit()
     conn.close()
-    return {"status": "success"}
+    try:
+        from ai.rag import collection
+        if collection is not None:
+            collection.delete(ids=[f'food_{food_id}'])
+    except Exception:
+        pass
+    return {'status': 'success', 'message': 'Đã xóa món ăn!'}
+
+
+# ═══════════════════════════════════════════
+# INGREDIENTS
+# ═══════════════════════════════════════════
+
+def get_ingredients(q=None, page=1, per_page=30):
+    conn = get_db_connection()
+    c = conn.cursor()
+    sql = 'SELECT id, name, calories, protein, carbs, fat, fiber, unit, created_at FROM ingredients WHERE 1=1'
+    params = []
+    if q:
+        sql += ' AND LOWER(name) LIKE ?'
+        params.append(f'%{q.lower()}%')
+
+    count_sql = 'SELECT COUNT(*) FROM ingredients WHERE 1=1'
+    count_params = list(params)
+    c.execute(count_sql if not q else count_sql + ' AND LOWER(name) LIKE ?', count_params)
+    total = c.fetchone()[0]
+
+    page = max(1, int(page or 1))
+    per_page = min(100, max(1, int(per_page or 30)))
+    sql += ' ORDER BY name ASC LIMIT ? OFFSET ?'
+    params.extend([per_page, (page - 1) * per_page])
+    c.execute(sql, params)
+    rows = c.fetchall()
+    conn.close()
+
+    return {
+        'status': 'success',
+        'ingredients': [
+            {
+                'id': r[0], 'name': r[1], 'calories': r[2], 'protein': r[3],
+                'carbs': r[4], 'fat': r[5], 'fiber': r[6], 'unit': r[7],
+                'created_at': r[8],
+            }
+            for r in rows
+        ],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'pages': max(1, (total + per_page - 1) // per_page),
+    }
+
+
+def add_ingredient(data):
+    errors, name = _validate_nutrition(data)
+    if errors:
+        return {'status': 'error', 'message': '; '.join(errors)}
+    unit = (data.get('unit') or 'g').strip()[:30]
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        '''INSERT INTO ingredients (name, calories, protein, carbs, fat, fiber, unit, created_at)
+           VALUES (?,?,?,?,?,?,?,?)''',
+        (
+            name,
+            _safe_float(data.get('calories')),
+            _safe_float(data.get('protein')),
+            _safe_float(data.get('carbs')),
+            _safe_float(data.get('fat')),
+            _safe_float(data.get('fiber')),
+            unit,
+            date.today().isoformat(),
+        ),
+    )
+    new_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã thêm nguyên liệu!', 'id': new_id}
+
+
+def update_ingredient(ing_id, data):
+    errors, name = _validate_nutrition(data)
+    if errors:
+        return {'status': 'error', 'message': '; '.join(errors)}
+    unit = (data.get('unit') or 'g').strip()[:30]
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id FROM ingredients WHERE id=?', (ing_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy nguyên liệu'}
+    c.execute(
+        '''UPDATE ingredients SET name=?, calories=?, protein=?, carbs=?, fat=?, fiber=?, unit=?
+           WHERE id=?''',
+        (
+            name,
+            _safe_float(data.get('calories')),
+            _safe_float(data.get('protein')),
+            _safe_float(data.get('carbs')),
+            _safe_float(data.get('fat')),
+            _safe_float(data.get('fiber')),
+            unit,
+            ing_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã cập nhật nguyên liệu!'}
+
+
+def delete_ingredient(ing_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('DELETE FROM ingredients WHERE id=?', (ing_id,))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã xóa nguyên liệu!'}
+
+
+# ═══════════════════════════════════════════
+# MEAL PLANS
+# ═══════════════════════════════════════════
+
+VALID_GOALS = ('giam_can', 'tang_can', 'duy_tri', 'tang_co')
+
+
+def _plan_totals(c, plan_id):
+    c.execute('''
+        SELECT COALESCE(SUM(f.calories * mpi.quantity),0),
+               COALESCE(SUM(f.protein * mpi.quantity),0),
+               COALESCE(SUM(f.carbs * mpi.quantity),0),
+               COALESCE(SUM(f.fat * mpi.quantity),0)
+        FROM meal_plan_items mpi
+        LEFT JOIN foods f ON f.id = mpi.food_id
+        WHERE mpi.plan_id=?
+    ''', (plan_id,))
+    row = c.fetchone()
+    return {
+        'total_calories': round(row[0] or 0, 1),
+        'total_protein': round(row[1] or 0, 1),
+        'total_carbs': round(row[2] or 0, 1),
+        'total_fat': round(row[3] or 0, 1),
+    }
+
+
+def get_meal_plans(q=None, goal=None):
+    conn = get_db_connection()
+    c = conn.cursor()
+    sql = 'SELECT id, name, goal, target_calories, description, created_at FROM meal_plans WHERE 1=1'
+    params = []
+    if q:
+        sql += ' AND LOWER(name) LIKE ?'
+        params.append(f'%{q.lower()}%')
+    if goal and goal in VALID_GOALS:
+        sql += ' AND goal=?'
+        params.append(goal)
+    sql += ' ORDER BY id DESC'
+    c.execute(sql, params)
+    rows = c.fetchall()
+    plans = []
+    for r in rows:
+        totals = _plan_totals(c, r[0])
+        plans.append({
+            'id': r[0], 'name': r[1], 'goal': r[2],
+            'target_calories': r[3], 'description': r[4], 'created_at': r[5],
+            **totals,
+        })
+    conn.close()
+    return {'status': 'success', 'plans': plans}
+
+
+def get_meal_plan_detail(plan_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        'SELECT id, name, goal, target_calories, description, created_at FROM meal_plans WHERE id=?',
+        (plan_id,),
+    )
+    r = c.fetchone()
+    if not r:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy thực đơn'}
+
+    c.execute('''
+        SELECT mpi.id, mpi.food_id, mpi.meal_slot, mpi.quantity,
+               f.name, f.calories, f.protein, f.carbs, f.fat, f.meal_type
+        FROM meal_plan_items mpi
+        LEFT JOIN foods f ON f.id = mpi.food_id
+        WHERE mpi.plan_id=?
+        ORDER BY CASE mpi.meal_slot
+            WHEN 'breakfast' THEN 1 WHEN 'lunch' THEN 2
+            WHEN 'dinner' THEN 3 ELSE 4 END, mpi.id
+    ''', (plan_id,))
+    items = [
+        {
+            'id': i[0], 'food_id': i[1], 'meal_slot': i[2], 'quantity': i[3],
+            'food_name': i[4], 'calories': i[5], 'protein': i[6],
+            'carbs': i[7], 'fat': i[8], 'food_meal_type': i[9],
+        }
+        for i in c.fetchall()
+    ]
+    totals = _plan_totals(c, plan_id)
+    conn.close()
+    return {
+        'status': 'success',
+        'plan': {
+            'id': r[0], 'name': r[1], 'goal': r[2],
+            'target_calories': r[3], 'description': r[4], 'created_at': r[5],
+            'items': items, **totals,
+        },
+    }
+
+
+def create_meal_plan(data):
+    name = (data.get('name') or '').strip()
+    if not name:
+        return {'status': 'error', 'message': 'Tên thực đơn không được trống'}
+    goal = data.get('goal', 'duy_tri')
+    if goal not in VALID_GOALS:
+        goal = 'duy_tri'
+    target = safe_int(data.get('target_calories', 2000))
+    if target < 800 or target > 6000:
+        return {'status': 'error', 'message': 'Calories mục tiêu phải trong khoảng 800–6000'}
+    desc = (data.get('description') or '').strip()[:500]
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        'INSERT INTO meal_plans (name, goal, target_calories, description, created_at) VALUES (?,?,?,?,?)',
+        (name, goal, target, desc, date.today().isoformat()),
+    )
+    plan_id = c.lastrowid
+
+    # Gắn món nếu có
+    items = data.get('items') or []
+    for it in items:
+        fid = it.get('food_id')
+        if not fid:
+            continue
+        slot = it.get('meal_slot', 'lunch')
+        if slot not in ('breakfast', 'lunch', 'dinner', 'snack'):
+            slot = 'lunch'
+        qty = max(0.1, _safe_float(it.get('quantity', 1), 1))
+        c.execute(
+            'INSERT INTO meal_plan_items (plan_id, food_id, meal_slot, quantity) VALUES (?,?,?,?)',
+            (plan_id, fid, slot, qty),
+        )
+
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã tạo thực đơn!', 'id': plan_id}
+
+
+def update_meal_plan(plan_id, data):
+    name = (data.get('name') or '').strip()
+    if not name:
+        return {'status': 'error', 'message': 'Tên thực đơn không được trống'}
+    goal = data.get('goal', 'duy_tri')
+    if goal not in VALID_GOALS:
+        goal = 'duy_tri'
+    target = safe_int(data.get('target_calories', 2000))
+    if target < 800 or target > 6000:
+        return {'status': 'error', 'message': 'Calories mục tiêu phải trong khoảng 800–6000'}
+    desc = (data.get('description') or '').strip()[:500]
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id FROM meal_plans WHERE id=?', (plan_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy thực đơn'}
+
+    c.execute(
+        'UPDATE meal_plans SET name=?, goal=?, target_calories=?, description=? WHERE id=?',
+        (name, goal, target, desc, plan_id),
+    )
+
+    # Nếu client gửi items → thay toàn bộ
+    if 'items' in data:
+        c.execute('DELETE FROM meal_plan_items WHERE plan_id=?', (plan_id,))
+        for it in (data.get('items') or []):
+            fid = it.get('food_id')
+            if not fid:
+                continue
+            slot = it.get('meal_slot', 'lunch')
+            if slot not in ('breakfast', 'lunch', 'dinner', 'snack'):
+                slot = 'lunch'
+            qty = max(0.1, _safe_float(it.get('quantity', 1), 1))
+            c.execute(
+                'INSERT INTO meal_plan_items (plan_id, food_id, meal_slot, quantity) VALUES (?,?,?,?)',
+                (plan_id, fid, slot, qty),
+            )
+
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã cập nhật thực đơn!'}
+
+
+def delete_meal_plan(plan_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('DELETE FROM meal_plan_items WHERE plan_id=?', (plan_id,))
+    c.execute('DELETE FROM meal_plans WHERE id=?', (plan_id,))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã xóa thực đơn!'}
+
+
+def add_food_to_plan(plan_id, food_id, meal_slot='lunch', quantity=1):
+    if meal_slot not in ('breakfast', 'lunch', 'dinner', 'snack'):
+        meal_slot = 'lunch'
+    quantity = max(0.1, _safe_float(quantity, 1))
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id FROM meal_plans WHERE id=?', (plan_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy thực đơn'}
+    c.execute('SELECT id FROM foods WHERE id=?', (food_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy món ăn'}
+    c.execute(
+        'INSERT INTO meal_plan_items (plan_id, food_id, meal_slot, quantity) VALUES (?,?,?,?)',
+        (plan_id, food_id, meal_slot, quantity),
+    )
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã thêm món vào thực đơn'}
+
+
+def remove_food_from_plan(item_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('DELETE FROM meal_plan_items WHERE id=?', (item_id,))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã gỡ món khỏi thực đơn'}

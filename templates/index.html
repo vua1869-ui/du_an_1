@@ -1284,72 +1284,187 @@
 
     <!-- ================= ADMIN ================= -->
     <div id="admin-screen" class="hidden min-h-screen bg-paper flex flex-col">
-        <header class="bg-dark text-white sticky top-0 z-40 shadow-md relative overflow-hidden">
-            <div class="absolute inset-0 noise-overlay"></div>
-            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16 sm:h-20 relative z-10">
-                <h1 class="text-xl font-display font-bold flex items-center gap-3">👑 <span class="hidden sm:inline tracking-tight">Trang Quản Trị Hệ Thống</span></h1>
-                <button onclick="closeAdminPanel()" class="btn-press text-sm font-bold bg-white/10 hover:bg-white/15 px-5 py-2.5 rounded-xl transition-all border border-white/10 shadow-sm">&larr; Về Ứng Dụng</button>
+        <header class="bg-dark text-white sticky top-0 z-40 shadow-md">
+            <div class="max-w-6xl mx-auto px-4 flex justify-between items-center h-16">
+                <h1 class="text-lg font-display font-bold">👑 Quản trị BalanceNutrition</h1>
+                <button onclick="closeAdminPanel()" class="btn-press text-sm font-bold bg-white/10 hover:bg-white/15 px-4 py-2 rounded-xl border border-white/10">&larr; Về ứng dụng</button>
             </div>
         </header>
-
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div class="card-pro p-5"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Tổng món ăn</p><p class="text-2xl font-num font-black text-dark" id="stat-total-foods">--</p></div>
-                <div class="card-pro p-5"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Tổng người dùng</p><p class="text-2xl font-num font-black text-dark" id="stat-total-users">--</p></div>
-                <div class="card-pro p-5"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Quản trị viên</p><p class="text-2xl font-num font-black text-primary" id="stat-total-admins">--</p></div>
-                <div class="card-pro p-5"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Trạng thái hệ thống</p><p class="text-2xl font-black text-primary flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>Hoạt động</p></div>
+        <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Người dùng</p><p class="text-2xl font-num font-black text-dark" id="stat-total-users">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Món ăn</p><p class="text-2xl font-num font-black text-dark" id="stat-total-foods">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Thực đơn</p><p class="text-2xl font-num font-black text-dark" id="stat-total-plans">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">AI phân tích</p><p class="text-2xl font-num font-black text-primary" id="stat-ai-total">--</p></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">Bài viết</p><p class="text-xl font-num font-black" id="stat-total-articles">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">AI thành công</p><p class="text-xl font-num font-black text-emerald-600" id="stat-ai-ok">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">AI thất bại</p><p class="text-xl font-num font-black text-rose-500" id="stat-ai-fail">--</p></div>
             </div>
 
-            <div class="flex border-b border-line mb-8 overflow-x-auto hide-scrollbar gap-2">
-                <button id="tab-adm-foods" onclick="switchAdminTab('foods')" class="px-6 py-3 font-extrabold text-primary border-b-2 border-primary whitespace-nowrap transition-colors">🍕 Quản lý Món ăn</button>
-                <button id="tab-adm-users" onclick="switchAdminTab('users')" class="px-6 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap transition-colors">👥 Quản lý Người dùng</button>
+            <!-- Tabs -->
+            <div class="flex border-b border-line overflow-x-auto hide-scrollbar gap-1">
+                <button id="tab-adm-users" onclick="switchAdminTab('users')" class="px-4 py-3 font-extrabold text-primary border-b-2 border-primary whitespace-nowrap text-sm">👥 Người dùng</button>
+                <button id="tab-adm-foods" onclick="switchAdminTab('foods')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">🍕 Món ăn</button>
+                <button id="tab-adm-plans" onclick="switchAdminTab('plans')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">📋 Thực đơn</button>
+                <button id="tab-adm-articles" onclick="switchAdminTab('articles')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">📰 Bài viết</button>
             </div>
 
-            <div id="adm-view-foods" class="block space-y-6 animate-fade-in-up">
-                <div class="card-pro p-6 sm:p-8">
-                    <h3 class="font-bold text-dark mb-5 text-lg flex items-center gap-2 font-display">✨ Thêm món ăn mới <span class="text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary px-3 py-1.5 rounded-lg border border-primary/15 font-sans">Tự động nạp RAG</span></h3>
-                    <form id="add-food-form" class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end" onsubmit="adminAddFood(event)">
-                        <div class="col-span-2 md:col-span-1"><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Loại bữa</label><select id="adm-meal" class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold outline-none focus:border-primary focus:bg-white transition-colors cursor-pointer"><option value="breakfast">Sáng</option><option value="lunch">Trưa/Tối</option><option value="snack">Ăn vặt</option></select></div>
-                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Tên món</label><input type="text" id="adm-name" required class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold outline-none focus:border-primary focus:bg-white transition-colors" placeholder="VD: Bún chả"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Calo</label><input type="number" id="adm-cal" required class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold font-num outline-none focus:border-primary focus:bg-white transition-colors text-center"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Protein</label><input type="number" id="adm-pro" required class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold font-num outline-none focus:border-primary focus:bg-white transition-colors text-center"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Carb</label><input type="number" id="adm-carb" required class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold font-num outline-none focus:border-primary focus:bg-white transition-colors text-center"></div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Fat</label><input type="number" id="adm-fat" required class="w-full border border-line bg-paper rounded-2xl p-3 text-sm font-bold font-num outline-none focus:border-primary focus:bg-white transition-colors text-center"></div>
-                        <div class="col-span-2 md:col-span-6 mt-2"><button type="submit" class="btn-press w-full bg-gradient-to-r from-primary to-ocean text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-primary/25 text-sm">Lưu vào Cơ sở dữ liệu</button></div>
-                    </form>
-                </div>
+            <!-- USERS -->
+            <div id="adm-view-users" class="space-y-4">
                 <div class="card-pro overflow-hidden">
-                    <div class="p-5 border-b border-line flex items-center gap-3">
-                        <svg class="w-4 h-4 text-inkmute shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"></path></svg>
-                        <input type="text" id="adm-food-search" oninput="filterAdminFoods()" placeholder="Tìm món ăn theo tên..." class="flex-1 bg-transparent outline-none text-sm font-medium text-dark placeholder-slate-400">
+                    <div class="p-4 border-b border-line">
+                        <input type="text" id="adm-user-search" oninput="loadAdminUsers()" placeholder="Tìm tên hoặc email..." class="w-full bg-transparent outline-none text-sm font-medium">
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-line text-sm">
-                            <thead class="bg-paper">
-                                <tr><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">ID</th><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Món ăn</th><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Năng lượng</th><th class="px-6 py-5 text-right font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Thao tác</th></tr>
-                            </thead>
-                            <tbody id="admin-food-table" class="divide-y divide-line/60"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="adm-view-users" class="hidden animate-fade-in-up space-y-6">
-                <div class="card-pro overflow-hidden">
-                    <div class="p-5 border-b border-line flex items-center gap-3">
-                        <svg class="w-4 h-4 text-inkmute shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"></path></svg>
-                        <input type="text" id="adm-user-search" oninput="filterAdminUsers()" placeholder="Tìm người dùng theo tên hoặc email..." class="flex-1 bg-transparent outline-none text-sm font-medium text-dark placeholder-slate-400">
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-line text-sm">
-                            <thead class="bg-paper">
-                                <tr><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Người dùng</th><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Email</th><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Quyền</th><th class="px-6 py-5 text-left font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Ngày tạo</th><th class="px-6 py-5 text-right font-extrabold text-inkmute uppercase tracking-wider text-[10px]">Khóa</th></tr>
-                            </thead>
+                        <table class="min-w-full text-sm divide-y divide-line">
+                            <thead class="bg-paper"><tr>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">ID</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Người dùng</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Email</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Role</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Trạng thái</th>
+                                <th class="px-4 py-3 text-right text-[10px] font-extrabold text-inkmute uppercase">Thao tác</th>
+                            </tr></thead>
                             <tbody id="admin-user-table" class="divide-y divide-line/60"></tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <!-- FOODS -->
+            <div id="adm-view-foods" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <h3 class="font-bold text-dark mb-3 font-display" id="adm-food-form-title">Thêm món ăn</h3>
+                    <form id="add-food-form" class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end" onsubmit="adminSaveFood(event)">
+                        <input type="hidden" id="adm-food-id" value="">
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Loại bữa</label>
+                            <select id="adm-meal" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold">
+                                <option value="breakfast">Sáng</option><option value="lunch">Trưa</option>
+                                <option value="dinner">Tối</option><option value="snack">Ăn vặt</option>
+                            </select></div>
+                        <div class="col-span-2"><label class="text-xs font-bold text-slate-500 uppercase">Tên món</label>
+                            <input type="text" id="adm-name" required class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Đơn vị</label>
+                            <input type="text" id="adm-unit" value="phần" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Calo</label>
+                            <input type="number" id="adm-cal" required min="0" step="0.1" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Protein</label>
+                            <input type="number" id="adm-pro" required min="0" step="0.1" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Carb</label>
+                            <input type="number" id="adm-carb" required min="0" step="0.1" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Fat</label>
+                            <input type="number" id="adm-fat" required min="0" step="0.1" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Fiber</label>
+                            <input type="number" id="adm-fiber" min="0" step="0.1" value="0" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div class="col-span-2 md:col-span-3"><label class="text-xs font-bold text-slate-500 uppercase">Mô tả</label>
+                            <input type="text" id="adm-desc" class="w-full border border-line bg-paper rounded-xl p-2.5 text-sm outline-none"></div>
+                        <div class="col-span-2 md:col-span-4 flex gap-2">
+                            <button type="submit" class="btn-press flex-1 bg-primary text-white font-bold py-2.5 rounded-xl text-sm">Lưu</button>
+                            <button type="button" onclick="resetFoodForm()" class="btn-press px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-inkmute">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-pro overflow-hidden">
+                    <div class="p-4 border-b border-line flex gap-2">
+                        <input type="text" id="adm-food-search" oninput="filterAdminFoods()" placeholder="Tìm món..." class="flex-1 outline-none text-sm">
+                        <select id="adm-food-filter-meal" onchange="filterAdminFoods()" class="border border-line rounded-lg px-2 py-1 text-xs font-bold">
+                            <option value="all">Tất cả</option>
+                            <option value="breakfast">Sáng</option><option value="lunch">Trưa</option>
+                            <option value="dinner">Tối</option><option value="snack">Vặt</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm divide-y divide-line">
+                            <thead class="bg-paper"><tr>
+                                <th class="px-3 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">ID</th>
+                                <th class="px-3 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Món</th>
+                                <th class="px-3 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Calo</th>
+                                <th class="px-3 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">P/C/F</th>
+                                <th class="px-3 py-3 text-right text-[10px] font-extrabold text-inkmute uppercase">Thao tác</th>
+                            </tr></thead>
+                            <tbody id="admin-food-table" class="divide-y divide-line/60"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 flex justify-between text-xs text-inkmute border-t border-line">
+                        <span id="adm-food-page-info"></span>
+                        <div class="flex gap-2">
+                            <button onclick="admFoodPage(-1)" class="btn-press px-2 py-1 border border-line rounded-lg font-bold">←</button>
+                            <button onclick="admFoodPage(1)" class="btn-press px-2 py-1 border border-line rounded-lg font-bold">→</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLANS -->
+            <div id="adm-view-plans" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <h3 class="font-bold mb-3 font-display" id="adm-plan-form-title">Tạo thực đơn</h3>
+                    <form id="add-plan-form" class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end" onsubmit="adminSavePlan(event)">
+                        <input type="hidden" id="adm-plan-id" value="">
+                        <div class="col-span-2"><label class="text-xs font-bold text-slate-500 uppercase">Tên</label>
+                            <input type="text" id="adm-plan-name" required class="w-full border border-line rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary"></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Mục tiêu</label>
+                            <select id="adm-plan-goal" class="w-full border border-line rounded-xl p-2.5 text-sm font-bold">
+                                <option value="giam_can">Giảm cân</option><option value="tang_can">Tăng cân</option>
+                                <option value="duy_tri">Duy trì</option><option value="tang_co">Tăng cơ</option>
+                            </select></div>
+                        <div><label class="text-xs font-bold text-slate-500 uppercase">Calo mục tiêu</label>
+                            <input type="number" id="adm-plan-cal" required min="800" max="6000" value="2000" class="w-full border border-line rounded-xl p-2.5 text-sm font-num text-center"></div>
+                        <div class="col-span-2 md:col-span-4"><label class="text-xs font-bold text-slate-500 uppercase">Mô tả</label>
+                            <input type="text" id="adm-plan-desc" class="w-full border border-line rounded-xl p-2.5 text-sm"></div>
+                        <div class="col-span-2 md:col-span-4 flex gap-2">
+                            <button type="submit" class="btn-press flex-1 bg-primary text-white font-bold py-2.5 rounded-xl text-sm">Lưu thực đơn</button>
+                            <button type="button" onclick="resetPlanForm()" class="btn-press px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-inkmute">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="admin-plan-list" class="card-pro divide-y divide-line/60"></div>
+                <div id="adm-plan-detail" class="hidden card-pro p-5 space-y-3">
+                    <div class="flex justify-between"><h3 class="font-bold font-display" id="adm-plan-detail-title">Chi tiết</h3>
+                        <button onclick="document.getElementById('adm-plan-detail').classList.add('hidden')" class="text-sm font-bold text-inkmute">Đóng</button></div>
+                    <div id="adm-plan-totals" class="flex flex-wrap gap-2 text-xs font-bold"></div>
+                    <div class="flex flex-wrap gap-2 items-end">
+                        <input type="number" id="adm-plan-add-food-id" placeholder="Food ID" class="border border-line rounded-xl p-2 text-sm font-num w-28">
+                        <select id="adm-plan-add-slot" class="border border-line rounded-xl p-2 text-xs font-bold">
+                            <option value="breakfast">Sáng</option><option value="lunch">Trưa</option>
+                            <option value="dinner">Tối</option><option value="snack">Phụ</option>
+                        </select>
+                        <input type="number" id="adm-plan-add-qty" value="1" min="0.1" step="0.1" class="w-16 border border-line rounded-xl p-2 text-sm font-num text-center">
+                        <button onclick="adminAddPlanItem()" class="btn-press bg-primary text-white px-3 py-2 rounded-xl text-xs font-bold">+ Thêm món</button>
+                    </div>
+                    <div id="adm-plan-items" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- ARTICLES -->
+            <div id="adm-view-articles" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <h3 class="font-bold mb-3 font-display" id="adm-art-form-title">Viết bài</h3>
+                    <form id="add-art-form" class="space-y-3" onsubmit="adminSaveArticle(event)">
+                        <input type="hidden" id="adm-art-id" value="">
+                        <input type="text" id="adm-art-title" required placeholder="Tiêu đề" class="w-full border border-line rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary">
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="adm-art-cat" class="border border-line rounded-xl p-2.5 text-sm font-bold">
+                                <option value="general">Chung</option><option value="nutrition">Dinh dưỡng</option>
+                                <option value="weight_loss">Giảm cân</option><option value="muscle">Tăng cơ</option>
+                                <option value="recipe">Công thức</option><option value="tips">Mẹo</option>
+                            </select>
+                            <select id="adm-art-status" class="border border-line rounded-xl p-2.5 text-sm font-bold">
+                                <option value="draft">Draft</option><option value="published">Published</option>
+                            </select>
+                        </div>
+                        <input type="text" id="adm-art-cover" placeholder="URL ảnh (tuỳ chọn)" class="w-full border border-line rounded-xl p-2.5 text-sm">
+                        <textarea id="adm-art-content" rows="4" placeholder="Nội dung" class="w-full border border-line rounded-xl p-2.5 text-sm outline-none focus:border-primary"></textarea>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn-press flex-1 bg-primary text-white font-bold py-2.5 rounded-xl text-sm">Lưu bài</button>
+                            <button type="button" onclick="resetArtForm()" class="btn-press px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-inkmute">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="admin-art-list" class="card-pro divide-y divide-line/60"></div>
             </div>
         </main>
     </div>
@@ -1654,7 +1769,7 @@
             else if (h < 14) period = 'Chào buổi trưa';
             else if (h < 18) period = 'Chào buổi chiều';
             else period = 'Chào buổi tối';
-            const nick = user.role === 'admin' ? 'Admin' : (user.nickname || user.fullname || 'bạn');
+            const nick = (user.is_admin || user.role === 'admin' || user.role === 'super_admin') ? 'Admin' : (user.nickname || user.fullname || 'bạn');
             return `${period}, ${nick} 👋`;
         }
 
@@ -1706,7 +1821,7 @@
                 av.style.cursor = 'pointer';
             }
 
-            if (user.role === 'admin') document.getElementById('admin-btn').classList.remove('hidden');
+            if ((user.is_admin || user.role === 'admin' || user.role === 'super_admin')) document.getElementById('admin-btn').classList.remove('hidden');
 
             // BMI badge
             const bmiBadge = document.getElementById('smart-bmi-badge');
@@ -1730,7 +1845,7 @@
                 if (tip) { mealTip.classList.remove('hidden'); mealTip.innerText = tip; }
             }
 
-            if (user.role !== 'admin' && user.height) {
+            if (!(user.is_admin || user.role === 'admin' || user.role === 'super_admin') && user.height) {
                 const currentYear = new Date().getFullYear();
                 const age = currentYear - parseInt(user.birth_year || 2000);
                 const genderStr = user.gender === 'male' ? 'Nam' : 'Nữ';
@@ -2611,104 +2726,364 @@
             document.getElementById('weight-history-list').innerHTML = histHtml || '<p class="text-xs text-inkmute">Chưa có dữ liệu.</p>';
         }
 
-        // ================= ADMIN PANEL LOGIC =================
+
+
+        // ================= ADMIN PANEL LOGIC (simplified) =================
         let adminFoodsCache = [];
-        let adminUsersCache = [];
+        let admFoodPageNum = 1;
+        let currentPlanId = null;
+        const GOAL_LABEL = { giam_can:'Giảm cân', tang_can:'Tăng cân', duy_tri:'Duy trì', tang_co:'Tăng cơ' };
 
         function showAdminPanel() {
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('landing-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.add('hidden');
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) { showToast('Vui lòng đăng nhập', 'error'); return; }
+            const user = JSON.parse(userStr);
+            if (!(user.is_admin || user.role === 'admin' || user.role === 'super_admin')) {
+                showToast('Không có quyền Admin', 'error'); return;
+            }
+            document.getElementById('app-screen')?.classList.add('hidden');
+            document.getElementById('landing-screen')?.classList.add('hidden');
+            document.getElementById('auth-screen')?.classList.add('hidden');
             document.getElementById('admin-screen').classList.remove('hidden');
-            loadAdminFoods();
+            loadAdminStats();
+            switchAdminTab('users');
         }
         function closeAdminPanel() {
             document.getElementById('admin-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('app-screen')?.classList.remove('hidden');
         }
         function switchAdminTab(tab) {
-            if (tab === 'foods') {
-                document.getElementById('adm-view-foods').classList.remove('hidden'); document.getElementById('adm-view-users').classList.add('hidden');
-                document.getElementById('tab-adm-foods').classList.add('border-primary', 'text-primary'); document.getElementById('tab-adm-foods').classList.remove('text-inkmute', 'border-transparent');
-                document.getElementById('tab-adm-users').classList.add('text-inkmute', 'border-transparent'); document.getElementById('tab-adm-users').classList.remove('border-primary', 'text-primary');
-                loadAdminFoods();
-            } else {
-                document.getElementById('adm-view-users').classList.remove('hidden'); document.getElementById('adm-view-foods').classList.add('hidden');
-                document.getElementById('tab-adm-users').classList.add('border-primary', 'text-primary'); document.getElementById('tab-adm-users').classList.remove('text-inkmute', 'border-transparent');
-                document.getElementById('tab-adm-foods').classList.add('text-inkmute', 'border-transparent'); document.getElementById('tab-adm-foods').classList.remove('border-primary', 'text-primary');
-                loadAdminUsers();
-            }
-        }
-        function renderAdminFoodRows(foods) {
-            let html = '';
-            foods.forEach(f => {
-                html += `<tr class="hover:bg-paper transition-colors">
-                    <td class="px-6 py-4 text-inkmute text-xs font-bold font-num">#${f.id}</td>
-                    <td class="px-6 py-4 font-bold text-dark">${f.name} <span class="text-[10px] text-slate-500 bg-surface2 px-2 py-0.5 rounded-lg ml-2 uppercase tracking-wide border border-line">${f.meal_type}</span></td>
-                    <td class="px-6 py-4 text-primary font-black font-num">${f.calories} <span class="text-[10px] text-inkmute font-bold uppercase ml-1 font-sans">kcal</span></td>
-                    <td class="px-6 py-4 text-right"><button onclick="adminDeleteFood(${f.id})" class="btn-press text-rose-500 hover:text-white font-bold bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-xl text-xs transition-colors border border-rose-100">Xóa</button></td>
-                </tr>`;
+            ['users','foods','plans','articles'].forEach(t => {
+                document.getElementById('adm-view-' + t)?.classList.add('hidden');
+                const btn = document.getElementById('tab-adm-' + t);
+                if (btn) { btn.classList.remove('border-primary','text-primary'); btn.classList.add('text-inkmute','border-transparent'); }
             });
-            document.getElementById('admin-food-table').innerHTML = html || `<tr><td colspan="4" class="px-6 py-10 text-center text-inkmute font-medium">Không tìm thấy món ăn nào.</td></tr>`;
+            document.getElementById('adm-view-' + tab)?.classList.remove('hidden');
+            const btn = document.getElementById('tab-adm-' + tab);
+            if (btn) { btn.classList.add('border-primary','text-primary'); btn.classList.remove('text-inkmute','border-transparent'); }
+            if (tab === 'users') loadAdminUsers();
+            else if (tab === 'foods') loadAdminFoods();
+            else if (tab === 'plans') loadAdminPlans();
+            else if (tab === 'articles') loadAdminArticles();
         }
-        function filterAdminFoods() {
-            const q = document.getElementById('adm-food-search').value.trim().toLowerCase();
-            const filtered = adminFoodsCache.filter(f => f.name.toLowerCase().includes(q));
-            renderAdminFoodRows(filtered);
+
+        async function loadAdminStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                if (res.status === 403) { showToast('Không có quyền Admin', 'error'); closeAdminPanel(); return; }
+                const d = await res.json();
+                if (d.status !== 'success' && d.total_users == null) return;
+                document.getElementById('stat-total-users').innerText = d.total_users ?? '--';
+                document.getElementById('stat-total-foods').innerText = d.total_foods ?? '--';
+                document.getElementById('stat-total-plans').innerText = d.total_plans ?? '--';
+            } catch (e) {}
+            // AI stats from monitor endpoint (basic)
+            try {
+                const r2 = await fetch('/api/admin/ai-monitor');
+                if (r2.ok) {
+                    const a = await r2.json();
+                    if (a.status === 'success') {
+                        document.getElementById('stat-ai-total').innerText = a.total ?? 0;
+                        document.getElementById('stat-ai-ok').innerText = a.success ?? 0;
+                        document.getElementById('stat-ai-fail').innerText = a.failed ?? 0;
+                    }
+                }
+            } catch (e) {}
+            try {
+                const r3 = await fetch('/api/admin/articles?per_page=1');
+                if (r3.ok) {
+                    const ar = await r3.json();
+                    document.getElementById('stat-total-articles').innerText = ar.total ?? 0;
+                }
+            } catch (e) {}
         }
-        function loadAdminFoods() {
-            document.getElementById('admin-food-table').innerHTML = `<tr><td colspan="4" class="p-4"><div class="skeleton h-10 rounded-xl"></div></td></tr>`;
-            fetch('/api/admin/foods').then(res => res.json()).then(data => {
-                adminFoodsCache = data;
-                document.getElementById('stat-total-foods').innerText = data.length;
-                renderAdminFoodRows(data);
-            });
-        }
-        function adminAddFood(e) {
-            e.preventDefault();
-            const payload = {
-                meal_type: document.getElementById('adm-meal').value, name: document.getElementById('adm-name').value,
-                calories: document.getElementById('adm-cal').value, protein: document.getElementById('adm-pro').value,
-                carbs: document.getElementById('adm-carb').value, fat: document.getElementById('adm-fat').value
-            };
-            fetch('/api/admin/foods', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
-            .then(res => res.json()).then(data => {
-                showToast(data.message || "Thêm món ăn thành công!", "success"); e.target.reset(); loadAdminFoods();
-            });
-        }
-        function adminDeleteFood(id) {
-            if(!confirm("Bạn có chắc chắn muốn xóa món này khỏi cơ sở dữ liệu?")) return;
-            fetch(`/api/admin/foods/${id}`, { method: 'DELETE' }).then(res => res.json()).then(() => { showToast("Đã xóa món ăn.", "info"); loadAdminFoods(); });
-        }
-        function renderAdminUserRows(users) {
-            let html = '';
-            users.forEach(u => {
-                const badge = u.role === 'admin' ? '<span class="px-2.5 py-1 bg-gold/15 text-gold rounded-lg text-[10px] font-black uppercase tracking-wider border border-gold/25">Admin</span>' : '<span class="px-2.5 py-1 bg-surface2 text-inkmute rounded-lg text-[10px] font-black uppercase tracking-wider border border-line">User</span>';
-                html += `<tr class="hover:bg-paper transition-colors">
-                    <td class="px-6 py-4 font-bold text-dark">${u.fullname}</td><td class="px-6 py-4 text-inkmute font-medium">${u.email}</td><td class="px-6 py-4">${badge}</td><td class="px-6 py-4 text-inkmute text-xs font-bold font-num">${u.created_at}</td>
-                    <td class="px-6 py-4 text-right">${u.role !== 'admin' ? `<button onclick="adminDeleteUser(${u.id})" class="btn-press text-rose-500 hover:text-white font-bold bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-xl text-xs transition-colors border border-rose-100">Khóa</button>` : ''}</td>
-                </tr>`;
-            });
-            document.getElementById('admin-user-table').innerHTML = html || `<tr><td colspan="5" class="px-6 py-10 text-center text-inkmute font-medium">Không tìm thấy người dùng nào.</td></tr>`;
-        }
-        function filterAdminUsers() {
-            const q = document.getElementById('adm-user-search').value.trim().toLowerCase();
-            const filtered = adminUsersCache.filter(u => u.fullname.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-            renderAdminUserRows(filtered);
-        }
+
+        // ---- USERS ----
         function loadAdminUsers() {
-            document.getElementById('admin-user-table').innerHTML = `<tr><td colspan="5" class="p-4"><div class="skeleton h-10 rounded-xl"></div></td></tr>`;
-            fetch('/api/admin/users').then(res => res.json()).then(data => {
-                adminUsersCache = data;
-                document.getElementById('stat-total-users').innerText = data.length;
-                document.getElementById('stat-total-admins').innerText = data.filter(u => u.role === 'admin').length;
-                renderAdminUserRows(data);
+            const q = document.getElementById('adm-user-search')?.value || '';
+            fetch(`/api/admin/users?q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => {
+                const users = Array.isArray(data) ? data : [];
+                const me = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                let html = '';
+                users.forEach(u => {
+                    const isAdm = u.role === 'admin' || u.role === 'super_admin';
+                    const roleBadge = isAdm
+                        ? '<span class="px-2 py-0.5 bg-gold/15 text-gold rounded-lg text-[10px] font-black uppercase border border-gold/25">Admin</span>'
+                        : '<span class="px-2 py-0.5 bg-surface2 text-inkmute rounded-lg text-[10px] font-black uppercase border border-line">User</span>';
+                    const st = u.is_active
+                        ? '<span class="text-emerald-600 text-xs font-bold">Hoạt động</span>'
+                        : '<span class="text-rose-500 text-xs font-bold">Đã khóa</span>';
+                    const isSelf = me.id === u.id;
+                    html += `<tr class="hover:bg-paper">
+                        <td class="px-4 py-3 text-xs font-num text-inkmute">#${u.id}</td>
+                        <td class="px-4 py-3 font-bold text-dark">${u.fullname||''}</td>
+                        <td class="px-4 py-3 text-xs text-inkmute">${u.email||''}</td>
+                        <td class="px-4 py-3">${roleBadge}</td>
+                        <td class="px-4 py-3">${st}</td>
+                        <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+                            ${!isSelf ? `<button onclick="adminToggleLock(${u.id})" class="btn-press text-xs font-bold px-2 py-1 rounded-lg border ${u.is_active?'text-amber-600 bg-amber-50 border-amber-100':'text-emerald-600 bg-emerald-50 border-emerald-100'}">${u.is_active?'Khóa':'Mở khóa'}</button>` : '<span class="text-[10px] text-inkmute">(Bạn)</span>'}
+                            ${!isSelf ? `<button onclick="adminDeleteUser(${u.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">Xóa</button>` : ''}
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('admin-user-table').innerHTML = html || `<tr><td colspan="6" class="p-8 text-center text-inkmute">Không có người dùng</td></tr>`;
+            });
+        }
+        function adminToggleLock(id) {
+            if (!confirm('Xác nhận khóa/mở khóa tài khoản này?')) return;
+            fetch(`/api/admin/users/${id}/lock`, {method:'POST'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { loadAdminUsers(); loadAdminStats(); }
             });
         }
         function adminDeleteUser(id) {
-            if(!confirm("Xóa/Khóa tài khoản này?")) return;
-            fetch(`/api/admin/users/${id}`, { method: 'DELETE' }).then(res => res.json()).then(() => { showToast("Đã cập nhật trạng thái tài khoản.", "info"); loadAdminUsers(); });
+            if (!confirm('XÓA vĩnh viễn tài khoản này?')) return;
+            fetch(`/api/admin/users/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'info':'error');
+                if (d.status==='success') { loadAdminUsers(); loadAdminStats(); }
+            });
         }
+
+        // ---- FOODS ----
+        function resetFoodForm() {
+            document.getElementById('adm-food-id').value = '';
+            document.getElementById('add-food-form').reset();
+            document.getElementById('adm-unit').value = 'phần';
+            document.getElementById('adm-fiber').value = '0';
+            document.getElementById('adm-food-form-title').innerText = 'Thêm món ăn';
+        }
+        function editFood(f) {
+            document.getElementById('adm-food-id').value = f.id;
+            document.getElementById('adm-meal').value = f.meal_type || 'snack';
+            document.getElementById('adm-name').value = f.name || '';
+            document.getElementById('adm-unit').value = f.unit || 'phần';
+            document.getElementById('adm-cal').value = f.calories ?? 0;
+            document.getElementById('adm-pro').value = f.protein ?? 0;
+            document.getElementById('adm-carb').value = f.carbs ?? 0;
+            document.getElementById('adm-fat').value = f.fat ?? 0;
+            document.getElementById('adm-fiber').value = f.fiber ?? 0;
+            document.getElementById('adm-desc').value = f.description || '';
+            document.getElementById('adm-food-form-title').innerText = 'Sửa món #' + f.id;
+        }
+        function filterAdminFoods() { admFoodPageNum = 1; loadAdminFoods(); }
+        function admFoodPage(d) { admFoodPageNum = Math.max(1, admFoodPageNum + d); loadAdminFoods(); }
+        function loadAdminFoods() {
+            const q = document.getElementById('adm-food-search')?.value || '';
+            const meal = document.getElementById('adm-food-filter-meal')?.value || 'all';
+            fetch(`/api/admin/foods?q=${encodeURIComponent(q)}&meal_type=${meal}&page=${admFoodPageNum}&per_page=30`)
+            .then(r=>r.json()).then(data => {
+                const foods = Array.isArray(data) ? data : (data.foods || []);
+                adminFoodsCache = foods;
+                let html = '';
+                foods.forEach(f => {
+                    html += `<tr class="hover:bg-paper">
+                        <td class="px-3 py-2 text-xs font-num text-inkmute">#${f.id}</td>
+                        <td class="px-3 py-2 font-bold text-dark">${f.name} <span class="text-[10px] text-inkmute uppercase ml-1">${f.meal_type||''}</span></td>
+                        <td class="px-3 py-2 font-num text-primary font-bold">${f.calories}</td>
+                        <td class="px-3 py-2 text-xs font-num text-inkmute">${f.protein}/${f.carbs}/${f.fat}</td>
+                        <td class="px-3 py-2 text-right space-x-1">
+                            <button onclick='editFood(${JSON.stringify(f).replace(/'/g,"&#39;")})' class="btn-press text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg">Sửa</button>
+                            <button onclick="adminDeleteFood(${f.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('admin-food-table').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-inkmute">Không có món</td></tr>`;
+                if (data.total != null) document.getElementById('adm-food-page-info').innerText = `Trang ${data.page}/${data.pages} · ${data.total} món`;
+            });
+        }
+        function adminSaveFood(e) {
+            e.preventDefault();
+            const id = document.getElementById('adm-food-id').value;
+            const payload = {
+                meal_type: document.getElementById('adm-meal').value,
+                name: document.getElementById('adm-name').value.trim(),
+                unit: document.getElementById('adm-unit').value.trim() || 'phần',
+                calories: document.getElementById('adm-cal').value,
+                protein: document.getElementById('adm-pro').value,
+                carbs: document.getElementById('adm-carb').value,
+                fat: document.getElementById('adm-fat').value,
+                fiber: document.getElementById('adm-fiber').value || 0,
+                description: document.getElementById('adm-desc').value.trim(),
+            };
+            if (!payload.name) { showToast('Tên món không được trống', 'error'); return; }
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/foods/${id}` : '/api/admin/foods';
+            fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+            .then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { resetFoodForm(); loadAdminFoods(); loadAdminStats(); }
+            });
+        }
+        function adminDeleteFood(id) {
+            if (!confirm('Xóa món ăn này?')) return;
+            fetch(`/api/admin/foods/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'Đã xóa','info'); loadAdminFoods(); loadAdminStats();
+            });
+        }
+
+        // ---- PLANS ----
+        function resetPlanForm() {
+            document.getElementById('adm-plan-id').value = '';
+            document.getElementById('add-plan-form').reset();
+            document.getElementById('adm-plan-cal').value = '2000';
+            document.getElementById('adm-plan-form-title').innerText = 'Tạo thực đơn';
+        }
+        function loadAdminPlans() {
+            fetch('/api/admin/meal-plans').then(r=>r.json()).then(d => {
+                let html = '';
+                (d.plans||[]).forEach(p => {
+                    html += `<div class="p-4 flex flex-wrap justify-between gap-3 items-center hover:bg-paper">
+                        <div>
+                            <p class="font-bold text-dark">${p.name}
+                                <span class="ml-2 text-[10px] uppercase font-black px-2 py-0.5 rounded-lg bg-primary/10 text-primary">${GOAL_LABEL[p.goal]||p.goal}</span></p>
+                            <p class="text-xs text-inkmute mt-1">Mục tiêu ${p.target_calories} kcal · Tổng món ${p.total_calories||0} kcal</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="adminViewPlan(${p.id})" class="btn-press text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl">Chi tiết</button>
+                            <button onclick='editPlan(${JSON.stringify({id:p.id,name:p.name,goal:p.goal,target_calories:p.target_calories,description:p.description||""}).replace(/'/g,"&#39;")})' class="btn-press text-xs font-bold text-inkmute bg-surface2 px-3 py-1.5 rounded-xl border border-line">Sửa</button>
+                            <button onclick="adminDeletePlan(${p.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl">Xóa</button>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('admin-plan-list').innerHTML = html || '<div class="p-8 text-center text-inkmute">Chưa có thực đơn</div>';
+            });
+        }
+        function editPlan(p) {
+            document.getElementById('adm-plan-id').value = p.id;
+            document.getElementById('adm-plan-name').value = p.name;
+            document.getElementById('adm-plan-goal').value = p.goal;
+            document.getElementById('adm-plan-cal').value = p.target_calories;
+            document.getElementById('adm-plan-desc').value = p.description || '';
+            document.getElementById('adm-plan-form-title').innerText = 'Sửa thực đơn #' + p.id;
+        }
+        function adminSavePlan(e) {
+            e.preventDefault();
+            const id = document.getElementById('adm-plan-id').value;
+            const payload = {
+                name: document.getElementById('adm-plan-name').value.trim(),
+                goal: document.getElementById('adm-plan-goal').value,
+                target_calories: document.getElementById('adm-plan-cal').value,
+                description: document.getElementById('adm-plan-desc').value.trim(),
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/meal-plans/${id}` : '/api/admin/meal-plans';
+            fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+            .then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { resetPlanForm(); loadAdminPlans(); loadAdminStats(); }
+            });
+        }
+        function adminDeletePlan(id) {
+            if (!confirm('Xóa thực đơn này?')) return;
+            fetch(`/api/admin/meal-plans/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'','info'); loadAdminPlans(); loadAdminStats();
+            });
+        }
+        function adminViewPlan(id) {
+            currentPlanId = id;
+            fetch(`/api/admin/meal-plans/${id}`).then(r=>r.json()).then(d => {
+                if (d.status !== 'success') return;
+                const p = d.plan;
+                document.getElementById('adm-plan-detail').classList.remove('hidden');
+                document.getElementById('adm-plan-detail-title').innerText = p.name;
+                document.getElementById('adm-plan-totals').innerHTML =
+                    `<span class="px-2 py-1 rounded-lg bg-primary/10 text-primary">${p.total_calories} kcal</span>
+                     <span class="px-2 py-1 rounded-lg bg-surface2 border border-line">P ${p.total_protein}g</span>
+                     <span class="px-2 py-1 rounded-lg bg-surface2 border border-line">C ${p.total_carbs}g</span>
+                     <span class="px-2 py-1 rounded-lg bg-surface2 border border-line">F ${p.total_fat}g</span>`;
+                const slotL = {breakfast:'Sáng',lunch:'Trưa',dinner:'Tối',snack:'Phụ'};
+                document.getElementById('adm-plan-items').innerHTML = (p.items||[]).map(it =>
+                    `<div class="flex justify-between items-center bg-paper border border-line rounded-xl px-3 py-2 text-sm">
+                        <span><b class="text-primary text-[10px] uppercase mr-1">${slotL[it.meal_slot]||it.meal_slot}</b> ${it.food_name||('#'+it.food_id)} ×${it.quantity}</span>
+                        <button onclick="adminRemovePlanItem(${it.id})" class="text-rose-500 text-xs font-bold">Gỡ</button>
+                    </div>`
+                ).join('') || '<p class="text-sm text-inkmute">Chưa gắn món</p>';
+            });
+        }
+        function adminAddPlanItem() {
+            if (!currentPlanId) return;
+            const foodId = document.getElementById('adm-plan-add-food-id').value;
+            if (!foodId) { showToast('Nhập Food ID', 'error'); return; }
+            fetch(`/api/admin/meal-plans/${currentPlanId}/items`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    food_id: Number(foodId),
+                    meal_slot: document.getElementById('adm-plan-add-slot').value,
+                    quantity: Number(document.getElementById('adm-plan-add-qty').value)||1,
+                })
+            }).then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { adminViewPlan(currentPlanId); loadAdminPlans(); }
+            });
+        }
+        function adminRemovePlanItem(itemId) {
+            fetch(`/api/admin/meal-plans/items/${itemId}`, {method:'DELETE'}).then(r=>r.json()).then(() => {
+                if (currentPlanId) adminViewPlan(currentPlanId);
+                loadAdminPlans();
+            });
+        }
+
+        // ---- ARTICLES ----
+        function resetArtForm() {
+            document.getElementById('adm-art-id').value = '';
+            document.getElementById('add-art-form').reset();
+            document.getElementById('adm-art-form-title').innerText = 'Viết bài';
+        }
+        function loadAdminArticles() {
+            fetch('/api/admin/articles').then(r=>r.json()).then(d => {
+                let html = '';
+                (d.articles||[]).forEach(a => {
+                    const st = a.status==='published'
+                        ? '<span class="text-[10px] font-bold text-emerald-600">Published</span>'
+                        : '<span class="text-[10px] font-bold text-inkmute">Draft</span>';
+                    html += `<div class="p-4 flex flex-wrap justify-between gap-3 hover:bg-paper">
+                        <div class="flex-1 min-w-[180px]">
+                            <p class="font-bold text-dark">${a.title} ${st}</p>
+                            <p class="text-xs text-inkmute mt-1">${a.content||''}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick='editArticle(${JSON.stringify({id:a.id,title:a.title,content:a.full_content||"",cover_image:a.cover_image,category:a.category,status:a.status}).replace(/'/g,"&#39;")})' class="btn-press text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl">Sửa</button>
+                            <button onclick="adminDeleteArticle(${a.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl">Xóa</button>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('admin-art-list').innerHTML = html || '<div class="p-8 text-center text-inkmute">Chưa có bài viết</div>';
+            });
+        }
+        function editArticle(a) {
+            document.getElementById('adm-art-id').value = a.id;
+            document.getElementById('adm-art-title').value = a.title;
+            document.getElementById('adm-art-content').value = a.content || '';
+            document.getElementById('adm-art-cover').value = a.cover_image || '';
+            document.getElementById('adm-art-cat').value = a.category || 'general';
+            document.getElementById('adm-art-status').value = a.status || 'draft';
+            document.getElementById('adm-art-form-title').innerText = 'Sửa bài #' + a.id;
+        }
+        function adminSaveArticle(e) {
+            e.preventDefault();
+            const id = document.getElementById('adm-art-id').value;
+            const payload = {
+                title: document.getElementById('adm-art-title').value.trim(),
+                content: document.getElementById('adm-art-content').value.trim(),
+                cover_image: document.getElementById('adm-art-cover').value.trim(),
+                category: document.getElementById('adm-art-cat').value,
+                status: document.getElementById('adm-art-status').value,
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/articles/${id}` : '/api/admin/articles';
+            fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+            .then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { resetArtForm(); loadAdminArticles(); loadAdminStats(); }
+            });
+        }
+        function adminDeleteArticle(id) {
+            if (!confirm('Xóa bài viết này?')) return;
+            fetch(`/api/admin/articles/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'','info'); loadAdminArticles(); loadAdminStats();
+            });
+        }
+
 
         // ================= WEEKLY AI REPORT LOGIC =================
         function openWeeklyReport() {

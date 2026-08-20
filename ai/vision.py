@@ -1,7 +1,12 @@
 import json
 import os
 import unicodedata
-from inference_sdk import InferenceHTTPClient
+try:
+    from inference_sdk import InferenceHTTPClient
+    HAS_INFERENCE_SDK = True
+except ImportError:
+    InferenceHTTPClient = None
+    HAS_INFERENCE_SDK = False
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -27,10 +32,16 @@ roboflow_key = os.getenv("ROBOFLOW_API_KEY")
 gemini_client = genai.Client(api_key=gemini_key) if gemini_key and gemini_key != 'your_api_key_here' else None
  
 # Client Roboflow (model YOLO tự train)
-roboflow_client = InferenceHTTPClient(
-    api_url="https://serverless.roboflow.com",
-    api_key=roboflow_key
-) if roboflow_key else None
+roboflow_client = None
+if HAS_INFERENCE_SDK and roboflow_key:
+    try:
+        roboflow_client = InferenceHTTPClient(
+            api_url="https://serverless.roboflow.com",
+            api_key=roboflow_key
+        )
+    except Exception as _e:
+        print(f"[WARN] Roboflow: {_e}")
+        roboflow_client = None
  
 MODEL_ID = "vietnamese-food-flf5p/1"   # đổi đúng theo project của em nếu khác
 CONFIDENCE_THRESHOLD = 0.25   # Giảm ngưỡng này xuống (từ 0.5 -> 0.25) để ưu tiên YOLO nhận diện hơn, hạn chế đẩy sang Gemini
@@ -379,7 +390,7 @@ def predict_with_gemini(image_bytes):
     for attempt in range(3):
         try:
             response = gemini_client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-2.0-flash",
                 contents=[
                     types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                     DETAILED_FOOD_PROMPT,

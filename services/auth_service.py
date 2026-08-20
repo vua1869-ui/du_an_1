@@ -14,31 +14,49 @@ def verify_password(stored_password, provided_password):
 def verify_login(email, password):
     conn = get_db_connection()
     c = conn.cursor()
-    # Thêm cột password vào truy vấn (vị trí index 2)
-    c.execute('SELECT id, fullname, password, role, nickname, gender, birth_year, height, weight, goal, bmr, tdee, target_calories FROM users WHERE email=?', (email,))
+    c.execute(
+        '''SELECT id, fullname, password, role, nickname, gender, birth_year,
+                  height, weight, goal, bmr, tdee, target_calories,
+                  COALESCE(is_active, 1)
+           FROM users WHERE email=?''',
+        (email,),
+    )
     u = c.fetchone()
     conn.close()
-    
-    # u[2] là password đã được mã hóa trong database
-    if u and verify_password(u[2], password):
-        return {
-            "status": "success", 
-            "user": {
-                "id": u[0], 
-                "fullname": u[1], 
-                "role": u[3], 
-                "nickname": u[4], 
-                "gender": u[5], 
-                "birth_year": u[6], 
-                "height": u[7], 
-                "weight": u[8], 
-                "goal": u[9], 
-                "bmr": u[10], 
-                "tdee": u[11], 
-                "target_calories": u[12]
-            }
-        }
-    return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
+
+    if not u or not verify_password(u[2], password):
+        return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
+
+    if not u[13]:
+        return {"status": "error", "message": "Tài khoản đã bị khóa. Liên hệ quản trị viên."}
+
+    role = u[3] or 'user'
+    # Chuẩn hóa role phụ về admin để đồ án đơn giản (USER | ADMIN)
+    if role in ('super_admin', 'content_admin', 'nutrition_admin', 'ai_admin'):
+        display_role = 'admin' if role != 'super_admin' else 'super_admin'
+    else:
+        display_role = role
+    is_admin = display_role in ('admin', 'super_admin')
+    return {
+        "status": "success",
+        "user": {
+            "id": u[0],
+            "fullname": u[1],
+            "email": email,
+            "role": display_role if is_admin else 'user',
+            "nickname": u[4],
+            "gender": u[5],
+            "birth_year": u[6],
+            "height": u[7],
+            "weight": u[8],
+            "goal": u[9],
+            "bmr": u[10],
+            "tdee": u[11],
+            "target_calories": u[12],
+            "is_active": True,
+            "is_admin": is_admin,
+        },
+    }
 
 def register_user(fullname, email, password):
     try:

@@ -1,6 +1,9 @@
 from functools import wraps
 from flask import session, jsonify
 
+ADMIN_ROLES = {'admin', 'super_admin'}
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -9,10 +12,11 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session or session.get('role') != 'admin':
+        if 'user_id' not in session or session.get('role') not in ADMIN_ROLES:
             return jsonify({"status": "error", "message": "Không có quyền truy cập (Admin required)"}), 403
         return f(*args, **kwargs)
     return decorated_function
