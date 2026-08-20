@@ -1202,3 +1202,325 @@ status_application = True
 # ============================================================
 # END MORE SAFE TEST CODE
 # ============================================================
+# ============================================================
+# EXTENDED SAFE TEST SECTION
+# ============================================================
+
+def safe_test_91():
+    numbers = [10, 20, 30, 40, 50]
+    return {
+        "first": numbers[0],
+        "last": numbers[-1],
+        "count": len(numbers)
+    }
+
+
+def safe_test_92():
+    names = ["Python", "Flask", "AI", "Git"]
+
+    result = []
+
+    for name in names:
+        result.append({
+            "name": name,
+            "length": len(name)
+        })
+
+    return result
+
+
+def safe_test_93():
+    data = {
+        "python": 1,
+        "flask": 2,
+        "ai": 3,
+        "git": 4
+    }
+
+    return list(data.keys())
+
+
+def safe_test_94():
+    data = {
+        "python": 1,
+        "flask": 2,
+        "ai": 3,
+        "git": 4
+    }
+
+    return list(data.values())
+
+
+def safe_test_95():
+    data = {
+        "python": 1,
+        "flask": 2,
+        "ai": 3
+    }
+
+    return [
+        f"{key}: {value}"
+        for key, value in data.items()
+    ]
+
+
+def safe_test_96():
+    numbers = range(1, 21)
+
+    multiples = []
+
+    for number in numbers:
+        if number % 5 == 0:
+            multiples.append(number)
+
+    return multiples
+
+
+def safe_test_97():
+    text = "Artificial Intelligence"
+
+    return {
+        "characters": len(text),
+        "words": len(text.split()),
+        "uppercase": text.upper()
+    }
+
+
+def safe_test_98():
+    records = [
+        {"id": 1, "status": "active"},
+        {"id": 2, "status": "inactive"},
+        {"id": 3, "status": "active"},
+        {"id": 4, "status": "active"}
+    ]
+
+    return [
+        record
+        for record in records
+        if record["status"] == "active"
+    ]
+
+
+def safe_test_99():
+    scores = [7, 8, 6, 9, 10]
+
+    return {
+        "total": sum(scores),
+        "average": sum(scores) / len(scores),
+        "highest": max(scores),
+        "lowest": min(scores)
+    }
+
+
+def safe_test_100():
+    configuration = {
+        "application": "DU_AN_1",
+        "language": "Python",
+        "framework": "Flask",
+        "environment": "development",
+        "branch": "main"
+    }
+
+    return configuration
+
+
+# ============================================================
+# ADDITIONAL OBJECT DATA
+# ============================================================
+
+application_info = {
+    "name": "DU_AN_1",
+    "type": "Web Application",
+    "language": "Python",
+    "framework": "Flask",
+    "version": "1.0.0"
+}
+
+
+database_info = {
+    "enabled": True,
+    "type": "SQLite",
+    "status": "ready"
+}
+
+
+chatbot_info = {
+    "enabled": True,
+    "status": "testing",
+    "version": "1.0"
+}
+
+
+testing_info = {
+    "unit_tests": True,
+    "syntax_check": True,
+    "data_check": True,
+    "status": "ready"
+}
+
+
+# ============================================================
+# EXTRA LISTS
+# ============================================================
+
+programming_languages = [
+    "Python",
+    "JavaScript",
+    "Java",
+    "C++",
+    "C#"
+]
+
+frameworks = [
+    "Flask",
+    "Django",
+    "FastAPI"
+]
+
+development_tools = [
+    "VS Code",
+    "Git",
+    "GitHub",
+    "Terminal"
+]
+
+project_features = [
+    "Authentication",
+    "Database",
+    "Chatbot",
+    "API",
+    "Testing"
+]
+
+
+# ============================================================
+# EXTRA CALCULATION FUNCTIONS
+# ============================================================
+
+def calculate_test_sum(first, second):
+    return first + second
+
+
+def calculate_test_difference(first, second):
+    return first - second
+
+
+def calculate_test_product(first, second):
+    return first * second
+
+
+def calculate_test_average(values):
+    if not values:
+        return 0
+
+    return sum(values) / len(values)
+
+
+def count_test_items(items):
+    return len(items)
+
+
+def check_test_value(value):
+    return value is not None
+
+
+def convert_test_text(value):
+    return str(value)
+
+
+def create_test_record(identifier, name):
+    return {
+        "id": identifier,
+        "name": name
+    }
+
+
+# ============================================================
+# EXTRA VALIDATION FUNCTIONS
+# ============================================================
+
+def validate_test_name(name):
+    if not isinstance(name, str):
+        return False
+
+    return bool(name.strip())
+
+
+def validate_test_number(number):
+    return isinstance(number, (int, float))
+
+
+def validate_test_list(values):
+    return isinstance(values, list)
+
+
+def validate_test_dictionary(values):
+    return isinstance(values, dict)
+
+
+def validate_test_boolean(value):
+    return isinstance(value, bool)
+
+
+# ============================================================
+# EXTRA TEXT PROCESSING
+# ============================================================
+
+def format_test_message(name):
+    return f"Hello, {name}!"
+
+
+def format_test_status(status):
+    return f"Current status: {status}"
+
+
+def format_test_project(name, version):
+    return f"{name} - Version {version}"
+
+
+def normalize_test_text(text):
+    return text.strip().lower()
+
+
+def reverse_test_text(text):
+    return text[::-1]
+
+
+# ============================================================
+# EXTRA SAMPLE RECORDS
+# ============================================================
+
+test_record_01 = {
+    "id": 101,
+    "name": "Record One",
+    "active": True
+}
+
+test_record_02 = {
+    "id": 102,
+    "name": "Record Two",
+    "active": True
+}
+
+test_record_03 = {
+    "id": 103,
+    "name": "Record Three",
+    "active": False
+}
+
+test_record_04 = {
+    "id": 104,
+    "name": "Record Four",
+    "active": True
+}
+
+test_record_05 = {
+    "id": 105,
+    "name": "Record Five",
+    "active": False
+}
+
+
+# ============================================================
+# END EXTENDED SAFE TEST SECTION
+# ============================================================
