@@ -697,3 +697,250 @@ test_status_05 = False
 # ============================================================
 # END EXTRA TEST FILE
 # ============================================================
+# ============================================================
+# ADDITIONAL SAFE TEST CODE
+# ============================================================
+
+def safe_test_51():
+    value = "AI"
+    return value
+
+
+def safe_test_52():
+    value = "Python"
+    return value
+
+
+def safe_test_53():
+    value = "Flask"
+    return value
+
+
+def safe_test_54():
+    numbers = [1, 2, 3, 4, 5]
+    return numbers
+
+
+def safe_test_55():
+    numbers = [10, 20, 30, 40, 50]
+    return sum(numbers)
+
+
+def safe_test_56():
+    data = {
+        "id": 1,
+        "status": "OK",
+        "enabled": True
+    }
+    return data
+
+
+def safe_test_57():
+    items = ["AI", "ML", "Python", "Flask"]
+    return len(items)
+
+
+def safe_test_58():
+    text = "chatbot testing"
+    return text.upper()
+
+
+def safe_test_59():
+    text = "application development"
+    return text.title()
+
+
+def safe_test_60():
+    number = 60
+
+    if number > 0:
+        return True
+
+    return False
+
+
+def safe_test_61():
+    result = []
+
+    for number in range(5):
+        result.append(number)
+
+    return result
+
+
+def safe_test_62():
+    result = []
+
+    for number in range(1, 6):
+        result.append(number * number)
+
+    return result
+
+
+def safe_test_63():
+    words = [
+        "Python",
+        "Flask",
+        "AI",
+        "Database"
+    ]
+
+    return [word.lower() for word in words]
+
+
+def safe_test_64():
+    user = {
+        "name": "Test User",
+        "role": "Developer"
+    }
+
+    return user.get("name")
+
+
+def safe_test_65():
+    values = [5, 10, 15, 20]
+
+    return {
+        "minimum": min(values),
+        "maximum": max(values),
+        "total": sum(values)
+    }
+
+
+def safe_test_66():
+    message = "System is ready"
+
+    return {
+        "message": message,
+        "success": True
+    }
+
+
+def safe_test_67():
+    counter = 0
+
+    for _ in range(10):
+        counter += 1
+
+    return counter
+
+
+def safe_test_68():
+    numbers = [2, 4, 6, 8, 10]
+
+    return [
+        number
+        for number in numbers
+        if number % 2 == 0
+    ]
+
+
+def safe_test_69():
+    text = "   test message   "
+
+    return text.strip()
+
+
+def safe_test_70():
+    text = "Hello Python"
+
+    return text.replace("Python", "World")
+
+
+# ============================================================
+# SAFE DATA OBJECTS
+# ============================================================
+
+safe_data_01 = {
+    "name": "Demo",
+    "type": "test"
+}
+
+safe_data_02 = {
+    "project": "DU_AN_1",
+    "language": "Python"
+}
+
+safe_data_03 = {
+    "framework": "Flask",
+    "status": "development"
+}
+
+safe_data_04 = {
+    "feature": "Chatbot",
+    "enabled": True
+}
+
+safe_data_05 = {
+    "version": "1.0",
+    "testing": True
+}
+
+
+# ============================================================
+# SAFE LIST DATA
+# ============================================================
+
+safe_list_01 = [
+    "Python",
+    "Flask",
+    "AI"
+]
+
+safe_list_02 = [
+    "Database",
+    "API",
+    "Chatbot"
+]
+
+safe_list_03 = [
+    10,
+    20,
+    30,
+    40,
+    50
+]
+
+safe_list_04 = [
+    True,
+    False,
+    True,
+    True
+]
+
+
+# ============================================================
+# SAFE STRING DATA
+# ============================================================
+
+safe_string_01 = "Python Programming"
+safe_string_02 = "Artificial Intelligence"
+safe_string_03 = "Machine Learning"
+safe_string_04 = "Flask Application"
+safe_string_05 = "Chatbot Project"
+safe_string_06 = "Database System"
+safe_string_07 = "Software Development"
+safe_string_08 = "Application Testing"
+safe_string_09 = "Git Repository"
+safe_string_10 = "Main Branch"
+
+
+# ============================================================
+# SAFE NUMERIC DATA
+# ============================================================
+
+safe_number_01 = 100
+safe_number_02 = 200
+safe_number_03 = 300
+safe_number_04 = 400
+safe_number_05 = 500
+safe_number_06 = 600
+safe_number_07 = 700
+safe_number_08 = 800
+safe_number_09 = 900
+safe_number_10 = 1000
+
+
+# ============================================================
+# END ADDITIONAL SAFE TEST CODE
+# ============================================================
