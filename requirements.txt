@@ -1,16 +1,15 @@
-# --- Web Framework & Security ---
+# --- Core (bắt buộc để chạy web) ---
 Flask==3.0.0
 flask-bcrypt==1.0.1
 email-validator==2.1.0.post1
 python-dotenv==1.0.1
-
-# --- Database & Data Processing ---
 pandas==2.1.1
-chromadb==0.4.15
-
-# --- AI & Machine Learning ---
-google-genai
-ultralytics==8.0.200
-roboflow==1.1.9
-
 openpyxl==3.1.2
+
+# --- AI optional (chatbot + vision + RAG) ---
+# Cài thêm nếu dùng Gemini / YOLO / ChromaDB:
+# google-genai
+# chromadb==0.4.15
+# ultralytics==8.0.200
+# sentence-transformers
+# inference-sdk  (Roboflow)

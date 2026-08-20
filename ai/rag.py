@@ -1,4 +1,3 @@
-from google import genai
 import sqlite3
 import os
 import re
@@ -8,11 +7,14 @@ from services.diet_service import get_diet_plan
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
-# 1. Khởi tạo Gemini Client
-if api_key and api_key != 'your_api_key_here':
-    client = genai.Client(api_key=api_key)
-else:
-    client = None
+# 1. Khởi tạo Gemini Client (optional)
+client = None
+try:
+    from google import genai
+    if api_key and api_key != 'your_api_key_here':
+        client = genai.Client(api_key=api_key)
+except Exception as e:
+    print(f"[WARN] google-genai không khả dụng: {e}")
 
 
 def get_client():

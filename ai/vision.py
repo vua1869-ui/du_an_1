@@ -7,12 +7,20 @@ try:
 except ImportError:
     InferenceHTTPClient = None
     HAS_INFERENCE_SDK = False
-from google import genai
-from google.genai import types
 from dotenv import load_dotenv
 import re
- 
- 
+
+genai = None
+types = None
+try:
+    from google import genai as _genai
+    from google.genai import types as _types
+    genai = _genai
+    types = _types
+except Exception as e:
+    print(f"[WARN] google-genai không khả dụng (vision): {e}")
+
+
 def safe_json_parse(text):
     text = text.strip()
     # Bỏ dấu markdown code fence nếu Gemini lỡ thêm vào
@@ -29,7 +37,7 @@ gemini_key = os.getenv("GEMINI_API_KEY")
 roboflow_key = os.getenv("ROBOFLOW_API_KEY")
  
 # Client Gemini (dự phòng / phân tích chi tiết)
-gemini_client = genai.Client(api_key=gemini_key) if gemini_key and gemini_key != 'your_api_key_here' else None
+gemini_client = (genai.Client(api_key=gemini_key) if genai and gemini_key and gemini_key != 'your_api_key_here' else None)
  
 # Client Roboflow (model YOLO tự train)
 roboflow_client = None
