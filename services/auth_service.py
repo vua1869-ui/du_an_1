@@ -11,68 +11,186 @@ def hash_password(password):
 def verify_password(stored_password, provided_password):
     return bcrypt.check_password_hash(stored_password, provided_password)
 
+def _user_payload_from_row(u, email=None):
+    """u: id, fullname, password, role, nickname, gender, birth_year, height, weight, goal, bmr, tdee, target_calories, is_active [, avatar]"""
+    role = u[3] or 'user'
+    if role in ('super_admin', 'content_admin', 'nutrition_admin', 'ai_admin'):
+        display_role = 'admin' if role != 'super_admin' else 'super_admin'
+    else:
+        display_role = role
+    is_admin = display_role in ('admin', 'super_admin')
+    payload = {
+        "id": u[0],
+        "fullname": u[1],
+        "email": email,
+        "role": display_role if is_admin else 'user',
+        "nickname": u[4],
+        "gender": u[5],
+        "birth_year": u[6],
+        "height": u[7],
+        "weight": u[8],
+        "goal": u[9],
+        "bmr": u[10],
+        "tdee": u[11],
+        "target_calories": u[12],
+        "is_active": True,
+        "is_admin": is_admin,
+        "needs_onboarding": not (u[7] and u[8] and u[11]),  # thiếu height/weight/tdee
+    }
+    if len(u) > 14:
+        payload["avatar_url"] = u[14]
+    return payload
+
+
 def verify_login(email, password):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute(
         '''SELECT id, fullname, password, role, nickname, gender, birth_year,
                   height, weight, goal, bmr, tdee, target_calories,
-                  COALESCE(is_active, 1)
+                  COALESCE(is_active, 1), avatar_url
            FROM users WHERE email=?''',
         (email,),
     )
     u = c.fetchone()
     conn.close()
 
-    if not u or not verify_password(u[2], password):
+    if not u:
+        return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
+    if not u[2]:
+        return {"status": "error", "message": "Tài khoản này đăng nhập bằng Google. Hãy dùng nút Google."}
+    if not verify_password(u[2], password):
         return {"status": "error", "message": "Email hoặc mật khẩu không đúng!"}
 
     if not u[13]:
         return {"status": "error", "message": "Tài khoản đã bị khóa. Liên hệ quản trị viên."}
 
-    role = u[3] or 'user'
-    # Chuẩn hóa role phụ về admin để đồ án đơn giản (USER | ADMIN)
-    if role in ('super_admin', 'content_admin', 'nutrition_admin', 'ai_admin'):
-        display_role = 'admin' if role != 'super_admin' else 'super_admin'
-    else:
-        display_role = role
-    is_admin = display_role in ('admin', 'super_admin')
     return {
         "status": "success",
-        "user": {
-            "id": u[0],
-            "fullname": u[1],
-            "email": email,
-            "role": display_role if is_admin else 'user',
-            "nickname": u[4],
-            "gender": u[5],
-            "birth_year": u[6],
-            "height": u[7],
-            "weight": u[8],
-            "goal": u[9],
-            "bmr": u[10],
-            "tdee": u[11],
-            "target_calories": u[12],
-            "is_active": True,
-            "is_admin": is_admin,
-        },
+        "user": _user_payload_from_row(u, email=email),
     }
 
-def register_user(fullname, email, password):
+
+def login_or_register_google(google_id, email, fullname, avatar_url=None):
+    """
+    Đăng nhập / đăng ký qua Google.
+    - Có google_id → login
+    - Có email trùng → liên kết google_id rồi login
+    - Chưa có → tạo user mới (password rỗng, cần onboarding)
+    """
+    if not google_id or not email:
+        return {"status": "error", "message": "Thiếu thông tin Google"}
+
+    email = email.strip().lower()
+    fullname = (fullname or email.split('@')[0] or 'Google User').strip()[:120]
+    avatar_url = (avatar_url or '')[:500] or None
+
+    conn = get_db_connection()
+    c = conn.cursor()
+
+    # 1) Tìm theo google_id
+    c.execute(
+        '''SELECT id, fullname, password, role, nickname, gender, birth_year,
+                  height, weight, goal, bmr, tdee, target_calories,
+                  COALESCE(is_active, 1), avatar_url, email
+           FROM users WHERE google_id=?''',
+        (google_id,),
+    )
+    u = c.fetchone()
+
+    if not u:
+        # 2) Tìm theo email → link
+        c.execute(
+            '''SELECT id, fullname, password, role, nickname, gender, birth_year,
+                      height, weight, goal, bmr, tdee, target_calories,
+                      COALESCE(is_active, 1), avatar_url, email
+               FROM users WHERE LOWER(email)=?''',
+            (email,),
+        )
+        u = c.fetchone()
+        if u:
+            c.execute(
+                'UPDATE users SET google_id=?, avatar_url=COALESCE(?, avatar_url) WHERE id=?',
+                (google_id, avatar_url, u[0]),
+            )
+            conn.commit()
+            # refresh
+            c.execute(
+                '''SELECT id, fullname, password, role, nickname, gender, birth_year,
+                          height, weight, goal, bmr, tdee, target_calories,
+                          COALESCE(is_active, 1), avatar_url, email
+                   FROM users WHERE id=?''',
+                (u[0],),
+            )
+            u = c.fetchone()
+
+    if not u:
+        # 3) Tạo mới
+        today = date.today().isoformat()
+        nick = fullname.split()[0] if fullname else 'Bạn'
+        c.execute(
+            '''INSERT INTO users (fullname, email, password, role, nickname, google_id, avatar_url, created_at, is_active)
+               VALUES (?, ?, ?, 'user', ?, ?, ?, ?, 1)''',
+            (fullname, email, None, nick, google_id, avatar_url, today),
+        )
+        new_id = c.lastrowid
+        conn.commit()
+        c.execute(
+            '''SELECT id, fullname, password, role, nickname, gender, birth_year,
+                      height, weight, goal, bmr, tdee, target_calories,
+                      COALESCE(is_active, 1), avatar_url, email
+               FROM users WHERE id=?''',
+            (new_id,),
+        )
+        u = c.fetchone()
+
+    conn.close()
+
+    if not u[13]:
+        return {"status": "error", "message": "Tài khoản đã bị khóa. Liên hệ quản trị viên."}
+
+    user = _user_payload_from_row(u, email=u[15] if len(u) > 15 else email)
+    user["auth_provider"] = "google"
+    return {"status": "success", "user": user}
+
+def register_user(fullname, email, password, nickname=None):
     try:
+        err = _validate_password_strength(password)
+        if err:
+            return {"status": "error", "message": err}
+
+        email = (email or '').strip().lower()
+        fullname = (fullname or '').strip()[:120]
+        if not email or not fullname:
+            return {"status": "error", "message": "Vui lòng nhập đầy đủ họ tên và email"}
+
+        nick = (nickname or '').strip()[:60] or (fullname.split()[0] if fullname else 'Bạn')
+
         conn = get_db_connection()
         c = conn.cursor()
-        
+
         # Mã hóa mật khẩu trước khi lưu vào SQLite (Chống lộ password nếu DB bị rò rỉ)
         hashed_password = hash_password(password)
-        
-        c.execute('INSERT INTO users (fullname, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)', 
-                  (fullname, email, hashed_password, 'user', date.today().isoformat()))
+
+        c.execute(
+            'INSERT INTO users (fullname, email, password, role, nickname, created_at, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)',
+            (fullname, email, hashed_password, 'user', nick, date.today().isoformat()),
+        )
         new_id = c.lastrowid
         conn.commit()
         conn.close()
-        return {"status": "success", "user": {"id": new_id, "fullname": fullname, "role": "user"}}
-    except Exception as e: 
+        return {
+            "status": "success",
+            "user": {
+                "id": new_id,
+                "fullname": fullname,
+                "email": email,
+                "nickname": nick,
+                "role": "user",
+                "needs_onboarding": True,
+            },
+        }
+    except Exception as e:
         return {"status": "error", "message": "Email này đã được đăng ký!"}
 
 def _validate_password_strength(password):
@@ -260,3 +378,113 @@ def save_user_onboarding(user_id, profile):
             "target_calories": target_calories
         }
     }
+
+
+def request_password_reset(email):
+    """
+    Tạo token đặt lại mật khẩu.
+    Luôn trả success (không lộ email có tồn tại hay không).
+    Token hết hạn sau 1 giờ.
+    """
+    import secrets
+    from datetime import datetime, timedelta
+
+    email = (email or '').strip().lower()
+    generic = {
+        "status": "success",
+        "message": "Nếu email tồn tại trong hệ thống, mã đặt lại mật khẩu đã được tạo. Kiểm tra hộp thư hoặc dùng mã bên dưới (môi trường dev).",
+    }
+    if not email or '@' not in email:
+        return {"status": "error", "message": "Email không hợp lệ"}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        '''SELECT id, fullname, password FROM users WHERE LOWER(email)=? AND COALESCE(is_active,1)=1''',
+        (email,),
+    )
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return generic
+
+    # Google-only account (no password) — vẫn cho tạo token để set mật khẩu mới
+    user_id = row[0]
+    token = secrets.token_urlsafe(32)
+    now = datetime.utcnow()
+    expires = (now + timedelta(hours=1)).isoformat() + 'Z'
+    created = now.isoformat() + 'Z'
+
+    # Vô hiệu token cũ
+    try:
+        c.execute('UPDATE password_resets SET used=1 WHERE user_id=? AND used=0', (user_id,))
+    except Exception:
+        pass
+
+    try:
+        c.execute(
+            '''INSERT INTO password_resets (user_id, email, token, expires_at, used, created_at)
+               VALUES (?, ?, ?, ?, 0, ?)''',
+            (user_id, email, token, expires, created),
+        )
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return {"status": "error", "message": f"Không tạo được mã reset: {e}"}
+
+    conn.close()
+
+    # Dev: trả token để test (production nên chỉ gửi email)
+    result = dict(generic)
+    result["dev_token"] = token
+    result["expires_at"] = expires
+    return result
+
+
+def reset_password_with_token(token, new_password):
+    """Đặt mật khẩu mới bằng token reset (còn hạn, chưa dùng)."""
+    from datetime import datetime
+
+    token = (token or '').strip()
+    if not token:
+        return {"status": "error", "message": "Thiếu mã đặt lại mật khẩu"}
+
+    err = _validate_password_strength(new_password)
+    if err:
+        return {"status": "error", "message": err}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    try:
+        c.execute(
+            '''SELECT id, user_id, expires_at, used FROM password_resets WHERE token=?''',
+            (token,),
+        )
+    except Exception:
+        conn.close()
+        return {"status": "error", "message": "Hệ thống chưa sẵn sàng cho đặt lại mật khẩu. Chạy lại app để migrate DB."}
+
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {"status": "error", "message": "Mã không hợp lệ hoặc đã hết hạn"}
+
+    reset_id, user_id, expires_at, used = row[0], row[1], row[2], row[3]
+    if used:
+        conn.close()
+        return {"status": "error", "message": "Mã đã được sử dụng"}
+
+    try:
+        exp = datetime.fromisoformat(expires_at.replace('Z', ''))
+        if datetime.utcnow() > exp:
+            conn.close()
+            return {"status": "error", "message": "Mã đã hết hạn. Vui lòng yêu cầu lại."}
+    except Exception:
+        pass
+
+    hashed = hash_password(new_password)
+    c.execute('UPDATE users SET password=? WHERE id=?', (hashed, user_id))
+    c.execute('UPDATE password_resets SET used=1 WHERE id=?', (reset_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "Đã đặt lại mật khẩu thành công. Bạn có thể đăng nhập ngay."}

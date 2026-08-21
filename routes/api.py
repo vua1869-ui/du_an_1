@@ -2,12 +2,21 @@ import os
 from flask import Blueprint, request, jsonify, render_template
 from ai.vision import predict_image
 from ai.rag import get_chatbot_response, client
-from services.auth_service import verify_login, register_user, save_user_onboarding, change_password, delete_account, export_user_data, get_security_info
+from services.auth_service import (
+    verify_login, register_user, save_user_onboarding, change_password,
+    delete_account, export_user_data, get_security_info, login_or_register_google,
+    request_password_reset, reset_password_with_token,
+)
 from services.diet_service import get_diet_plan
-from services.user_service import log_food, get_today_logs, get_weekly_stats, delete_log, search_foods, get_recent_foods, get_day_comparison
+from services.user_service import (
+    log_food, get_today_logs, get_logs_by_date, get_weekly_stats, delete_log,
+    update_log, copy_day_logs, apply_meal_plan, get_daily_checklist,
+    search_foods, get_recent_foods, get_day_comparison,
+)
 from services.admin_service import (
     get_all_foods, add_new_food, update_food, delete_food,
     get_all_users, get_user_detail, toggle_user_lock, set_user_role, delete_user,
+    update_user, admin_reset_password, export_users_csv,
     get_ingredients, add_ingredient, update_ingredient, delete_ingredient,
     get_meal_plans, get_meal_plan_detail, create_meal_plan, update_meal_plan,
     delete_meal_plan, add_food_to_plan, remove_food_from_plan,
@@ -16,7 +25,9 @@ from services.admin_service import (
 from services.admin_content_service import (
     get_articles, get_article, create_article, update_article, delete_article,
     get_published_articles, get_faqs, create_faq, update_faq, delete_faq, reorder_faqs,
-    log_chat, get_chatbot_stats, get_chat_logs,
+    log_chat, get_chatbot_stats, get_chat_logs, get_user_chat_history,
+    create_chat_session, list_chat_sessions, get_session_messages,
+    rename_chat_session, delete_chat_session, ensure_chat_session,
     get_knowledge_docs, create_knowledge_doc, update_knowledge_doc, delete_knowledge_doc,
     reindex_knowledge, log_analysis, get_ai_monitoring_stats,
     import_foods_from_file, get_advanced_stats,
@@ -112,6 +123,12 @@ def chat():
         current_tdee = 2000
 
     user_id = session.get('user_id') or data.get('user_id')
+    session_id = data.get('session_id')
+    try:
+        session_id = int(session_id) if session_id not in (None, '', 0, '0') else None
+    except (TypeError, ValueError):
+        session_id = None
+
     today_logs_data = None
     if user_id:
         from services.user_service import get_today_logs
@@ -123,22 +140,159 @@ def chat():
     )
     answer = result.get('response', '') if isinstance(result, dict) else str(result)
     is_err = any(k in (answer or '') for k in ('Lỗi', 'quá tải', 'chưa cấu hình', 'error'))
-    log_chat(user_id, message, answer, result.get('type', 'chat') if isinstance(result, dict) else 'chat', is_err)
+    # Lưu bản sạch (không kèm ghi chú hệ thống) vào lịch sử
+    log_question = (data.get('display_message') or message or '').strip()
+    marker = '(Lưu ý hệ thống:'
+    if marker in log_question:
+        log_question = log_question.split(marker)[0].strip()
+    new_sid = log_chat(
+        user_id, log_question, answer,
+        result.get('type', 'chat') if isinstance(result, dict) else 'chat',
+        is_err,
+        session_id=session_id,
+    )
+    if isinstance(result, dict):
+        result['session_id'] = new_sid
+    else:
+        result = {'response': str(result), 'type': 'chat', 'session_id': new_sid}
     return jsonify(result)
+
+
+@api_bp.route('/api/chat/history', methods=['GET'])
+def chat_history():
+    """Lịch sử chat phẳng (fallback)."""
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập', 'logs': []}), 401
+    limit = request.args.get('limit', 50, type=int)
+    return jsonify(get_user_chat_history(user_id, limit=limit))
+
+
+def _resolve_user_id():
+    """Lấy user_id từ Flask session hoặc query/body (app dùng localStorage)."""
+    uid = session.get('user_id')
+    if uid:
+        return uid
+    uid = request.args.get('user_id', type=int)
+    if uid:
+        return uid
+    data = request.get_json(silent=True) or {}
+    try:
+        return int(data['user_id']) if data.get('user_id') not in (None, '', 0, '0') else None
+    except (TypeError, ValueError):
+        return None
+
+
+@api_bp.route('/api/chat/sessions', methods=['GET'])
+def chat_sessions_list():
+    user_id = _resolve_user_id()
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập', 'sessions': []}), 401
+    limit = request.args.get('limit', 40, type=int)
+    try:
+        return jsonify(list_chat_sessions(user_id, limit=limit))
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e), 'sessions': []}), 500
+
+
+@api_bp.route('/api/chat/sessions', methods=['POST'])
+def chat_sessions_create():
+    user_id = _resolve_user_id()
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập'}), 401
+    title = (request.json or {}).get('title')
+    return jsonify(create_chat_session(user_id, title=title))
+
+
+@api_bp.route('/api/chat/sessions/<int:session_id>', methods=['GET'])
+def chat_session_detail(session_id):
+    user_id = _resolve_user_id()
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập', 'logs': []}), 401
+    limit = request.args.get('limit', 100, type=int)
+    try:
+        return jsonify(get_session_messages(user_id, session_id, limit=limit))
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e), 'logs': []}), 500
+
+
+@api_bp.route('/api/chat/sessions/<int:session_id>', methods=['PATCH'])
+def chat_session_rename(session_id):
+    user_id = _resolve_user_id()
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập'}), 401
+    title = (request.json or {}).get('title', '')
+    result = rename_chat_session(user_id, session_id, title)
+    return jsonify(result), 200 if result.get('status') == 'success' else 400
+
+
+@api_bp.route('/api/chat/sessions/<int:session_id>', methods=['DELETE'])
+def chat_session_delete(session_id):
+    user_id = _resolve_user_id()
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Chưa đăng nhập'}), 401
+    result = delete_chat_session(user_id, session_id)
+    return jsonify(result), 200 if result.get('status') == 'success' else 400
 
 @api_bp.route('/api/log_food', methods=['POST'])
 def add_food_log():
-    user_id = session.get('user_id')
+    data = request.json or {}
+    user_id = session.get('user_id') or data.get('user_id')
+    try:
+        user_id = int(user_id) if user_id not in (None, '', 0, '0') else None
+    except (TypeError, ValueError):
+        user_id = None
     if not user_id:
         return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
-    return jsonify(log_food(user_id, request.json))
+    return jsonify(log_food(user_id, data))
+
+
+@api_bp.route('/api/log_food/<int:log_id>', methods=['PUT'])
+def edit_food_log(log_id):
+    data = request.json or {}
+    user_id = session.get('user_id') or data.get('user_id')
+    try:
+        user_id = int(user_id) if user_id not in (None, '', 0, '0') else None
+    except (TypeError, ValueError):
+        user_id = None
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    result = update_log(user_id, log_id, data)
+    return jsonify(result), 200 if result.get('status') == 'success' else 400
+
 
 @api_bp.route('/api/today_logs', methods=['GET'])
 def today_logs():
-    user_id = session.get('user_id')
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
     if not user_id:
         return jsonify({"foods": [], "totals": {"calories": 0, "protein": 0, "carbs": 0, "fat": 0}})
+    date_str = request.args.get('date')
+    if date_str:
+        return jsonify(get_logs_by_date(user_id, date_str))
     return jsonify(get_today_logs(user_id))
+
+
+@api_bp.route('/api/logs/copy-yesterday', methods=['POST'])
+def api_copy_yesterday():
+    data = request.json or {}
+    user_id = session.get('user_id') or data.get('user_id')
+    try:
+        user_id = int(user_id) if user_id not in (None, '', 0, '0') else None
+    except (TypeError, ValueError):
+        user_id = None
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    result = copy_day_logs(user_id, data.get('from_date'), data.get('to_date'))
+    return jsonify(result), 200 if result.get('status') == 'success' else 400
+
+
+@api_bp.route('/api/checklist', methods=['GET'])
+def api_checklist():
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    return jsonify(get_daily_checklist(user_id))
+
 
 @api_bp.route('/api/weekly_stats', methods=['GET'])
 def weekly_stats():
@@ -164,8 +318,26 @@ def admin_get_users():
     q = request.args.get('q')
     status = request.args.get('status')
     role = request.args.get('role')
-    users = get_all_users(q=q, status=status, role=role)
-    return jsonify(users)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    result = get_all_users(q=q, status=status, role=role, page=page, per_page=per_page)
+    return jsonify(result)
+
+
+@api_bp.route('/api/admin/users/export', methods=['GET'])
+@admin_required
+def admin_export_users():
+    from flask import Response
+    q = request.args.get('q')
+    status = request.args.get('status')
+    role = request.args.get('role')
+    csv_data = export_users_csv(q=q, status=status, role=role)
+    filename = 'users_export.csv'
+    return Response(
+        '\ufeff' + csv_data,  # BOM for Excel UTF-8
+        mimetype='text/csv; charset=utf-8',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
 
 
 @api_bp.route('/api/admin/users/<int:user_id>', methods=['GET'])
@@ -202,7 +374,28 @@ def admin_delete_user(user_id):
     return jsonify(result), code
 
 
+@api_bp.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+@admin_required
+def admin_update_user(user_id):
+    data = request.json or {}
+    admin_id = session.get('user_id')
+    result = update_user(user_id, data, admin_id)
+    code = 200 if result.get('status') == 'success' else 400
+    return jsonify(result), code
+
+
+@api_bp.route('/api/admin/users/<int:user_id>/reset-password', methods=['POST'])
+@admin_required
+def admin_user_reset_password(user_id):
+    data = request.json or {}
+    admin_id = session.get('user_id')
+    result = admin_reset_password(user_id, data.get('new_password', ''), admin_id)
+    code = 200 if result.get('status') == 'success' else 400
+    return jsonify(result), code
+
+
 # --- Foods ---
+
 @api_bp.route('/api/admin/foods', methods=['GET'])
 @admin_required
 def admin_get_foods():
@@ -476,12 +669,55 @@ def admin_advanced_stats():
 # Public content (user-facing)
 @api_bp.route('/api/articles', methods=['GET'])
 def public_articles():
-    return jsonify(get_published_articles(limit=request.args.get('limit', 10, type=int)))
+    return jsonify(get_published_articles(limit=request.args.get('limit', 20, type=int)))
+
+
+@api_bp.route('/api/articles/<int:aid>', methods=['GET'])
+def public_article_detail(aid):
+    result = get_article(aid)
+    if result.get('status') != 'success':
+        return jsonify(result), 404
+    art = result.get('article') or {}
+    if art.get('status') != 'published':
+        return jsonify({'status': 'error', 'message': 'Bài viết chưa được xuất bản'}), 404
+    return jsonify(result)
 
 
 @api_bp.route('/api/faqs', methods=['GET'])
 def public_faqs():
     return jsonify(get_faqs(active_only=True))
+
+
+@api_bp.route('/api/meal-plans', methods=['GET'])
+def public_meal_plans():
+    goal = request.args.get('goal')
+    return jsonify(get_meal_plans(q=request.args.get('q'), goal=goal))
+
+
+@api_bp.route('/api/meal-plans/<int:plan_id>', methods=['GET'])
+def public_meal_plan_detail(plan_id):
+    return jsonify(get_meal_plan_detail(plan_id))
+
+
+@api_bp.route('/api/meal-plans/<int:plan_id>/apply', methods=['POST'])
+def api_apply_meal_plan(plan_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    data = request.json or {}
+    result = apply_meal_plan(user_id, plan_id, data.get('date'))
+    return jsonify(result), 200 if result.get('status') == 'success' else 400
+
+
+@api_bp.route('/api/profile', methods=['PUT'])
+def api_update_profile():
+    """User tự cập nhật hồ sơ → tính lại BMR/TDEE."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
+    data = request.json or {}
+    result = save_user_onboarding(user_id, data)
+    return jsonify(result)
 
 
 
@@ -503,11 +739,18 @@ def onboarding_api():
 
 @api_bp.route('/api/recommendations', methods=['GET'])
 def get_recommendations():
-    user_id = request.args.get('user_id', 1, type=int)
+    user_id = request.args.get('user_id', type=int) or session.get('user_id') or 1
     tdee = request.args.get('tdee', 2000, type=int)
     goal = request.args.get('goal', 'duy_tri')
-    
-    result = get_personalized_recommendations(user_id, tdee, goal)
+    slot = request.args.get('slot')  # breakfast | lunch | dinner — chỉ làm mới 1 ô
+    exclude = request.args.get('exclude', '')  # tên món loại trừ, phân tách bằng |
+    exclude_names = [x.strip() for x in exclude.split('|') if x.strip()] if exclude else None
+    only_slots = [slot] if slot in ('breakfast', 'lunch', 'dinner') else None
+    result = get_personalized_recommendations(
+        user_id, tdee, goal,
+        exclude_names=exclude_names,
+        only_slots=only_slots,
+    )
     return jsonify(result)
 
 @api_bp.route('/api/weight', methods=['GET', 'POST', 'DELETE'])
@@ -584,29 +827,24 @@ def get_alternatives_api():
 
 @api_bp.route('/api/register', methods=['POST'])
 def register():
-    data = request.json
+    data = request.json or {}
     email = data.get('email', '').strip()
     password = data.get('password', '')
     fullname = data.get('fullname', '').strip()
+    nickname = (data.get('nickname') or '').strip() or None
 
     if not email or not password or not fullname:
         return jsonify({"status": "error", "message": "Vui lòng nhập đầy đủ thông tin"}), 400
-    
-    if len(password) < 8:
-        return jsonify({"status": "error", "message": "Mật khẩu phải có ít nhất 8 ký tự"}), 400
-    if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
-        return jsonify({"status": "error", "message": "Mật khẩu cần có cả chữ và số"}), 400
-    if not any(c in "!@#$%^&*()_+-=[]{}|;:',.<>?/`~\\" for c in password):
-        return jsonify({"status": "error", "message": "Mật khẩu cần có ít nhất 1 ký tự đặc biệt (!@#$%...)"}), 400
 
-    result = register_user(fullname, email, password)
-    
+    result = register_user(fullname, email, password, nickname=nickname)
+
     if result["status"] == "success":
         # Tự động đăng nhập luôn sau khi đăng ký
         session['user_id'] = result["user"]["id"]
         session['role'] = result["user"]["role"]
-        
-    return jsonify(result)
+        session['email'] = result["user"].get("email") or email
+
+    return jsonify(result), 200 if result["status"] == "success" else 400
 
 @api_bp.route('/api/login', methods=['POST'])
 def login():
@@ -626,6 +864,128 @@ def login():
 
     return jsonify(result), 200 if result["status"] == "success" else 401
 
+
+@api_bp.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.json or {}
+    email = (data.get('email') or '').strip()
+    result = request_password_reset(email)
+    code = 200 if result.get('status') == 'success' else 400
+    return jsonify(result), code
+
+
+@api_bp.route('/api/reset-password', methods=['POST'])
+def reset_password_api():
+    data = request.json or {}
+    token = (data.get('token') or '').strip()
+    new_password = data.get('new_password') or data.get('password') or ''
+    result = reset_password_with_token(token, new_password)
+    code = 200 if result.get('status') == 'success' else 400
+    return jsonify(result), code
+
+
+@api_bp.route('/api/auth/google/status', methods=['GET'])
+def google_auth_status():
+    """Frontend kiểm tra Google OAuth đã cấu hình chưa."""
+    cid = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    return jsonify({
+        "status": "success",
+        "enabled": bool(cid and os.getenv('GOOGLE_CLIENT_SECRET', '').strip()),
+    })
+
+
+@api_bp.route('/api/auth/google', methods=['GET'])
+def google_login_start():
+    """Redirect user sang Google consent screen."""
+    client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
+    if not client_id or not client_secret:
+        return jsonify({
+            "status": "error",
+            "message": "Chưa cấu hình GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET trong file .env",
+        }), 503
+
+    from authlib.integrations.requests_client import OAuth2Session
+    redirect_uri = os.getenv('GOOGLE_REDIRECT_URI') or request.url_root.rstrip('/') + '/api/auth/google/callback'
+    oauth = OAuth2Session(
+        client_id,
+        client_secret,
+        scope='openid email profile',
+        redirect_uri=redirect_uri,
+    )
+    uri, state = oauth.create_authorization_url(
+        'https://accounts.google.com/o/oauth2/v2/auth',
+        access_type='online',
+        prompt='select_account',
+    )
+    session['google_oauth_state'] = state
+    session['google_oauth_redirect'] = redirect_uri
+    from flask import redirect
+    return redirect(uri)
+
+
+@api_bp.route('/api/auth/google/callback', methods=['GET'])
+def google_login_callback():
+    """Google redirect về đây sau khi user đồng ý."""
+    from flask import redirect as flask_redirect, current_app
+    client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
+    if not client_id or not client_secret:
+        return flask_redirect('/?google_error=not_configured')
+
+    error = request.args.get('error')
+    if error:
+        return flask_redirect(f'/?google_error={error}')
+
+    state = request.args.get('state')
+    if not state or state != session.get('google_oauth_state'):
+        return flask_redirect('/?google_error=invalid_state')
+
+    code = request.args.get('code')
+    if not code:
+        return flask_redirect('/?google_error=no_code')
+
+    try:
+        from authlib.integrations.requests_client import OAuth2Session
+        redirect_uri = session.get('google_oauth_redirect') or (
+            request.url_root.rstrip('/') + '/api/auth/google/callback'
+        )
+        oauth = OAuth2Session(client_id, client_secret, redirect_uri=redirect_uri)
+        token = oauth.fetch_token(
+            'https://oauth2.googleapis.com/token',
+            code=code,
+            grant_type='authorization_code',
+        )
+        resp = oauth.get('https://www.googleapis.com/oauth2/v3/userinfo')
+        info = resp.json()
+        google_id = info.get('sub')
+        email = info.get('email')
+        fullname = info.get('name') or info.get('given_name') or ''
+        avatar = info.get('picture')
+        if not info.get('email_verified', True):
+            return flask_redirect('/?google_error=email_not_verified')
+
+        result = login_or_register_google(google_id, email, fullname, avatar)
+        if result.get('status') != 'success':
+            msg = result.get('message', 'login_failed')
+            return flask_redirect(f'/?google_error={msg}')
+
+        user = result['user']
+        session['user_id'] = user['id']
+        session['role'] = user.get('role', 'user')
+        session['email'] = user.get('email') or email
+        session.pop('google_oauth_state', None)
+
+        # Truyền user qua query (frontend đọc rồi lưu localStorage) — encode an toàn
+        import json, base64
+        payload = base64.urlsafe_b64encode(json.dumps(user, ensure_ascii=False).encode('utf-8')).decode('ascii')
+        needs = '1' if user.get('needs_onboarding') else '0'
+        return flask_redirect(f'/?google_login=1&u={payload}&onboarding={needs}')
+    except Exception as e:
+        print(f'[Google OAuth] {e}')
+        return flask_redirect('/?google_error=oauth_failed')
+
+
 @api_bp.route('/api/logout', methods=['POST'])
 def logout():
     session.clear()
@@ -633,7 +993,13 @@ def logout():
 
 @api_bp.route('/api/log_food/<int:log_id>', methods=['DELETE'])
 def remove_food_log(log_id):
-    user_id = session.get('user_id')
+    user_id = session.get('user_id') or request.args.get('user_id', type=int)
+    if not user_id:
+        data = request.get_json(silent=True) or {}
+        try:
+            user_id = int(data['user_id']) if data.get('user_id') not in (None, '', 0, '0') else None
+        except (TypeError, ValueError, KeyError):
+            user_id = None
     if not user_id:
         return jsonify({"status": "error", "message": "Chưa đăng nhập"}), 401
     return jsonify(delete_log(user_id, log_id))
