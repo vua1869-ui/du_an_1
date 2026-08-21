@@ -302,23 +302,211 @@ def reorder_faqs(order_list):
 
 
 # ═══════════════════════════════════════════
-# CHAT LOGS
+# CHAT LOGS + SESSIONS (kiểu ChatGPT)
 # ═══════════════════════════════════════════
 
-def log_chat(user_id, question, answer, response_type='chat', is_error=False):
+def _make_title_from_question(question, max_len=48):
+    q = (question or '').strip().replace('\n', ' ')
+    if not q:
+        return 'Đoạn chat mới'
+    if len(q) <= max_len:
+        return q
+    return q[: max_len - 1].rstrip() + '…'
+
+
+def create_chat_session(user_id, title=None):
+    if not user_id:
+        return {'status': 'error', 'message': 'Chưa đăng nhập'}
+    now = _now()
+    title = (title or 'Đoạn chat mới').strip()[:120] or 'Đoạn chat mới'
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        '''INSERT INTO chat_sessions (user_id, title, created_at, updated_at) VALUES (?,?,?,?)''',
+        (user_id, title, now, now),
+    )
+    sid = c.lastrowid
+    conn.commit()
+    conn.close()
+    return {
+        'status': 'success',
+        'session': {
+            'id': sid,
+            'title': title,
+            'created_at': now,
+            'updated_at': now,
+            'preview': '',
+        },
+    }
+
+
+def list_chat_sessions(user_id, limit=40):
+    if not user_id:
+        return {'status': 'success', 'sessions': []}
     try:
+        limit = min(100, max(1, int(limit or 40)))
+    except (TypeError, ValueError):
+        limit = 40
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        '''SELECT s.id, s.title, s.created_at, s.updated_at,
+                  (SELECT question FROM chat_logs WHERE session_id=s.id ORDER BY id ASC LIMIT 1) as first_q
+           FROM chat_sessions s
+           WHERE s.user_id=?
+           ORDER BY s.updated_at DESC, s.id DESC
+           LIMIT ?''',
+        (user_id, limit),
+    )
+    rows = c.fetchall()
+    conn.close()
+    sessions = []
+    for r in rows:
+        title = r[1] or 'Đoạn chat mới'
+        if title == 'Đoạn chat mới' and r[4]:
+            title = _make_title_from_question(r[4])
+        sessions.append({
+            'id': r[0],
+            'title': title,
+            'created_at': r[2],
+            'updated_at': r[3],
+            'preview': (r[4] or '')[:80],
+        })
+    return {'status': 'success', 'sessions': sessions}
+
+
+def get_session_messages(user_id, session_id, limit=100):
+    if not user_id or not session_id:
+        return {'status': 'error', 'message': 'Thiếu thông tin', 'logs': []}
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id, title FROM chat_sessions WHERE id=? AND user_id=?', (session_id, user_id))
+    sess = c.fetchone()
+    if not sess:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy đoạn chat', 'logs': []}
+    try:
+        limit = min(200, max(1, int(limit or 100)))
+    except (TypeError, ValueError):
+        limit = 100
+    c.execute(
+        '''SELECT id, question, answer, response_type, is_error, created_at
+           FROM chat_logs WHERE session_id=? AND user_id=?
+           ORDER BY id ASC LIMIT ?''',
+        (session_id, user_id, limit),
+    )
+    rows = c.fetchall()
+    conn.close()
+    return {
+        'status': 'success',
+        'session': {'id': sess[0], 'title': sess[1] or 'Đoạn chat mới'},
+        'logs': [
+            {
+                'id': r[0],
+                'question': r[1],
+                'answer': r[2],
+                'response_type': r[3],
+                'is_error': bool(r[4]),
+                'created_at': r[5],
+            }
+            for r in rows
+        ],
+    }
+
+
+def rename_chat_session(user_id, session_id, title):
+    title = (title or '').strip()[:120]
+    if not title:
+        return {'status': 'error', 'message': 'Tiêu đề trống'}
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        'UPDATE chat_sessions SET title=?, updated_at=? WHERE id=? AND user_id=?',
+        (title, _now(), session_id, user_id),
+    )
+    ok = c.rowcount > 0
+    conn.commit()
+    conn.close()
+    if not ok:
+        return {'status': 'error', 'message': 'Không tìm thấy đoạn chat'}
+    return {'status': 'success', 'message': 'Đã đổi tên', 'title': title}
+
+
+def delete_chat_session(user_id, session_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id FROM chat_sessions WHERE id=? AND user_id=?', (session_id, user_id))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy đoạn chat'}
+    c.execute('DELETE FROM chat_logs WHERE session_id=? AND user_id=?', (session_id, user_id))
+    c.execute('DELETE FROM chat_sessions WHERE id=? AND user_id=?', (session_id, user_id))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã xóa đoạn chat'}
+
+
+def ensure_chat_session(user_id, session_id=None, first_question=None):
+    """Lấy session hiện có hoặc tạo mới. Trả về session_id."""
+    if not user_id:
+        return None
+    conn = get_db_connection()
+    c = conn.cursor()
+    if session_id:
+        c.execute('SELECT id FROM chat_sessions WHERE id=? AND user_id=?', (session_id, user_id))
+        if c.fetchone():
+            conn.close()
+            return int(session_id)
+    now = _now()
+    title = _make_title_from_question(first_question) if first_question else 'Đoạn chat mới'
+    c.execute(
+        '''INSERT INTO chat_sessions (user_id, title, created_at, updated_at) VALUES (?,?,?,?)''',
+        (user_id, title, now, now),
+    )
+    sid = c.lastrowid
+    conn.commit()
+    conn.close()
+    return sid
+
+
+def log_chat(user_id, question, answer, response_type='chat', is_error=False, session_id=None):
+    try:
+        now = _now()
+        # Tự tạo session nếu chưa có
+        if user_id and not session_id:
+            session_id = ensure_chat_session(user_id, None, question)
+        elif user_id and session_id:
+            # verify ownership; create if invalid
+            session_id = ensure_chat_session(user_id, session_id, question)
+
         conn = get_db_connection()
         c = conn.cursor()
         c.execute(
-            '''INSERT INTO chat_logs (user_id, question, answer, response_type, is_error, created_at)
-               VALUES (?,?,?,?,?,?)''',
+            '''INSERT INTO chat_logs (user_id, question, answer, response_type, is_error, created_at, session_id)
+               VALUES (?,?,?,?,?,?,?)''',
             (user_id, (question or '')[:1000], (answer or '')[:2000], response_type or 'chat',
-             1 if is_error else 0, _now()),
+             1 if is_error else 0, now, session_id),
         )
+        if session_id and user_id:
+            # Cập nhật thời gian + auto title nếu vẫn là mặc định
+            c.execute('SELECT title FROM chat_sessions WHERE id=? AND user_id=?', (session_id, user_id))
+            row = c.fetchone()
+            if row:
+                title = row[0] or 'Đoạn chat mới'
+                if title in ('Đoạn chat mới', 'New chat', '') and question:
+                    title = _make_title_from_question(question)
+                    c.execute(
+                        'UPDATE chat_sessions SET title=?, updated_at=? WHERE id=?',
+                        (title, now, session_id),
+                    )
+                else:
+                    c.execute('UPDATE chat_sessions SET updated_at=? WHERE id=?', (now, session_id))
         conn.commit()
         conn.close()
+        return session_id
     except Exception as e:
         print(f'[WARN] log_chat: {e}')
+        return session_id
 
 
 def get_chatbot_stats():
@@ -374,6 +562,39 @@ def get_chat_logs(page=1, per_page=30, q=None):
         ],
         'total': total, 'page': page,
         'pages': max(1, (total + per_page - 1) // per_page),
+    }
+
+
+def get_user_chat_history(user_id, limit=50):
+    """Lịch sử chat của một user (mới nhất trước)."""
+    if not user_id:
+        return {'status': 'success', 'logs': []}
+    try:
+        limit = min(100, max(1, int(limit or 50)))
+    except (TypeError, ValueError):
+        limit = 50
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        '''SELECT id, question, answer, response_type, is_error, created_at
+           FROM chat_logs WHERE user_id=? ORDER BY id DESC LIMIT ?''',
+        (user_id, limit),
+    )
+    rows = c.fetchall()
+    conn.close()
+    return {
+        'status': 'success',
+        'logs': [
+            {
+                'id': r[0],
+                'question': r[1],
+                'answer': r[2],
+                'response_type': r[3],
+                'is_error': bool(r[4]),
+                'created_at': r[5],
+            }
+            for r in rows
+        ],
     }
 
 

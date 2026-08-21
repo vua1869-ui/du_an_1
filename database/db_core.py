@@ -24,6 +24,31 @@ def _migrate_schema(c):
     if not _column_exists(c, 'users', 'is_active'):
         c.execute('ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1')
         c.execute('UPDATE users SET is_active=1 WHERE is_active IS NULL')
+    if not _column_exists(c, 'users', 'google_id'):
+        c.execute('ALTER TABLE users ADD COLUMN google_id TEXT')
+    if not _column_exists(c, 'users', 'avatar_url'):
+        c.execute('ALTER TABLE users ADD COLUMN avatar_url TEXT')
+    try:
+        c.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL')
+    except Exception:
+        pass
+
+    # --- password reset tokens ---
+    c.execute('''CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        email TEXT NOT NULL,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        created_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )''')
+    try:
+        c.execute('CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id)')
+    except Exception:
+        pass
 
     # --- foods ---
     for col, typedef in [
@@ -91,6 +116,20 @@ def _migrate_schema(c):
         updated_at TEXT
     )''')
 
+    # --- Chat sessions (kiểu ChatGPT) ---
+    c.execute('''CREATE TABLE IF NOT EXISTS chat_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT DEFAULT 'Đoạn chat mới',
+        created_at TEXT,
+        updated_at TEXT
+    )''')
+    try:
+        c.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_user ON chat_sessions(user_id)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_chat_sessions_updated ON chat_sessions(updated_at)')
+    except Exception:
+        pass
+
     # --- Chatbot logs ---
     c.execute('''CREATE TABLE IF NOT EXISTS chat_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,6 +140,16 @@ def _migrate_schema(c):
         is_error INTEGER DEFAULT 0,
         created_at TEXT
     )''')
+    if not _column_exists(c, 'chat_logs', 'session_id'):
+        try:
+            c.execute('ALTER TABLE chat_logs ADD COLUMN session_id INTEGER')
+        except Exception:
+            pass
+    try:
+        c.execute('CREATE INDEX IF NOT EXISTS idx_chat_logs_session ON chat_logs(session_id)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_chat_logs_user ON chat_logs(user_id)')
+    except Exception:
+        pass
 
     # --- Image analysis logs ---
     c.execute('''CREATE TABLE IF NOT EXISTS analysis_logs (

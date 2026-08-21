@@ -344,23 +344,117 @@
 
         <div class="bg-white/90 backdrop-blur-xl p-8 sm:p-10 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(21,36,32,0.18)] border border-line w-full max-w-xl animate-fade-in-up relative z-10">
             <div id="view-login" class="space-y-6">
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-4xl mb-4 shadow-sm border border-primary/15">🥑</div>
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-ocean/15 text-3xl mb-4 shadow-sm border border-primary/15">🥑</div>
                     <h1 class="text-3xl font-display font-bold text-dark tracking-tight">Nutrition<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-ocean">AI</span></h1>
-                    <p class="text-inkmute text-sm mt-2 font-medium">Hành trình sức khỏe bắt đầu từ đây</p>
+                    <p class="text-inkmute text-sm mt-2 font-medium">Chào mừng trở lại — đăng nhập để tiếp tục</p>
                 </div>
-                <form onsubmit="handleLogin(event)" class="space-y-5">
+
+                <!-- Tabs Đăng nhập / Đăng ký -->
+                <div class="flex p-1 bg-surface2 rounded-2xl border border-line">
+                    <button type="button" id="auth-tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-primary shadow-sm">Đăng nhập</button>
+                    <button type="button" id="auth-tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-inkmute hover:text-dark">Đăng ký</button>
+                </div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4" id="login-form" autocomplete="on">
                     <div class="space-y-1.5">
-                        <label class="block text-sm font-bold text-slate-700">Email</label>
-                        <input type="email" id="login-email" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300" placeholder="hello@example.com">
+                        <label class="block text-sm font-bold text-slate-700" for="login-email">Email</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-inkmute text-sm pointer-events-none">✉️</span>
+                            <input type="email" id="login-email" name="email" required autocomplete="email" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300" placeholder="hello@example.com">
+                        </div>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block text-sm font-bold text-slate-700">Mật khẩu</label>
-                        <input type="password" id="login-password" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300" placeholder="••••••••">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-bold text-slate-700" for="login-password">Mật khẩu</label>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-inkmute text-sm pointer-events-none">🔒</span>
+                            <input type="password" id="login-password" name="password" required autocomplete="current-password" class="w-full pl-11 pr-12 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300" placeholder="••••••••">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-dark transition" title="Hiện/ẩn mật khẩu" aria-label="Hiện mật khẩu">
+                                <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="btn-press w-full bg-gradient-to-r from-primary to-ocean text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/25 text-base mt-2">Đăng Nhập</button>
-                    <p class="text-center text-sm text-inkmute mt-6 font-medium">Chưa có tài khoản? <button type="button" onclick="startOnboarding()" class="text-primary font-bold hover:text-primary_hover transition-colors">Bắt đầu ngay</button></p>
+                    <div class="flex items-center justify-between pt-0.5">
+                        <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="login-remember" class="w-4 h-4 rounded border-line text-primary focus:ring-primary/30">
+                            <span class="text-sm font-medium text-slate-600">Ghi nhớ email</span>
+                        </label>
+                        <button type="button" onclick="showForgotPassword()" class="text-xs text-primary font-bold hover:text-primary_hover transition-colors">Quên mật khẩu?</button>
+                    </div>
+                    <div id="login-error" class="hidden rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-medium px-4 py-3"></div>
+                    <button type="submit" id="btn-login-submit" class="btn-press w-full bg-gradient-to-r from-primary to-ocean text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/25 text-base mt-1 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span id="login-btn-text">Đăng nhập</span>
+                        <svg id="login-btn-spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                    </button>
                 </form>
+
+                <div id="google-login-block" class="space-y-4">
+                    <div class="relative flex items-center gap-3 py-1">
+                        <div class="flex-1 h-px bg-line"></div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-inkmute">hoặc</span>
+                        <div class="flex-1 h-px bg-line"></div>
+                    </div>
+                    <button type="button" onclick="loginWithGoogle()" id="btn-google-login"
+                        class="btn-press w-full flex items-center justify-center gap-3 bg-white border border-line hover:bg-paper text-dark font-bold py-3.5 rounded-2xl shadow-sm transition-all text-sm">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.8 0 3.41.63 4.68 1.87l3.49-3.49C18.07 1.46 15.24 0 12 0 7.31 0 3.26 2.7 1.34 6.62l4.05 3.14C6.4 6.94 8.98 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.86 3c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#FBBC05" d="M5.39 14.24c-.22-.66-.35-1.36-.35-2.09s.12-1.43.35-2.09L1.34 6.92C.49 8.53 0 10.26 0 12.15c0 1.89.49 3.62 1.34 5.23l4.05-3.14z"/><path fill="#34A853" d="M12 24c3.24 0 5.97-1.07 7.96-2.91l-3.86-3c-1.08.72-2.46 1.14-4.1 1.14-3.02 0-5.6-1.9-6.61-4.57L1.34 17.7C3.26 21.62 7.31 24 12 24z"/></svg>
+                        Tiếp tục với Google
+                    </button>
+                    <p id="google-login-hint" class="hidden text-center text-[11px] text-inkmute font-medium">Đang cấu hình Google OAuth…</p>
+                </div>
+
+                <p class="text-center text-sm text-inkmute mt-1 font-medium">Chưa có tài khoản? <button type="button" onclick="switchAuthTab('register')" class="text-primary font-bold hover:text-primary_hover transition-colors">Đăng ký miễn phí</button></p>
+            </div>
+
+            <!-- Quên mật khẩu -->
+            <div id="view-forgot" class="hidden space-y-6">
+                <div class="text-center mb-2">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-50 text-2xl mb-3 border border-amber-100">🔑</div>
+                    <h2 class="text-2xl font-display font-bold text-dark tracking-tight">Quên mật khẩu</h2>
+                    <p class="text-inkmute text-sm mt-1.5 font-medium">Nhập email đã đăng ký để nhận mã đặt lại</p>
+                </div>
+                <form onsubmit="handleForgotPassword(event)" class="space-y-4" id="forgot-form">
+                    <div class="space-y-1.5">
+                        <label class="block text-sm font-bold text-slate-700" for="forgot-email">Email</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-inkmute text-sm pointer-events-none">✉️</span>
+                            <input type="email" id="forgot-email" required autocomplete="email" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="hello@example.com">
+                        </div>
+                    </div>
+                    <div id="forgot-error" class="hidden rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-medium px-4 py-3"></div>
+                    <div id="forgot-success" class="hidden rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm font-medium px-4 py-3 space-y-2"></div>
+                    <button type="submit" id="btn-forgot-submit" class="btn-press w-full bg-gradient-to-r from-primary to-ocean text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/25 text-base flex items-center justify-center gap-2 disabled:opacity-70">
+                        <span id="forgot-btn-text">Gửi mã đặt lại</span>
+                    </button>
+                </form>
+                <div id="reset-form-wrap" class="hidden space-y-4 pt-2 border-t border-line">
+                    <p class="text-sm font-bold text-dark">Nhập mã và mật khẩu mới</p>
+                    <form onsubmit="handleResetPassword(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Mã đặt lại (token)</label>
+                            <input type="text" id="reset-token" required class="w-full px-4 py-3 rounded-xl border border-line bg-paper focus:bg-white focus:border-primary outline-none text-sm font-mono" placeholder="Dán mã token">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu mới</label>
+                            <div class="relative">
+                                <input type="password" id="reset-password" required oninput="checkObPassStrength(this.value)" class="w-full px-4 pr-12 py-3 rounded-xl border border-line bg-paper focus:bg-white focus:border-primary outline-none text-sm" placeholder="≥8 ký tự, chữ + số + ký tự đặc biệt" autocomplete="new-password">
+                                <button type="button" onclick="togglePasswordVisibility('reset-password', this)" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-inkmute hover:bg-surface2" title="Hiện/ẩn">
+                                    <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Xác nhận mật khẩu</label>
+                            <input type="password" id="reset-password-confirm" required class="w-full px-4 py-3 rounded-xl border border-line bg-paper focus:bg-white focus:border-primary outline-none text-sm" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+                        </div>
+                        <div id="reset-error" class="hidden rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-medium px-4 py-3"></div>
+                        <button type="submit" class="btn-press w-full bg-dark text-white font-bold py-3.5 rounded-2xl shadow-lg">Đặt mật khẩu mới</button>
+                    </form>
+                </div>
+                <button type="button" onclick="switchAuthTab('login')" class="w-full text-center text-sm font-bold text-primary hover:text-primary_hover py-2">← Quay lại đăng nhập</button>
             </div>
 
             <div id="view-onboarding" class="hidden">
@@ -385,7 +479,13 @@
                         <div><label class="block text-sm font-bold text-slate-600 mb-1.5">Email</label><input type="email" id="ob-email" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all"></div>
                         <div>
                             <label class="block text-sm font-bold text-slate-600 mb-1.5">Mật khẩu</label>
-                            <input type="password" id="ob-password" required oninput="checkObPassStrength(this.value)" class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="≥8 ký tự, chữ + số + ký tự đặc biệt">
+                            <div class="relative">
+                                <input type="password" id="ob-password" required oninput="checkObPassStrength(this.value)" class="w-full px-5 pr-12 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="≥8 ký tự, chữ + số + ký tự đặc biệt" autocomplete="new-password">
+                                <button type="button" onclick="togglePasswordVisibility('ob-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-dark transition" title="Hiện/ẩn mật khẩu" aria-label="Hiện mật khẩu">
+                                    <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
                             <div class="mt-2 flex gap-1">
                                 <div id="ob-pw-1" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
                                 <div id="ob-pw-2" class="h-1.5 flex-1 rounded-full bg-surface2"></div>
@@ -396,7 +496,13 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-600 mb-1.5">Nhập lại mật khẩu</label>
-                            <input type="password" id="ob-password-confirm" required class="w-full px-5 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="Xác nhận mật khẩu">
+                            <div class="relative">
+                                <input type="password" id="ob-password-confirm" required class="w-full px-5 pr-12 py-3.5 rounded-2xl border border-line bg-paper focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" placeholder="Xác nhận mật khẩu" autocomplete="new-password">
+                                <button type="button" onclick="togglePasswordVisibility('ob-password-confirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-dark transition" title="Hiện/ẩn mật khẩu" aria-label="Hiện mật khẩu">
+                                    <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -565,10 +671,6 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 Hồ sơ
             </button>
-            <button onclick="switchAppTab('settings')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-inkmute py-1 px-3" id="mnav-settings">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                Cài đặt
-            </button>
         </nav>
 
         <div class="fz-main">
@@ -603,7 +705,7 @@
                     
                     <div class="flex gap-3 overflow-x-auto hide-scrollbar w-full md:w-auto pb-2 md:pb-0">
                         <button onclick="switchAppTab('chat')" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
-                            <span class="bg-primary/10 text-primary w-7 h-7 rounded-full flex items-center justify-center">📷</span> Quét Món
+                            <span class="bg-primary/10 text-primary w-7 h-7 rounded-full flex items-center justify-center">💬</span> Trợ lý AI
                         </button>
                         <button onclick="openWeightModal()" class="action-btn flex items-center gap-2 bg-white text-dark px-4 py-2.5 rounded-2xl border border-line shadow-sm font-bold text-sm shrink-0">
                             <span class="bg-ocean/10 text-ocean w-7 h-7 rounded-full flex items-center justify-center">⚖️</span> Cân Nặng
@@ -855,10 +957,27 @@
                     <div id="recent-foods-chips" class="flex flex-wrap gap-2"></div>
                 </div>
 
+                <!-- Checklist / Reminder -->
+                <div id="daily-checklist-widget" class="bento-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-dark font-display flex items-center gap-2">✅ Checklist hôm nay</h3>
+                        <button type="button" onclick="loadDailyChecklist()" class="text-[10px] font-bold text-primary hover:underline px-2 py-1 rounded-lg hover:bg-primary/10">Làm mới</button>
+                    </div>
+                    <div id="checklist-items" class="space-y-2 mb-3"></div>
+                    <div id="reminder-banner" class="hidden text-xs font-medium text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2"></div>
+                </div>
+
                 <div class="bento-card p-6">
-                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-line">
-                        <h3 class="text-lg font-bold text-dark font-display">Nhật ký ăn uống</h3>
-                        <span class="bg-surface2 text-inkmute text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full">Hôm nay</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-line">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-bold text-dark font-display">Nhật ký ăn uống</h3>
+                            <span id="log-date-label" class="bg-surface2 text-inkmute text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full">Hôm nay</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="date" id="log-date-picker" onchange="onLogDateChange()" class="border border-line rounded-xl px-2 py-1.5 text-xs font-bold bg-paper outline-none">
+                            <button onclick="goLogToday()" class="btn-press text-[10px] font-bold px-3 py-1.5 rounded-xl border border-line text-inkmute">Hôm nay</button>
+                            <button onclick="copyYesterdayLogs()" class="btn-press text-[10px] font-bold px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/15">📋 Copy hôm qua</button>
+                        </div>
                     </div>
                     <div id="today-logs-list" class="space-y-3"></div>
                 </div>
@@ -866,56 +985,140 @@
 
             <!-- TAB 3: TRỢ LÝ CHAT (GIAO DIỆN PRO) -->
             <div id="view-chat" class="hidden h-[calc(100vh-140px)] sm:h-[75vh] max-h-[800px] flex-col bg-white rounded-[2rem] shadow-[0_12px_40px_-15px_rgba(30,110,76,0.15)] border border-line overflow-hidden animate-fade-in-up">
-                
-                <!-- Header mượt mà (Glassmorphism) -->
-                <div class="bg-paper/80 backdrop-blur-xl p-4 sm:p-5 flex items-center justify-between border-b border-line shrink-0 z-20 relative">
-                    <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 bg-white rounded-[1rem] flex items-center justify-center text-2xl shadow-sm border border-line relative">
-                            🤖
-                            <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></span>
+                <div class="flex flex-1 min-h-0">
+                    <!-- Sidebar lịch sử (ChatGPT-style) -->
+                    <aside id="chat-history-sidebar" class="flex w-[220px] sm:w-[260px] shrink-0 flex-col border-r border-line bg-[#F7F7F8] max-md:hidden">
+                        <div class="p-3 border-b border-line">
+                            <button type="button" onclick="startNewChat()" class="btn-press w-full flex items-center justify-center gap-2 bg-white border border-line hover:bg-paper text-dark font-bold py-2.5 rounded-xl text-sm shadow-sm transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                Đoạn chat mới
+                            </button>
                         </div>
-                        <div>
-                            <h3 class="font-display font-bold text-dark text-lg tracking-tight leading-tight">NutriBot AI</h3>
-                            <p class="text-primary text-[11px] font-bold uppercase tracking-widest mt-0.5">Trợ lý dinh dưỡng 24/7</p>
+                        <div class="px-3 pt-3 pb-1 flex items-center justify-between">
+                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-inkmute">Lịch sử chat</p>
+                            <button type="button" onclick="loadChatSessions()" class="text-[10px] font-bold text-primary hover:underline">Làm mới</button>
                         </div>
-                    </div>
-                    <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-surface2 text-inkmute transition-colors" title="Cài đặt chat">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-                    </button>
-                </div>
-                
-                <!-- Khu vực tin nhắn -->
-                <div id="chat-box" class="flex-1 min-h-0 p-5 overflow-y-auto bg-[#FBF9F4] space-y-6 flex flex-col scroll-smooth">
-                    
-                    <!-- Lời chào từ AI -->
-                    <div class="flex justify-start items-end gap-3 animate-fade-in-up">
-                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
-                        <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-line max-w-[85%] leading-relaxed">
-                            Chào bạn! Mình là AI tư vấn dinh dưỡng RAG. Nhấn để yêu cầu lên thực đơn hoặc hỏi về hàm lượng calo bất cứ món ăn nào nhé!
+                        <div id="chat-session-list" class="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5 min-h-0">
+                            <p class="text-xs text-inkmute text-center py-6">Đang tải lịch sử…</p>
                         </div>
-                    </div>
+                    </aside>
 
+                    <!-- Main chat panel -->
+                    <div class="flex-1 min-w-0 flex flex-col">
+                        <div class="bg-paper/80 backdrop-blur-xl p-3 sm:p-4 flex items-center justify-between border-b border-line shrink-0 z-20 relative">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <button type="button" onclick="toggleChatSidebar()" class="md:hidden w-9 h-9 flex items-center justify-center rounded-xl hover:bg-surface2 text-inkmute border border-line" title="Lịch sử chat">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </button>
+                                <div class="w-10 h-10 bg-white rounded-[1rem] flex items-center justify-center text-xl shadow-sm border border-line relative shrink-0">
+                                    🤖
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="font-display font-bold text-dark text-base tracking-tight leading-tight truncate" id="chat-current-title">Đoạn chat mới</h3>
+                                    <p class="text-primary text-[10px] font-bold uppercase tracking-widest mt-0.5">NutriBot · 24/7</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="startNewChat()" class="btn-press hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-line bg-white text-xs font-bold text-dark hover:bg-paper" title="Chat mới">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    Mới
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="chat-box" class="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto bg-[#FBF9F4] space-y-5 flex flex-col scroll-smooth">
+                            <div class="flex justify-start items-end gap-3 animate-fade-in-up">
+                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
+                                <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-line max-w-[85%] leading-relaxed">
+                                    Chào bạn! Mình là AI tư vấn dinh dưỡng RAG. Nhấn để yêu cầu lên thực đơn hoặc hỏi về hàm lượng calo bất cứ món ăn nào nhé!
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 sm:p-4 bg-white border-t border-line shrink-0 relative z-20">
+                            <div class="max-w-3xl mx-auto relative flex items-center bg-surface2/50 border border-line rounded-[1.25rem] focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm">
+                                <div class="absolute left-1.5 flex items-center gap-0.5">
+                                    <label for="chat-image-upload" class="btn-press w-9 h-9 flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-primary rounded-xl transition-colors cursor-pointer" title="Tải ảnh từ thư viện">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </label>
+                                    <label for="chat-camera-capture" class="btn-press w-9 h-9 flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-primary rounded-xl transition-colors cursor-pointer" title="Chụp ảnh món ăn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    </label>
+                                </div>
+                                <input type="file" id="chat-image-upload" accept="image/*" class="hidden" onchange="uploadImageForChat(event)">
+                                <input type="file" id="chat-camera-capture" accept="image/*" capture="environment" class="hidden" onchange="uploadImageForChat(event)">
+                                <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Nhắn tin hoặc gửi ảnh món ăn…" class="flex-1 bg-transparent border-none py-3.5 pl-[5.25rem] pr-14 text-sm font-medium outline-none text-dark placeholder-inkmute/70">
+                                <button onclick="sendChatMessage()" class="btn-press absolute right-2 w-10 h-10 flex items-center justify-center bg-primary text-white rounded-xl shadow-md hover:bg-primary_hover transition-colors">
+                                    <svg class="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-center text-inkmute mt-2 font-medium">📷 Chụp / tải ảnh món ăn để AI phân tích calo · NutriBot có thể mắc lỗi</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Khu vực nhập liệu -->
-                <div class="p-4 sm:p-5 bg-white border-t border-line shrink-0 relative z-20">
-                    <div class="max-w-3xl mx-auto relative flex items-center bg-surface2/50 border border-line rounded-[1.25rem] focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm">
-                        <label for="chat-image-upload" class="btn-press absolute left-2 w-10 h-10 flex items-center justify-center text-inkmute hover:bg-surface2 rounded-xl transition-colors cursor-pointer" title="Gửi ảnh">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                        </label>
-                        <input type="file" id="chat-image-upload" accept="image/*" class="hidden" onchange="uploadImageForChat(event)">
-                        <input type="text" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Hỏi AI tại đây hoặc tải ảnh mâm cơm lên..." class="flex-1 bg-transparent border-none py-3.5 pl-14 pr-14 text-sm font-medium outline-none text-dark placeholder-inkmute/70">
-                        <button onclick="sendChatMessage()" class="btn-press absolute right-2 w-10 h-10 flex items-center justify-center bg-primary text-white rounded-xl shadow-md hover:bg-primary_hover transition-colors">
-                            <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                        </button>
+                <!-- Mobile history drawer -->
+                <div id="chat-history-drawer" class="hidden md:hidden fixed inset-0 z-[80]">
+                    <div class="absolute inset-0 bg-dark/40 backdrop-blur-sm" onclick="toggleChatSidebar(false)"></div>
+                    <div class="absolute left-0 top-0 bottom-0 w-[280px] max-w-[85vw] bg-white shadow-2xl flex flex-col animate-fade-in-up">
+                        <div class="p-3 border-b border-line flex items-center justify-between">
+                            <p class="font-bold text-dark text-sm">Lịch sử chat</p>
+                            <button type="button" onclick="toggleChatSidebar(false)" class="w-8 h-8 rounded-lg hover:bg-surface2 text-inkmute">×</button>
+                        </div>
+                        <div class="p-3">
+                            <button type="button" onclick="startNewChat(); toggleChatSidebar(false)" class="btn-press w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-xl text-sm">
+                                + Đoạn chat mới
+                            </button>
+                        </div>
+                        <div id="chat-session-list-mobile" class="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5"></div>
                     </div>
-                    <p class="text-[10px] text-center text-inkmute mt-3 font-medium">NutriBot có thể mắc lỗi. Vui lòng kiểm tra lại các thông số y khoa.</p>
+                </div>
+            </div>
+
+            <!-- TAB: THỰC ĐƠN MẪU -->
+            <div id="view-plans" class="hidden space-y-6 sm:space-y-8 animate-fade-in-up pb-10">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-3xl font-display font-bold text-dark tracking-tight">Thực đơn mẫu</h2>
+                        <p class="text-inkmute text-sm mt-1 font-medium">Chọn thực đơn phù hợp mục tiêu và áp dụng vào nhật ký hôm nay</p>
+                    </div>
+                    <select id="user-plan-goal-filter" onchange="loadUserPlans()" class="border border-line bg-white rounded-xl px-3 py-2.5 text-xs font-bold outline-none">
+                        <option value="">Tất cả mục tiêu</option>
+                        <option value="giam_can">Giảm cân</option>
+                        <option value="tang_can">Tăng cân</option>
+                        <option value="duy_tri">Duy trì</option>
+                        <option value="tang_co">Tăng cơ</option>
+                    </select>
+                </div>
+                <div id="user-plans-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="skeleton h-40 rounded-2xl"></div>
+                    <div class="skeleton h-40 rounded-2xl"></div>
+                </div>
+                <div id="user-plan-detail" class="hidden card-pro p-5 sm:p-6 space-y-4"></div>
+            </div>
+
+            <!-- TAB: KIẾN THỨC / BÀI VIẾT -->
+            <div id="view-knowledge" class="hidden space-y-6 sm:space-y-8 animate-fade-in-up pb-10">
+                <div>
+                    <h2 class="text-3xl font-display font-bold text-dark tracking-tight">Kiến thức dinh dưỡng</h2>
+                    <p class="text-inkmute text-sm mt-1 font-medium">Bài viết do chuyên gia / admin biên soạn</p>
+                </div>
+                <div id="knowledge-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="skeleton h-36 rounded-2xl"></div>
+                    <div class="skeleton h-36 rounded-2xl"></div>
+                </div>
+                <div id="knowledge-detail" class="hidden card-pro p-6 space-y-4"></div>
+                <div class="card-pro p-5">
+                    <h3 class="font-display font-bold text-dark mb-3">❓ Câu hỏi thường gặp</h3>
+                    <div id="user-faq-list" class="space-y-2"></div>
                 </div>
             </div>
 
             <div id="view-account" class="hidden space-y-6 sm:space-y-8 animate-fade-in-up">
                 <div class="flex justify-between items-center">
                     <h2 class="text-3xl sm:text-4xl font-display font-bold text-dark tracking-tight">Hồ sơ cá nhân</h2>
+                    <button onclick="toggleProfileEdit()" id="btn-edit-profile" class="btn-press text-xs font-bold bg-primary/10 text-primary px-4 py-2 rounded-xl border border-primary/15">✏️ Chỉnh sửa</button>
                 </div>
                 <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-line">
                     <div class="flex items-center gap-5 mb-8 border-b border-line pb-8">
@@ -926,32 +1129,68 @@
                         </div>
                     </div>
 
-                    <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2 font-display">🏋️ Thông tin thể chất</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Giới tính</p><p class="font-black text-dark text-xl" id="acc-gender">--</p></div>
-                        <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Tuổi</p><p class="font-black text-dark text-xl font-num" id="acc-age">--</p></div>
-                        <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Chiều cao</p><p class="font-black text-dark text-xl font-num" id="acc-height">-- <span class="text-sm font-bold text-inkmute font-sans">cm</span></p></div>
-                        <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Cân nặng</p><p class="font-black text-dark text-xl font-num" id="acc-weight">-- <span class="text-sm font-bold text-inkmute font-sans">kg</span></p></div>
+                    <!-- View mode -->
+                    <div id="acc-view-mode">
+                        <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2 font-display">🏋️ Thông tin thể chất</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                            <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Giới tính</p><p class="font-black text-dark text-xl" id="acc-gender">--</p></div>
+                            <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Tuổi</p><p class="font-black text-dark text-xl font-num" id="acc-age">--</p></div>
+                            <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Chiều cao</p><p class="font-black text-dark text-xl font-num" id="acc-height">-- <span class="text-sm font-bold text-inkmute font-sans">cm</span></p></div>
+                            <div class="bg-paper p-4 rounded-2xl border border-line"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest mb-1">Cân nặng</p><p class="font-black text-dark text-xl font-num" id="acc-weight">-- <span class="text-sm font-bold text-inkmute font-sans">kg</span></p></div>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2 font-display">🎯 Mục tiêu & Trao đổi chất</h4>
+                        <div class="bg-primary/5 p-5 rounded-2xl border border-primary/15 flex flex-col sm:flex-row justify-between items-center gap-6">
+                            <div class="text-center sm:text-left">
+                                <p class="text-[10px] text-primary font-extrabold uppercase tracking-widest mb-1">Định hướng cân nặng</p>
+                                <p class="font-black text-dark text-xl" id="acc-goal">--</p>
+                            </div>
+                            <div class="flex gap-3 text-center">
+                                <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-primary/10"><p class="text-[10px] text-inkmute font-extrabold uppercase">BMR</p><p class="font-black text-dark text-lg font-num" id="acc-bmr">--</p></div>
+                                <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-primary/10"><p class="text-[10px] text-inkmute font-extrabold uppercase">TDEE</p><p class="font-black text-dark text-lg font-num" id="acc-tdee">--</p></div>
+                                <div class="bg-gradient-to-br from-primary to-ocean px-4 py-3 rounded-xl shadow-lg shadow-primary/20 text-white"><p class="text-[10px] text-white/80 font-extrabold uppercase">Calo Mục Tiêu</p><p class="font-black text-lg font-num" id="acc-target">--</p></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <h4 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2 font-display">🎯 Mục tiêu & Trao đổi chất</h4>
-                    <div class="bg-primary/5 p-5 rounded-2xl border border-primary/15 flex flex-col sm:flex-row justify-between items-center gap-6">
-                        <div class="text-center sm:text-left">
-                            <p class="text-[10px] text-primary font-extrabold uppercase tracking-widest mb-1">Định hướng cân nặng</p>
-                            <p class="font-black text-dark text-xl" id="acc-goal">--</p>
+                    <!-- Edit mode -->
+                    <form id="acc-edit-mode" class="hidden space-y-4" onsubmit="saveUserProfile(event)">
+                        <h4 class="font-bold text-slate-800 text-lg font-display">Chỉnh sửa hồ sơ</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Nickname</label>
+                                <input id="pe-nickname" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary"></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Giới tính</label>
+                                <select id="pe-gender" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold">
+                                    <option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option>
+                                </select></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Năm sinh</label>
+                                <input id="pe-birth" type="number" min="1920" max="2020" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary"></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Chiều cao (cm)</label>
+                                <input id="pe-height" type="number" step="0.1" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary"></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Cân nặng (kg)</label>
+                                <input id="pe-weight" type="number" step="0.1" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary"></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Mục tiêu</label>
+                                <select id="pe-goal" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold">
+                                    <option value="giam_can">Giảm cân</option><option value="tang_can">Tăng cân</option>
+                                    <option value="duy_tri">Duy trì</option><option value="tang_co">Tăng cơ</option>
+                                </select></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Vận động</label>
+                                <select id="pe-activity" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold">
+                                    <option value="sedentary">Ít vận động</option><option value="light">Nhẹ</option>
+                                    <option value="moderate">Vừa</option><option value="active">Năng động</option>
+                                    <option value="very_active">Rất năng động</option>
+                                </select></div>
+                            <div><label class="text-[10px] font-extrabold text-inkmute uppercase">Mục tiêu tuần (kg)</label>
+                                <input id="pe-weekly" type="number" step="0.1" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary"></div>
                         </div>
-                        <div class="flex gap-3 text-center">
-                            <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-primary/10"><p class="text-[10px] text-inkmute font-extrabold uppercase">BMR</p><p class="font-black text-dark text-lg font-num" id="acc-bmr">--</p></div>
-                            <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-primary/10"><p class="text-[10px] text-inkmute font-extrabold uppercase">TDEE</p><p class="font-black text-dark text-lg font-num" id="acc-tdee">--</p></div>
-                            <div class="bg-gradient-to-br from-primary to-ocean px-4 py-3 rounded-xl shadow-lg shadow-primary/20 text-white"><p class="text-[10px] text-white/80 font-extrabold uppercase">Calo Mục Tiêu</p><p class="font-black text-lg font-num" id="acc-target">--</p></div>
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="btn-press flex-1 bg-primary text-white font-bold py-2.5 rounded-xl text-sm">Lưu & tính lại BMR/TDEE</button>
+                            <button type="button" onclick="toggleProfileEdit(false)" class="btn-press px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-inkmute">Hủy</button>
                         </div>
-                    </div>
-                    <!-- KHU VỰC TRƯNG BÀY THÀNH TỰU -->
+                    </form>
+
                     <h4 class="font-bold text-slate-800 text-lg mb-4 mt-8 flex items-center gap-2 font-display">🏆 Tủ huy hiệu <span id="badge-count-header" class="text-xs font-sans font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full ml-1"></span></h4>
                     <p class="text-xs text-inkmute mb-4 -mt-2">Mở khóa huy hiệu bằng cách duy trì thói quen lành mạnh mỗi ngày.</p>
-                    <div id="achievements-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <!-- Huy hiệu sẽ được JS sinh ra tại đây -->
-                    </div>
+                    <div id="achievements-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
                 </div>
             </div>
 
@@ -1284,55 +1523,130 @@
 
     <!-- ================= ADMIN ================= -->
     <div id="admin-screen" class="hidden min-h-screen bg-paper flex flex-col">
-        <header class="bg-dark text-white sticky top-0 z-40 shadow-md">
+        <header class="bg-dark text-white sticky top-0 z-40 shadow-lg shadow-dark/20">
             <div class="max-w-6xl mx-auto px-4 flex justify-between items-center h-16">
-                <h1 class="text-lg font-display font-bold">👑 Quản trị BalanceNutrition</h1>
-                <button onclick="closeAdminPanel()" class="btn-press text-sm font-bold bg-white/10 hover:bg-white/15 px-4 py-2 rounded-xl border border-white/10">&larr; Về ứng dụng</button>
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-sm font-black shadow-lg shadow-primary/30">BN</div>
+                    <div>
+                        <h1 class="text-base font-display font-bold leading-tight">Admin Console</h1>
+                        <p class="text-[10px] text-white/50 font-medium tracking-wide uppercase">BalanceNutrition</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminPanel()" class="btn-press text-sm font-bold bg-white/10 hover:bg-white/15 px-4 py-2 rounded-xl border border-white/10 transition">&larr; Về ứng dụng</button>
             </div>
         </header>
         <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
             <!-- Stats -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Người dùng</p><p class="text-2xl font-num font-black text-dark" id="stat-total-users">--</p></div>
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Món ăn</p><p class="text-2xl font-num font-black text-dark" id="stat-total-foods">--</p></div>
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Thực đơn</p><p class="text-2xl font-num font-black text-dark" id="stat-total-plans">--</p></div>
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">AI phân tích</p><p class="text-2xl font-num font-black text-primary" id="stat-ai-total">--</p></div>
+                <div class="card-pro p-4 hover:shadow-md transition group">
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Người dùng</p>
+                        <span class="text-lg opacity-40 group-hover:opacity-70 transition">👥</span>
+                    </div>
+                    <p class="text-2xl font-num font-black text-dark" id="stat-total-users">--</p>
+                </div>
+                <div class="card-pro p-4 hover:shadow-md transition group">
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-[10px] text-inkmute font-extrabold uppercase tracking-widest">Món ăn</p>
+                        <span class="text-lg opacity-40 group-hover:opacity-70 transition">🍕</span>
+                    </div>
+                    <p class="text-2xl font-num font-black text-dark" id="stat-total-foods">--</p>
+                </div>
+                <div class="card-pro p-4 hover:shadow-md transition group border-primary/20 bg-gradient-to-br from-white to-blue-50/50">
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-[10px] text-primary font-extrabold uppercase tracking-widest">AI phân tích</p>
+                        <span class="text-lg opacity-50 group-hover:opacity-80 transition">🤖</span>
+                    </div>
+                    <p class="text-2xl font-num font-black text-primary" id="stat-ai-total">--</p>
+                </div>
+                <div class="card-pro p-4 hover:shadow-md transition group">
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-[10px] text-emerald-600 font-extrabold uppercase tracking-widest">AI OK</p>
+                        <span class="text-lg opacity-40">✓</span>
+                    </div>
+                    <p class="text-2xl font-num font-black text-emerald-600" id="stat-ai-ok">--</p>
+                </div>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">Bài viết</p><p class="text-xl font-num font-black" id="stat-total-articles">--</p></div>
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">AI thành công</p><p class="text-xl font-num font-black text-emerald-600" id="stat-ai-ok">--</p></div>
-                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase">AI thất bại</p><p class="text-xl font-num font-black text-rose-500" id="stat-ai-fail">--</p></div>
+            <div class="grid grid-cols-2 sm:grid-cols-2 gap-3">
+                <div class="card-pro p-4"><p class="text-[10px] text-rose-500 font-extrabold uppercase tracking-wider">AI thất bại</p><p class="text-xl font-num font-black text-rose-500" id="stat-ai-fail">--</p></div>
+                <div class="card-pro p-4"><p class="text-[10px] text-inkmute font-extrabold uppercase tracking-wider">User đang hoạt động</p><p class="text-xl font-num font-black" id="stat-active-users">--</p></div>
             </div>
 
             <!-- Tabs -->
-            <div class="flex border-b border-line overflow-x-auto hide-scrollbar gap-1">
-                <button id="tab-adm-users" onclick="switchAdminTab('users')" class="px-4 py-3 font-extrabold text-primary border-b-2 border-primary whitespace-nowrap text-sm">👥 Người dùng</button>
-                <button id="tab-adm-foods" onclick="switchAdminTab('foods')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">🍕 Món ăn</button>
-                <button id="tab-adm-plans" onclick="switchAdminTab('plans')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">📋 Thực đơn</button>
-                <button id="tab-adm-articles" onclick="switchAdminTab('articles')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm">📰 Bài viết</button>
+            <div class="flex border-b border-line overflow-x-auto hide-scrollbar gap-1 bg-white/60 rounded-t-xl px-1">
+                <button id="tab-adm-users" onclick="switchAdminTab('users')" class="px-4 py-3 font-extrabold text-primary border-b-2 border-primary whitespace-nowrap text-sm transition">👥 Người dùng</button>
+                <button id="tab-adm-foods" onclick="switchAdminTab('foods')" class="px-4 py-3 font-extrabold text-inkmute border-b-2 border-transparent hover:text-slate-600 whitespace-nowrap text-sm transition">🍕 Món ăn</button>
             </div>
 
             <!-- USERS -->
             <div id="adm-view-users" class="space-y-4">
                 <div class="card-pro overflow-hidden">
-                    <div class="p-4 border-b border-line">
-                        <input type="text" id="adm-user-search" oninput="loadAdminUsers()" placeholder="Tìm tên hoặc email..." class="w-full bg-transparent outline-none text-sm font-medium">
+                    <div class="p-4 border-b border-line flex flex-col sm:flex-row gap-3 sm:items-center">
+                        <div class="flex-1 relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-inkmute text-sm">🔍</span>
+                            <input type="text" id="adm-user-search" oninput="onAdminUserSearch()" placeholder="Tìm tên, email hoặc nickname..." class="w-full pl-9 pr-3 py-2.5 bg-paper border border-line rounded-xl outline-none text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/10 transition">
+                        </div>
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <select id="adm-user-filter-status" onchange="admUserPage=1; loadAdminUsers()" class="border border-line bg-paper rounded-xl px-3 py-2.5 text-xs font-bold text-inkmute outline-none focus:border-primary">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active">Hoạt động</option>
+                                <option value="locked">Đã khóa</option>
+                            </select>
+                            <select id="adm-user-filter-role" onchange="admUserPage=1; loadAdminUsers()" class="border border-line bg-paper rounded-xl px-3 py-2.5 text-xs font-bold text-inkmute outline-none focus:border-primary">
+                                <option value="">Tất cả role</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            <select id="adm-user-per-page" onchange="admUserPage=1; loadAdminUsers()" class="border border-line bg-paper rounded-xl px-3 py-2.5 text-xs font-bold text-inkmute outline-none focus:border-primary">
+                                <option value="10">10 / trang</option>
+                                <option value="20" selected>20 / trang</option>
+                                <option value="50">50 / trang</option>
+                            </select>
+                            <button type="button" onclick="exportAdminUsers()" class="btn-press inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-line bg-white text-xs font-bold text-dark hover:bg-paper transition" title="Xuất CSV">
+                                📥 Xuất CSV
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm divide-y divide-line">
                             <thead class="bg-paper"><tr>
-                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">ID</th>
-                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Người dùng</th>
-                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Email</th>
-                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Role</th>
-                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase">Trạng thái</th>
-                                <th class="px-4 py-3 text-right text-[10px] font-extrabold text-inkmute uppercase">Thao tác</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Người dùng</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider hidden md:table-cell">Hồ sơ</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Mục tiêu</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Đăng nhập</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Role</th>
+                                <th class="px-4 py-3 text-left text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Trạng thái</th>
+                                <th class="px-4 py-3 text-right text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Thao tác</th>
                             </tr></thead>
                             <tbody id="admin-user-table" class="divide-y divide-line/60"></tbody>
                         </table>
                     </div>
+                    <div class="p-3 border-t border-line flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                        <div class="text-xs text-inkmute font-medium" id="adm-user-count"></div>
+                        <div class="flex items-center gap-2" id="adm-user-pagination"></div>
+                    </div>
                 </div>
             </div>
+
+            <!-- USER DETAIL MODAL -->
+            <div id="adm-user-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-dark/50 backdrop-blur-sm" onclick="closeUserModal()"></div>
+                <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scale-in">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-line bg-gradient-to-r from-dark to-slate-800 text-white">
+                        <div>
+                            <h3 class="font-display font-bold text-lg" id="adm-modal-title">Chi tiết người dùng</h3>
+                            <p class="text-xs text-white/60 mt-0.5" id="adm-modal-subtitle"></p>
+                        </div>
+                        <button onclick="closeUserModal()" class="btn-press w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-lg">&times;</button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 p-6 space-y-5" id="adm-modal-body">
+                        <!-- filled by JS -->
+                    </div>
+                    <div class="px-6 py-4 border-t border-line bg-paper flex flex-wrap gap-2 justify-end" id="adm-modal-footer">
+                    </div>
+                </div>
+            </div>
+
 
             <!-- FOODS -->
             <div id="adm-view-foods" class="hidden space-y-4">
@@ -1466,6 +1780,61 @@
                 </div>
                 <div id="admin-art-list" class="card-pro divide-y divide-line/60"></div>
             </div>
+
+            <!-- INGREDIENTS -->
+            <div id="adm-view-ingredients" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <h3 class="font-bold mb-3 font-display">Thêm nguyên liệu</h3>
+                    <form class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end" onsubmit="adminSaveIngredient(event)">
+                        <div class="col-span-2"><label class="text-xs font-bold text-inkmute uppercase">Tên</label>
+                            <input id="adm-ing-name" required class="w-full border border-line rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary"></div>
+                        <div><label class="text-xs font-bold text-inkmute uppercase">Calo</label>
+                            <input id="adm-ing-cal" type="number" step="0.1" value="0" class="w-full border border-line rounded-xl p-2.5 text-sm font-num"></div>
+                        <div><label class="text-xs font-bold text-inkmute uppercase">Protein</label>
+                            <input id="adm-ing-pro" type="number" step="0.1" value="0" class="w-full border border-line rounded-xl p-2.5 text-sm font-num"></div>
+                        <div><label class="text-xs font-bold text-inkmute uppercase">Carbs</label>
+                            <input id="adm-ing-carb" type="number" step="0.1" value="0" class="w-full border border-line rounded-xl p-2.5 text-sm font-num"></div>
+                        <div><label class="text-xs font-bold text-inkmute uppercase">Fat</label>
+                            <input id="adm-ing-fat" type="number" step="0.1" value="0" class="w-full border border-line rounded-xl p-2.5 text-sm font-num"></div>
+                        <div><label class="text-xs font-bold text-inkmute uppercase">Đơn vị</label>
+                            <input id="adm-ing-unit" value="100g" class="w-full border border-line rounded-xl p-2.5 text-sm"></div>
+                        <div class="col-span-2 md:col-span-4"><button type="submit" class="btn-press bg-primary text-white font-bold px-6 py-2.5 rounded-xl text-sm">Thêm</button></div>
+                    </form>
+                </div>
+                <div class="card-pro overflow-hidden">
+                    <div class="p-3 border-b border-line"><input id="adm-ing-search" oninput="loadAdminIngredients()" placeholder="Tìm nguyên liệu..." class="w-full outline-none text-sm"></div>
+                    <div id="admin-ing-list" class="divide-y divide-line/60 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- FAQS -->
+            <div id="adm-view-faqs" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <h3 class="font-bold mb-3 font-display">Thêm FAQ</h3>
+                    <form class="space-y-3" onsubmit="adminSaveFaq(event)">
+                        <input id="adm-faq-q" required placeholder="Câu hỏi" class="w-full border border-line rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary">
+                        <textarea id="adm-faq-a" required rows="3" placeholder="Trả lời" class="w-full border border-line rounded-xl p-2.5 text-sm outline-none focus:border-primary"></textarea>
+                        <button type="submit" class="btn-press bg-primary text-white font-bold px-6 py-2.5 rounded-xl text-sm">Thêm FAQ</button>
+                    </form>
+                </div>
+                <div id="admin-faq-list" class="card-pro divide-y divide-line/60"></div>
+            </div>
+
+            <!-- KNOWLEDGE -->
+            <div id="adm-view-knowledge" class="hidden space-y-4">
+                <div class="card-pro p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold font-display">Tài liệu RAG</h3>
+                        <button onclick="adminReindexKnowledge()" class="btn-press text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1.5 rounded-xl">🔄 Reindex</button>
+                    </div>
+                    <form class="space-y-3" onsubmit="adminSaveKnowledge(event)">
+                        <input id="adm-know-title" required placeholder="Tiêu đề" class="w-full border border-line rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary">
+                        <textarea id="adm-know-content" required rows="4" placeholder="Nội dung kiến thức..." class="w-full border border-line rounded-xl p-2.5 text-sm outline-none focus:border-primary"></textarea>
+                        <button type="submit" class="btn-press bg-primary text-white font-bold px-6 py-2.5 rounded-xl text-sm">Thêm tài liệu</button>
+                    </form>
+                </div>
+                <div id="admin-know-list" class="card-pro divide-y divide-line/60"></div>
+            </div>
         </main>
     </div>
 
@@ -1524,9 +1893,9 @@
         let onboardingData = {};
         let todayChartInstance = null;
 
-        // -- CHUYỂN ĐỔI TAB (HỖ TRỢ 4 TAB) --
+        // -- CHUYỂN ĐỔI TAB --
         function switchAppTab(tab) {
-            const views = ['dashboard', 'account', 'chat', 'settings'];
+            const views = ['dashboard', 'account', 'chat', 'settings', 'plans', 'knowledge'];
 
             views.forEach(v => {
                 const el = document.getElementById(`view-${v}`);
@@ -1554,8 +1923,13 @@
             if (activeNav) activeNav.classList.add('active');
             if (activeMnav) { activeMnav.classList.add('text-primary'); activeMnav.classList.remove('text-inkmute'); }
 
-            if (tab === 'chat') setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+            if (tab === 'chat') {
+                // Chỉ refresh danh sách lịch sử — KHÔNG tạo chat mới khi chuyển tab
+                onEnterChatTab();
+                setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+            }
             if (tab === 'settings') { loadSettingsUI(); loadSecurityInfo(); }
+            if (tab === 'account') loadAccountEditForm();
         }
 
         function handleGoalChange() {
@@ -1571,7 +1945,155 @@
             dots.forEach((d, i) => d.classList.toggle('active', i === step - 1));
         }
 
-        function startOnboarding() { document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-onboarding').classList.remove('hidden'); nextStep(1); }
+        function startOnboarding() {
+            document.getElementById('view-login')?.classList.add('hidden');
+            document.getElementById('view-forgot')?.classList.add('hidden');
+            document.getElementById('view-onboarding')?.classList.remove('hidden');
+            const tabLogin = document.getElementById('auth-tab-login');
+            const tabReg = document.getElementById('auth-tab-register');
+            if (tabLogin) { tabLogin.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-inkmute hover:text-dark'; }
+            if (tabReg) { tabReg.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-primary shadow-sm'; }
+            nextStep(1);
+        }
+
+        /** Chuyển tab Đăng nhập ↔ Đăng ký ↔ Quên MK trong auth card */
+        function switchAuthTab(tab) {
+            const tabLogin = document.getElementById('auth-tab-login');
+            const tabReg = document.getElementById('auth-tab-register');
+            const viewLogin = document.getElementById('view-login');
+            const viewOb = document.getElementById('view-onboarding');
+            const viewForgot = document.getElementById('view-forgot');
+            const titleEl = viewLogin?.querySelector('p.text-inkmute');
+
+            if (viewForgot) viewForgot.classList.add('hidden');
+
+            if (tab === 'register') {
+                if (tabLogin) tabLogin.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-inkmute hover:text-dark';
+                if (tabReg) tabReg.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-primary shadow-sm';
+                startOnboarding();
+                return;
+            }
+            if (tab === 'forgot') {
+                if (viewLogin) viewLogin.classList.add('hidden');
+                if (viewOb) viewOb.classList.add('hidden');
+                if (viewForgot) viewForgot.classList.remove('hidden');
+                const fe = document.getElementById('forgot-email');
+                const le = document.getElementById('login-email');
+                if (fe && le && le.value) fe.value = le.value;
+                setTimeout(() => fe?.focus(), 80);
+                return;
+            }
+            // login
+            if (tabLogin) tabLogin.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-primary shadow-sm';
+            if (tabReg) tabReg.className = 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-inkmute hover:text-dark';
+            if (viewOb) viewOb.classList.add('hidden');
+            if (viewLogin) viewLogin.classList.remove('hidden');
+            if (titleEl) titleEl.textContent = 'Chào mừng trở lại — đăng nhập để tiếp tục';
+            try {
+                const remembered = localStorage.getItem('rememberedEmail');
+                const emailInput = document.getElementById('login-email');
+                const rememberCb = document.getElementById('login-remember');
+                if (remembered && emailInput) {
+                    emailInput.value = remembered;
+                    if (rememberCb) rememberCb.checked = true;
+                }
+            } catch (_) {}
+            setTimeout(() => document.getElementById('login-email')?.focus(), 80);
+        }
+
+        function showForgotPassword() { switchAuthTab('forgot'); }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = (document.getElementById('forgot-email')?.value || '').trim();
+            const errEl = document.getElementById('forgot-error');
+            const okEl = document.getElementById('forgot-success');
+            const btn = document.getElementById('btn-forgot-submit');
+            const btnText = document.getElementById('forgot-btn-text');
+            if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+            if (okEl) { okEl.classList.add('hidden'); okEl.innerHTML = ''; }
+            if (!email) {
+                if (errEl) { errEl.textContent = 'Vui lòng nhập email.'; errEl.classList.remove('hidden'); }
+                return;
+            }
+            if (btn) btn.disabled = true;
+            if (btnText) btnText.textContent = 'Đang gửi…';
+            fetch('/api/forgot-password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    let html = `<p>${data.message || 'Đã xử lý yêu cầu.'}</p>`;
+                    if (data.dev_token) {
+                        html += `<p class="text-xs mt-2">Mã token (dev — hết hạn 1 giờ):</p>
+                            <code class="block text-[11px] break-all bg-white/80 border border-emerald-200 rounded-lg px-2 py-1.5 mt-1 select-all">${data.dev_token}</code>`;
+                        const tok = document.getElementById('reset-token');
+                        if (tok) tok.value = data.dev_token;
+                        document.getElementById('reset-form-wrap')?.classList.remove('hidden');
+                    }
+                    if (okEl) { okEl.innerHTML = html; okEl.classList.remove('hidden'); }
+                    showToast('Đã tạo mã đặt lại mật khẩu', 'success');
+                } else {
+                    if (errEl) { errEl.textContent = data.message || 'Có lỗi xảy ra'; errEl.classList.remove('hidden'); }
+                }
+            }).catch(() => {
+                if (errEl) { errEl.textContent = 'Không kết nối được máy chủ.'; errEl.classList.remove('hidden'); }
+            }).finally(() => {
+                if (btn) btn.disabled = false;
+                if (btnText) btnText.textContent = 'Gửi mã đặt lại';
+            });
+        }
+
+        function handleResetPassword(e) {
+            e.preventDefault();
+            const token = (document.getElementById('reset-token')?.value || '').trim();
+            const pw = document.getElementById('reset-password')?.value || '';
+            const confirm = document.getElementById('reset-password-confirm')?.value || '';
+            const errEl = document.getElementById('reset-error');
+            if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+            if (pw !== confirm) {
+                if (errEl) { errEl.textContent = 'Mật khẩu nhập lại không khớp.'; errEl.classList.remove('hidden'); }
+                return;
+            }
+            const strength = isStrongPassword(pw);
+            if (!strength.ok) {
+                if (errEl) { errEl.textContent = strength.msg; errEl.classList.remove('hidden'); }
+                return;
+            }
+            fetch('/api/reset-password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ token, new_password: pw })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    showToast(data.message || 'Đã đặt lại mật khẩu!', 'success');
+                    switchAuthTab('login');
+                } else {
+                    if (errEl) { errEl.textContent = data.message || 'Thất bại'; errEl.classList.remove('hidden'); }
+                    else showToast(data.message || 'Thất bại', 'error');
+                }
+            }).catch(() => {
+                if (errEl) { errEl.textContent = 'Không kết nối được máy chủ.'; errEl.classList.remove('hidden'); }
+            });
+        }
+
+        /** Hiện / ẩn mật khẩu */
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            const open = btn?.querySelector('.eye-open');
+            const closed = btn?.querySelector('.eye-closed');
+            if (open && closed) {
+                open.classList.toggle('hidden', isHidden);
+                closed.classList.toggle('hidden', !isHidden);
+            }
+            btn?.setAttribute('aria-label', isHidden ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+            btn?.setAttribute('title', isHidden ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        }
+
         function selectGender(g) {
             selectedGender = g;
             const activeClass = 'btn-press p-4 rounded-2xl border-2 font-bold text-center bg-primary/10 border-primary text-primary transition-all';
@@ -1698,29 +2220,53 @@
             document.getElementById('ai-loading').classList.remove('hidden');
             document.getElementById('ai-result').classList.add('hidden');
 
-            fetch('/api/register', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({fullname: document.getElementById('ob-fullname').value, email: document.getElementById('ob-email').value, password: document.getElementById('ob-password').value})
-            }).then(res => res.json()).then(regData => {
-                registeredUserId = regData.user ? regData.user.id : 1;
-                const profilePayload = {
-                    nickname: document.getElementById('ob-nickname').value, gender: selectedGender, birth_year: document.getElementById('ob-birthyear').value,
-                    height: document.getElementById('ob-height').value, weight: document.getElementById('ob-weight').value,
-                    goal: document.getElementById('ob-goal').value, activity_level: document.getElementById('ob-activity').value, weekly_goal: document.getElementById('ob-weeklygoal').value
-                };
-                return fetch('/api/onboarding', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({user_id: registeredUserId, profile: profilePayload}) });
-            }).then(res => res.json()).then(resData => {
+            const profilePayload = {
+                nickname: document.getElementById('ob-nickname').value, gender: selectedGender, birth_year: document.getElementById('ob-birthyear').value,
+                height: document.getElementById('ob-height').value, weight: document.getElementById('ob-weight').value,
+                goal: document.getElementById('ob-goal').value, activity_level: document.getElementById('ob-activity').value, weekly_goal: document.getElementById('ob-weeklygoal').value
+            };
+
+            // Google user đã có account → chỉ onboarding; user thường → register rồi onboarding
+            const existing = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            const isGoogleUser = existing && (existing.auth_provider === 'google' || existing.needs_onboarding) && existing.id;
+
+            const afterUserReady = (userId) => {
+                registeredUserId = userId;
+                return fetch('/api/onboarding', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, profile: profilePayload}),
+                });
+            };
+
+            const chain = isGoogleUser
+                ? afterUserReady(existing.id)
+                : fetch('/api/register', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        fullname: document.getElementById('ob-fullname').value,
+                        email: document.getElementById('ob-email').value,
+                        password: document.getElementById('ob-password').value,
+                        nickname: document.getElementById('ob-nickname').value,
+                    }),
+                }).then(res => res.json()).then(regData => {
+                    if (regData.status !== 'success') throw new Error(regData.message || 'Đăng ký thất bại');
+                    return afterUserReady(regData.user ? regData.user.id : 1);
+                });
+
+            chain.then(res => res.json()).then(resData => {
                 document.getElementById('ai-loading').classList.add('hidden');
                 document.getElementById('ai-result').classList.remove('hidden');
                 document.getElementById('ai-result').classList.add('animate-fade-in-up');
-
                 const r = resData.result;
                 onboardingData = r;
                 document.getElementById('res-nickname').innerText = r.nickname;
                 document.getElementById('res-bmr').innerText = r.bmr;
                 document.getElementById('res-tdee').innerText = r.tdee;
                 document.getElementById('res-target').innerText = r.target_calories;
-            }).catch(err => { showToast("Có lỗi khi tạo tài khoản!", "error"); nextStep(1); });
+            }).catch(err => {
+                showToast(err.message || "Có lỗi khi tạo tài khoản!", "error");
+                nextStep(1);
+            });
         }
 
         function finishOnboarding() {
@@ -1745,13 +2291,141 @@
 
         function handleLogin(e) {
             e.preventDefault();
+            const emailEl = document.getElementById('login-email');
+            const passEl = document.getElementById('login-password');
+            const errEl = document.getElementById('login-error');
+            const btn = document.getElementById('btn-login-submit');
+            const btnText = document.getElementById('login-btn-text');
+            const spinner = document.getElementById('login-btn-spinner');
+            const remember = document.getElementById('login-remember');
+
+            const email = (emailEl?.value || '').trim();
+            const password = passEl?.value || '';
+
+            if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+            if (!email || !password) {
+                if (errEl) { errEl.textContent = 'Vui lòng nhập email và mật khẩu.'; errEl.classList.remove('hidden'); }
+                else showToast('Vui lòng nhập email và mật khẩu.', 'error');
+                return;
+            }
+
+            // Loading UI
+            if (btn) btn.disabled = true;
+            if (btnText) btnText.textContent = 'Đang đăng nhập…';
+            if (spinner) spinner.classList.remove('hidden');
+
             fetch('/api/login', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email: document.getElementById('login-email').value, password: document.getElementById('login-password').value})
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
             }).then(res => res.json()).then(data => {
-                if(data.status === 'success') { localStorage.setItem('currentUser', JSON.stringify(data.user)); applyLoginState(); }
-                else { showToast(data.message || "Đăng nhập thất bại", "error"); }
+                if (data.status === 'success') {
+                    try {
+                        if (remember?.checked) localStorage.setItem('rememberedEmail', email);
+                        else localStorage.removeItem('rememberedEmail');
+                    } catch (_) {}
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    showToast('Đăng nhập thành công!', 'success');
+                    applyLoginState();
+                } else {
+                    const msg = data.message || 'Đăng nhập thất bại';
+                    if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+                    else showToast(msg, 'error');
+                    passEl?.focus();
+                }
+            }).catch(() => {
+                const msg = 'Không kết nối được máy chủ. Thử lại sau.';
+                if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+                else showToast(msg, 'error');
+            }).finally(() => {
+                if (btn) btn.disabled = false;
+                if (btnText) btnText.textContent = 'Đăng nhập';
+                if (spinner) spinner.classList.add('hidden');
             });
+        }
+
+        function loginWithGoogle() {
+            // Full-page redirect tới Google OAuth
+            window.location.href = '/api/auth/google';
+        }
+
+        function checkGoogleAuthStatus() {
+            fetch('/api/auth/google/status').then(r => r.json()).then(d => {
+                const btn = document.getElementById('btn-google-login');
+                const hint = document.getElementById('google-login-hint');
+                if (!d.enabled) {
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        btn.title = 'Chưa cấu hình GOOGLE_CLIENT_ID trong .env';
+                    }
+                    if (hint) {
+                        hint.classList.remove('hidden');
+                        hint.innerText = 'Google OAuth chưa cấu hình — thêm GOOGLE_CLIENT_ID & SECRET vào file .env';
+                    }
+                }
+            }).catch(() => {});
+        }
+
+        function handleGoogleCallbackFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const err = params.get('google_error');
+            if (err) {
+                const map = {
+                    not_configured: 'Chưa cấu hình Google OAuth (.env)',
+                    invalid_state: 'Phiên Google không hợp lệ — thử lại',
+                    no_code: 'Google không trả mã xác thực',
+                    email_not_verified: 'Email Google chưa được xác minh',
+                    oauth_failed: 'Đăng nhập Google thất bại',
+                };
+                showToast(map[err] || ('Google: ' + err), 'error');
+                window.history.replaceState({}, '', window.location.pathname);
+                goToAuth('login');
+                return true;
+            }
+            if (params.get('google_login') === '1') {
+                try {
+                    const raw = params.get('u') || '';
+                    let b64 = raw.replace(/-/g, '+').replace(/_/g, '/');
+                    while (b64.length % 4) b64 += '=';
+                    const user = JSON.parse(decodeURIComponent(escape(atob(b64))));
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    window.history.replaceState({}, '', window.location.pathname);
+                    if (params.get('onboarding') === '1' || user.needs_onboarding) {
+                        showToast('Đăng nhập Google thành công! Hoàn tất hồ sơ nhé.', 'success');
+                        // User Google mới → vào onboarding nhưng bỏ bước tạo account (đã có user)
+                        registeredUserId = user.id;
+                        document.getElementById('landing-screen')?.classList.add('hidden');
+                        document.getElementById('auth-screen')?.classList.remove('hidden');
+                        document.getElementById('view-login')?.classList.add('hidden');
+                        document.getElementById('view-onboarding')?.classList.remove('hidden');
+                        // Điền sẵn nếu có
+                        if (document.getElementById('ob-fullname') && user.fullname) document.getElementById('ob-fullname').value = user.fullname;
+                        if (document.getElementById('ob-email') && user.email) {
+                            document.getElementById('ob-email').value = user.email;
+                            document.getElementById('ob-email').readOnly = true;
+                        }
+                        if (document.getElementById('ob-nickname') && user.nickname) document.getElementById('ob-nickname').value = user.nickname;
+                        // Ẩn mật khẩu — Google user không cần
+                        const pw = document.getElementById('ob-password');
+                        const pwc = document.getElementById('ob-password-confirm');
+                        if (pw) { pw.required = false; pw.closest('div')?.classList.add('hidden'); }
+                        if (pwc) { pwc.required = false; pwc.closest('div')?.classList.add('hidden'); }
+                        if (typeof nextStep === 'function') {
+                            try { nextStep(2); } catch(e) { nextStep(1); }
+                        }
+                    } else {
+                        showToast('Đăng nhập Google thành công!', 'success');
+                        applyLoginState();
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showToast('Không đọc được phiên Google', 'error');
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
+                return true;
+            }
+            return false;
         }
 
         function getNicknameInitials(user) {
@@ -1880,6 +2554,7 @@
             checkAchievements();
             loadDayCompare();
             loadRecentFoods();
+            loadDailyChecklist();
         }
 
         function logout() {
@@ -1892,10 +2567,10 @@
         function goToAuth(type) {
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
-            if (type === 'register') startOnboarding();
-            else {
-                document.getElementById('view-onboarding').classList.add('hidden');
-                document.getElementById('view-login').classList.remove('hidden');
+            if (type === 'register') {
+                switchAuthTab('register');
+            } else {
+                switchAuthTab('login');
             }
         }
 
@@ -1905,6 +2580,20 @@
         }
 
         window.onload = function() {
+            checkGoogleAuthStatus();
+            if (handleGoogleCallbackFromUrl()) return;
+
+            // Prefill remembered email for login form
+            try {
+                const remembered = localStorage.getItem('rememberedEmail');
+                const emailInput = document.getElementById('login-email');
+                const rememberCb = document.getElementById('login-remember');
+                if (remembered && emailInput) {
+                    emailInput.value = remembered;
+                    if (rememberCb) rememberCb.checked = true;
+                }
+            } catch (_) {}
+
             const userStr = localStorage.getItem('currentUser');
             if(userStr) {
                 document.getElementById('landing-screen').classList.add('hidden');
@@ -1917,133 +2606,377 @@
             }
         }
 
-        // -- VẼ LỊCH TUẦN ĐỘNG --
+        // -- LỊCH TUẦN + NHẬT KÝ THEO NGÀY --
+        let selectedLogDate = null;
+
+        function _iso(d) {
+            const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+            return `${y}-${m}-${day}`;
+        }
+        function _todayIso() { return _iso(new Date()); }
+
         function renderWeeklyCalendar() {
             const calendarEl = document.getElementById('weekly-calendar');
             if(!calendarEl) return;
             const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
             const today = new Date();
             const currentDay = today.getDay();
-
+            const activeIso = selectedLogDate || _todayIso();
             let html = '';
             for(let i = 1; i <= 7; i++) {
                 const targetDayIndex = i === 7 ? 0 : i;
                 const dateDiff = targetDayIndex - currentDay + (currentDay === 0 && targetDayIndex !== 0 ? -7 : 0);
                 const targetDate = new Date(today);
                 targetDate.setDate(today.getDate() + dateDiff);
-
+                const iso = _iso(targetDate);
                 const dateNum = targetDate.getDate().toString().padStart(2, '0');
                 const dayName = days[targetDayIndex];
-
-                if(targetDayIndex === currentDay) {
-                    html += `<div class="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-ocean text-white w-12 h-12 rounded-full shadow-lg shadow-primary/30">
+                const isActive = iso === activeIso;
+                const isToday = iso === _todayIso();
+                if(isActive) {
+                    html += `<button onclick="selectLogDate('${iso}')" class="flex flex-col items-center justify-center bg-gradient-to-br from-primary to-ocean text-white w-12 h-12 rounded-full shadow-lg shadow-primary/30">
                         <span class="text-[10px] font-bold opacity-90">${dayName}</span>
                         <span class="font-num font-black text-sm leading-tight">${dateNum}</span>
-                    </div>`;
+                    </button>`;
                 } else {
-                    html += `<div class="flex flex-col items-center justify-center w-10 h-10">
+                    html += `<button onclick="selectLogDate('${iso}')" class="flex flex-col items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition ${isToday?'ring-2 ring-primary/30':''}">
                         <span class="text-[10px] font-bold text-inkmute mb-0.5">${dayName}</span>
                         <span class="font-num font-extrabold text-sm text-slate-700 leading-tight">${dateNum}</span>
-                    </div>`;
+                    </button>`;
                 }
             }
             calendarEl.innerHTML = html;
         }
-        window.addEventListener('DOMContentLoaded', renderWeeklyCalendar);
+        window.addEventListener('DOMContentLoaded', () => {
+            renderWeeklyCalendar();
+            const picker = document.getElementById('log-date-picker');
+            if (picker) picker.value = _todayIso();
+        });
 
-        // -- CẬP NHẬT RENDER DASHBOARD --
+        function selectLogDate(iso) {
+            selectedLogDate = iso;
+            const picker = document.getElementById('log-date-picker');
+            if (picker) picker.value = iso;
+            const label = document.getElementById('log-date-label');
+            if (label) label.innerText = iso === _todayIso() ? 'Hôm nay' : iso;
+            renderWeeklyCalendar();
+            loadTodayLogs();
+        }
+        function onLogDateChange() {
+            const v = document.getElementById('log-date-picker')?.value;
+            if (v) selectLogDate(v);
+        }
+        function goLogToday() { selectLogDate(_todayIso()); }
+
+        function copyYesterdayLogs() {
+            if (!confirm('Sao chép toàn bộ món từ hôm qua sang ngày đang xem?')) return;
+            const toDate = selectedLogDate || _todayIso();
+            fetch('/api/logs/copy-yesterday', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ to_date: toDate }),
+            }).then(r => r.json()).then(d => {
+                showToast(d.message || '', d.status === 'success' ? 'success' : 'error');
+                if (d.status === 'success') { loadTodayLogs(); loadDailyChecklist(); }
+            });
+        }
+
+        function getCurrentUserId() {
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                return u.id || null;
+            } catch (_) { return null; }
+        }
+
         function loadTodayLogs() {
             const listEl = document.getElementById('today-logs-list');
+            if (!listEl) return;
             listEl.innerHTML = `<div class="skeleton h-16 rounded-2xl"></div><div class="skeleton h-16 rounded-2xl"></div>`;
-            fetch('/api/today_logs').then(res => res.json()).then(data => {
-                window._todayMealCount = (data.foods || []).length;
-                renderDashboard(data.totals);
+            const uid = getCurrentUserId();
+            const params = new URLSearchParams();
+            if (uid) params.set('user_id', uid);
+            if (selectedLogDate && selectedLogDate !== _todayIso()) params.set('date', selectedLogDate);
+            const qs = params.toString() ? ('?' + params.toString()) : '';
+            fetch('/api/today_logs' + qs).then(res => res.json()).then(data => {
+                const isToday = !selectedLogDate || selectedLogDate === _todayIso() || data.is_today;
+                window._todayMealCount = isToday ? (data.foods || []).length : window._todayMealCount;
+                if (isToday) renderDashboard(data.totals);
                 let html = '';
                 if (data.foods && data.foods.length > 0) {
                     data.foods.forEach(f => {
+                        const mealLabel = {breakfast:'Sáng',lunch:'Trưa',dinner:'Tối',snack:'Vặt'}[f.meal_type] || f.meal_type || '';
                         html += `<div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-line shadow-sm hover:shadow-md transition-shadow group">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-paper flex items-center justify-center text-2xl border border-line">🍽️</div>
-                                <div><p class="font-bold text-dark">${escapeHtml(f.name)}</p><p class="text-xs text-inkmute font-medium mt-0.5 font-num"><span class="text-primary font-bold">${f.calories} cal</span> &bull; P:${f.protein} C:${f.carbs} F:${f.fat}</p></div>
+                            <div class="flex items-center gap-4 min-w-0">
+                                <div class="w-12 h-12 rounded-2xl bg-paper flex items-center justify-center text-2xl border border-line shrink-0">🍽️</div>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-dark truncate">${escapeHtml(f.name)} <span class="text-[10px] text-inkmute font-bold ml-1">${mealLabel}</span></p>
+                                    <p class="text-xs text-inkmute font-medium mt-0.5 font-num"><span class="text-primary font-bold">${f.calories} cal</span> · P:${f.protein} C:${f.carbs} F:${f.fat}</p>
+                                </div>
                             </div>
-                            <button onclick="deleteFoodLog(${f.id})" class="btn-press opacity-0 group-hover:opacity-100 text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-xl font-bold text-xs transition-all">Xóa</button>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                                <button onclick='editFoodLog(${JSON.stringify(f).replace(/'/g,"&#39;")})' class="btn-press text-primary bg-primary/10 px-2.5 py-1.5 rounded-xl font-bold text-xs">Sửa</button>
+                                <button onclick="deleteFoodLog(${f.id})" class="btn-press text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-xl font-bold text-xs">Xóa</button>
+                            </div>
                         </div>`;
                     });
                 } else {
-                    html = `<div class="text-center p-8 text-inkmute bg-white rounded-3xl border border-dashed border-line font-medium">Chưa có dữ liệu ăn uống hôm nay.</div>`;
+                    html = `<div class="text-center p-8 text-inkmute bg-paper rounded-3xl border border-dashed border-line font-medium space-y-2">
+                        <p class="text-3xl">🍽️</p>
+                        <p>Chưa có món nào ngày này.</p>
+                        <p class="text-xs">Dùng <b>Log nhanh</b>, quét ảnh, hoặc <b>Copy hôm qua</b>.</p>
+                    </div>`;
                 }
                 listEl.innerHTML = html;
             });
         }
 
+        function editFoodLog(f) {
+            const name = prompt('Tên món:', f.name);
+            if (name === null) return;
+            const cal = prompt('Calo:', f.calories);
+            if (cal === null) return;
+            const pro = prompt('Protein (g):', f.protein);
+            if (pro === null) return;
+            const carbs = prompt('Carbs (g):', f.carbs);
+            if (carbs === null) return;
+            const fat = prompt('Fat (g):', f.fat);
+            if (fat === null) return;
+            fetch(`/api/log_food/${f.id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, calories: cal, protein: pro, carbs, fat, meal_type: f.meal_type }),
+            }).then(r => r.json()).then(d => {
+                showToast(d.message || '', d.status === 'success' ? 'success' : 'error');
+                if (d.status === 'success') loadTodayLogs();
+            });
+        }
+
+        function loadDailyChecklist() {
+            const uid = getCurrentUserId();
+            const widget = document.getElementById('daily-checklist-widget');
+            const itemsEl = document.getElementById('checklist-items');
+            const banner = document.getElementById('reminder-banner');
+            if (!widget || !itemsEl) return;
+            // Luôn hiện widget
+            widget.classList.remove('hidden');
+            if (!uid) {
+                itemsEl.innerHTML = '<p class="text-xs text-inkmute">Đăng nhập để xem checklist</p>';
+                return;
+            }
+            const btn = widget.querySelector('button');
+            if (btn) { btn.disabled = true; btn.textContent = 'Đang tải…'; }
+            // cache-bust để luôn lấy dữ liệu mới
+            fetch(`/api/checklist?user_id=${encodeURIComponent(uid)}&_=${Date.now()}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.status !== 'success') {
+                    itemsEl.innerHTML = `<p class="text-xs text-rose-500">${d.message || 'Không tải được checklist'}</p>`;
+                    return;
+                }
+                const doneCount = (d.checklist || []).filter(c => c.done).length;
+                const total = (d.checklist || []).length;
+                itemsEl.innerHTML = `
+                    <p class="text-[10px] font-bold text-inkmute mb-1">${doneCount}/${total} hoàn thành</p>
+                    ${(d.checklist || []).map(c => `
+                    <div class="flex items-start gap-2 text-sm ${c.done ? 'opacity-60' : ''}">
+                        <span class="mt-0.5 text-base">${c.done ? '✅' : '⬜'}</span>
+                        <div>
+                            <p class="font-bold text-dark text-xs">${c.label}</p>
+                            ${c.done
+                                ? `<p class="text-[10px] text-emerald-600 font-medium">Hoàn thành</p>`
+                                : `<p class="text-[10px] text-inkmute">${c.hint || ''}</p>`}
+                        </div>
+                    </div>`).join('')}`;
+                if (banner) {
+                    if (d.reminders && d.reminders.length) {
+                        banner.classList.remove('hidden');
+                        banner.innerText = '💡 ' + d.reminders[0];
+                    } else {
+                        banner.classList.add('hidden');
+                    }
+                }
+            })
+            .catch(() => {
+                itemsEl.innerHTML = '<p class="text-xs text-rose-500">Lỗi kết nối checklist</p>';
+            })
+            .finally(() => {
+                if (btn) { btn.disabled = false; btn.textContent = 'Làm mới'; }
+            });
+        }
+
         function deleteFoodLog(id) {
             if(!confirm("Bạn có chắc chắn muốn xóa món này khỏi nhật ký hôm nay?")) return;
-            
-            fetch(`/api/log_food/${id}`, { 
-                method: 'DELETE' 
-            })
+            const uid = getCurrentUserId();
+            const qs = uid ? `?user_id=${encodeURIComponent(uid)}` : '';
+            fetch(`/api/log_food/${id}${qs}`, { method: 'DELETE' })
             .then(res => res.json())
             .then(data => {
+                if (data.status && data.status !== 'success') {
+                    showToast(data.message || 'Xóa thất bại', 'error');
+                    return;
+                }
                 showToast("Đã xóa món ăn!", "info");
-                // Load lại dữ liệu ngay lập tức để biểu đồ và danh sách tự cập nhật
                 loadTodayLogs();
+                loadDailyChecklist();
             })
             .catch(err => showToast("Lỗi khi xóa món ăn!", "error"));
         }
 
+        let currentRecommendations = {}; // giữ đề xuất hiện tại để chỉ đổi 1 ô
+
+        function renderRecommendCard(key, m) {
+            const labels = { 'breakfast': 'Bữa Sáng', 'lunch': 'Bữa Trưa', 'dinner': 'Bữa Tối' };
+            const foodObj = { ...m, meal_type: m.meal_type || key };
+            const encoded = encodeURIComponent(JSON.stringify(foodObj));
+            return `
+            <div class="bg-gradient-to-br from-primary/10 to-ocean/5 p-5 rounded-[1.5rem] border border-primary/20 hover:shadow-lg transition-all relative overflow-hidden group" data-rec-slot="${key}">
+                <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 transition-transform">🥑</div>
+                <span class="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-1 block">${labels[key] || key}</span>
+                <h4 class="font-bold text-dark text-base mb-2 relative z-10 pr-6">${escapeHtml(m.name || '')}</h4>
+                <div class="flex items-center gap-3 text-xs font-bold text-inkmute font-num relative z-10">
+                    <span class="bg-white px-2 py-1 rounded-md shadow-sm border border-line text-primary">${m.calories || m.cals || 0} cal</span>
+                    <span>P: ${m.protein || 0}g</span>
+                </div>
+                <button onclick="addFoodToLog(JSON.parse(decodeURIComponent('${encoded}')), '${key}')" class="mt-4 w-full bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white py-2.5 rounded-xl text-xs font-bold transition-colors relative z-10 btn-press shadow-sm">
+                    + Thêm vào nhật ký
+                </button>
+            </div>`;
+        }
+
         function loadRecommendations() {
             const userStr = localStorage.getItem('currentUser');
-            if(!userStr) return;
+            if (!userStr) return;
             const u = JSON.parse(userStr);
             const goal = u.goal || 'duy_tri';
             const tdee = u.target_calories || 2000;
             const uid = u.id || 1;
 
-            document.getElementById('ai-recommends-list').innerHTML = '<div class="skeleton h-36 rounded-3xl"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div>';
+            const listEl = document.getElementById('ai-recommends-list');
+            if (listEl) listEl.innerHTML = '<div class="skeleton h-36 rounded-3xl"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div><div class="skeleton h-36 rounded-3xl hidden sm:block"></div>';
 
             fetch(`/api/recommendations?user_id=${uid}&tdee=${tdee}&goal=${goal}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success' && data.recommendations) {
+                if (data.status === 'success' && data.recommendations) {
+                    currentRecommendations = data.recommendations;
                     let html = '';
-                    const meals = data.recommendations;
-                    const labels = { 'breakfast': 'Bữa Sáng', 'lunch': 'Bữa Trưa', 'dinner': 'Bữa Tối' };
-                    
-                    for(let key in meals) {
-                        let m = meals[key];
-                        html += `
-                        <div class="bg-gradient-to-br from-primary/10 to-ocean/5 p-5 rounded-[1.5rem] border border-primary/20 hover:shadow-lg transition-all relative overflow-hidden group">
-                            <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 group-hover:scale-110 transition-transform">🥑</div>
-                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-1 block">${labels[key] || key}</span>
-                            <h4 class="font-bold text-dark text-base mb-2 relative z-10 pr-6">${m.name}</h4>
-                            <div class="flex items-center gap-3 text-xs font-bold text-inkmute font-num relative z-10">
-                                <span class="bg-white px-2 py-1 rounded-md shadow-sm border border-line text-primary">${m.calories || m.cals} cal</span>
-                                <span>P: ${m.protein}g</span>
-                            </div>
-                            <button onclick='addFoodToLog(${JSON.stringify(m)})' class="mt-4 w-full bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white py-2.5 rounded-xl text-xs font-bold transition-colors relative z-10 btn-press shadow-sm">
-                                + Thêm vào nhật ký
-                            </button>
-                        </div>`;
-                    }
-                    document.getElementById('ai-recommends-list').innerHTML = html;
+                    ['breakfast', 'lunch', 'dinner'].forEach(key => {
+                        if (currentRecommendations[key]) html += renderRecommendCard(key, currentRecommendations[key]);
+                    });
+                    if (listEl) listEl.innerHTML = html || `<p class="text-inkmute text-sm font-medium col-span-3">Chưa có đề xuất phù hợp.</p>`;
                 } else {
-                    document.getElementById('ai-recommends-list').innerHTML = `<p class="text-inkmute text-sm font-medium col-span-3">AI đang thu thập thêm dữ liệu sở thích của bạn...</p>`;
+                    if (listEl) listEl.innerHTML = `<p class="text-inkmute text-sm font-medium col-span-3">AI đang thu thập thêm dữ liệu sở thích của bạn...</p>`;
                 }
-            }).catch(err => {
-                document.getElementById('ai-recommends-list').innerHTML = '';
+            }).catch(() => {
+                if (listEl) listEl.innerHTML = '';
             });
         }
 
+        /** Chỉ làm mới 1 slot đề xuất (sau khi thêm món vào nhật ký) */
+        function refreshRecommendationSlot(slot, excludeName) {
+            const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!u.id || !slot) return;
+            const goal = u.goal || 'duy_tri';
+            const tdee = u.target_calories || u.tdee || 2000;
+            const uid = u.id;
+            const card = document.querySelector(`[data-rec-slot="${slot}"]`);
+            if (card) {
+                card.innerHTML = `<div class="flex flex-col items-center justify-center h-full py-8 text-center">
+                    <div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <p class="text-xs text-inkmute">Đang tìm món thay thế…</p>
+                </div>`;
+            }
+            const excludes = [excludeName];
+            Object.keys(currentRecommendations || {}).forEach(k => {
+                if (k !== slot && currentRecommendations[k] && currentRecommendations[k].name) {
+                    excludes.push(currentRecommendations[k].name);
+                }
+            });
+            const excludeParam = excludes.filter(Boolean).map(encodeURIComponent).join('|');
+            fetch(`/api/recommendations?user_id=${uid}&tdee=${tdee}&goal=${goal}&slot=${slot}&exclude=${excludeParam}&_=${Date.now()}`)
+            .then(r => r.json())
+            .then(data => {
+                const card2 = document.querySelector(`[data-rec-slot="${slot}"]`);
+                if (data.status !== 'success' || !data.recommendations || !data.recommendations[slot]) {
+                    if (card2) {
+                        card2.innerHTML = `<div class="flex flex-col items-center justify-center h-full py-6 text-center">
+                            <span class="text-2xl mb-2">✅</span>
+                            <p class="text-sm font-bold text-dark">Đã thêm vào nhật ký</p>
+                            <p class="text-[10px] text-inkmute mt-1">Không còn đề xuất khác</p>
+                        </div>`;
+                    }
+                    delete currentRecommendations[slot];
+                    return;
+                }
+                currentRecommendations[slot] = data.recommendations[slot];
+                if (card2) {
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = renderRecommendCard(slot, currentRecommendations[slot]);
+                    card2.replaceWith(tmp.firstElementChild);
+                }
+            })
+            .catch(() => {
+                const card3 = document.querySelector(`[data-rec-slot="${slot}"]`);
+                if (card3) {
+                    card3.innerHTML = `<div class="flex flex-col items-center justify-center h-full py-6 text-center">
+                        <span class="text-2xl mb-2">✅</span>
+                        <p class="text-sm font-bold text-dark">Đã thêm vào nhật ký</p>
+                    </div>`;
+                }
+            });
+        }
 
-        function addFoodToLog(food) {
-            fetch('/api/log_food', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(food) })
-            .then(() => {
-                showToast("Đã thêm món vào nhật ký thành công!", "success");
+        function addFoodToLog(food, slotKey) {
+            const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!u.id) { showToast('Vui lòng đăng nhập', 'error'); return; }
+            const slot = slotKey || (food && food.meal_type) || 'snack';
+            const payload = {
+                user_id: u.id,
+                meal_type: slot,
+                name: food.name,
+                calories: food.calories || food.cals || 0,
+                protein: food.protein || 0,
+                carbs: food.carbs || 0,
+                fat: food.fat || 0,
+                grams: food.grams || null,
+            };
+            // Đánh dấu ô đang thêm
+            const card = document.querySelector(`[data-rec-slot="${slot}"]`);
+            if (card) {
+                const btn = card.querySelector('button');
+                if (btn) { btn.disabled = true; btn.textContent = 'Đang thêm…'; }
+            }
+            fetch('/api/log_food', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status && data.status !== 'success') {
+                    showToast(data.message || 'Thêm món thất bại', 'error');
+                    if (card) {
+                        const btn = card.querySelector('button');
+                        if (btn) { btn.disabled = false; btn.textContent = '+ Thêm vào nhật ký'; }
+                    }
+                    return;
+                }
+                showToast('Đã thêm «' + (food.name || 'món') + '» vào nhật ký!', 'success');
                 switchAppTab('dashboard');
                 loadTodayLogs();
-                checkAchievements();
-
-                loadRecommendations(); 
+                loadDailyChecklist();
+                if (typeof checkAchievements === 'function') checkAchievements();
+                // Chỉ đổi ô vừa chọn
+                if (['breakfast', 'lunch', 'dinner'].includes(slot)) {
+                    refreshRecommendationSlot(slot, food.name);
+                }
+            })
+            .catch(() => {
+                showToast('Lỗi khi thêm món', 'error');
+                if (card) {
+                    const btn = card.querySelector('button');
+                    if (btn) { btn.disabled = false; btn.textContent = '+ Thêm vào nhật ký'; }
+                }
             });
         }
 
@@ -2393,19 +3326,27 @@
 
         
         
+        function quickAddWater(amount) {
+            const ml = amount || 250;
+            updateWater(ml);
+            showToast(`Đã ghi +${ml}ml nước 💧`, 'success');
+        }
+
         function uploadImageForChat(e) {
             const file = e.target.files[0];
             if (!file) return;
+            // Cho phép chọn lại cùng file / chụp lại
+            try { e.target.value = ''; } catch (_) {}
             
             let chatBox = document.getElementById('chat-box');
             const imgURL = URL.createObjectURL(file);
             chatBox.innerHTML += `
             <div class="flex justify-end items-end gap-3 mb-4 animate-fade-in-up">
-                <div class="chat-bubble-user p-4 max-w-[85%] text-sm font-medium">
-                    <img src="${imgURL}" class="max-w-full h-auto rounded-lg mb-2" style="max-height: 200px;">
+                <div class="bg-gradient-to-r from-primary to-ocean text-white p-3 rounded-2xl rounded-br-sm max-w-[85%] text-sm font-medium shadow-md">
+                    <img src="${imgURL}" class="max-w-full h-auto rounded-lg mb-2 border border-white/20" style="max-height: 200px;">
                     <p>Hãy phân tích món ăn này giúp tôi!</p>
                 </div>
-                <div class="w-8 h-8 rounded-full bg-surface2 flex items-center justify-center text-sm shrink-0 mb-1">👤</div>
+                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm shadow-sm border border-primary/30 shrink-0 mb-1">🥑</div>
             </div>`;
             
             const loadingId = 'loading-' + Date.now();
@@ -2424,8 +3365,13 @@
 
             const formData = new FormData(); 
             formData.append('image', file);
-            if(onboardingData && onboardingData.user_id) formData.append('user_id', onboardingData.user_id);
-            if(onboardingData && onboardingData.tdee) formData.append('tdee', onboardingData.tdee);
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                if (u.id) formData.append('user_id', u.id);
+                if (u.target_calories || u.tdee) formData.append('tdee', u.target_calories || u.tdee);
+            } catch (_) {}
+            if (onboardingData && onboardingData.user_id) formData.append('user_id', onboardingData.user_id);
+            if (onboardingData && onboardingData.tdee) formData.append('tdee', onboardingData.tdee);
 
             fetch('/api/analyze', { method: 'POST', body: formData }).then(res => res.json()).then(data => {
                 document.getElementById(loadingId).remove();
@@ -2506,6 +3452,194 @@
             checkAchievements();
         }
 
+        // ── Chat sessions (tự lưu, reload = chat mới) ──
+        let currentChatSessionId = null;
+        let chatSessionsCache = [];
+
+        function getChatUserId() {
+            try {
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                return u.id || null;
+            } catch (_) { return null; }
+        }
+
+        function chatWelcomeHtml() {
+            return `<div class="flex justify-start items-end gap-3 animate-fade-in-up">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
+                <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-line max-w-[85%] leading-relaxed">
+                    Chào bạn! Mình là AI tư vấn dinh dưỡng RAG. Nhấn để yêu cầu lên thực đơn hoặc hỏi về hàm lượng calo bất cứ món ăn nào nhé!
+                </div>
+            </div>`;
+        }
+
+        function renderChatBubble(role, text, timeStr) {
+            const safe = escapeHtml(text || '');
+            const timeHtml = timeStr ? `<p class="text-[10px] text-inkmute/70 mt-1 ${role==='user'?'text-right':''}">${escapeHtml(timeStr)}</p>` : '';
+            if (role === 'user') {
+                return `<div class="flex justify-end items-end gap-3">
+                    <div class="max-w-[85%]">
+                        <div class="bg-gradient-to-r from-primary to-ocean text-white p-4 rounded-2xl rounded-br-sm shadow-md text-sm font-medium leading-relaxed whitespace-pre-wrap">${safe}</div>
+                        ${timeHtml}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm shadow-sm border border-primary/30 shrink-0 mb-1">🥑</div>
+                </div>`;
+            }
+            return `<div class="flex justify-start items-end gap-3">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
+                <div class="max-w-[85%]">
+                    <div class="bg-white text-dark p-4 rounded-2xl rounded-bl-sm text-sm font-medium shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-line leading-relaxed whitespace-pre-wrap">${safe}</div>
+                    ${timeHtml}
+                </div>
+            </div>`;
+        }
+
+        function formatChatTime(iso) {
+            if (!iso) return '';
+            try {
+                const d = new Date(String(iso).replace('Z',''));
+                if (isNaN(d.getTime())) return iso;
+                const now = new Date();
+                const sameDay = d.toDateString() === now.toDateString();
+                if (sameDay) return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            } catch (_) { return iso; }
+        }
+
+        function toggleChatSidebar(force) {
+            const drawer = document.getElementById('chat-history-drawer');
+            if (!drawer) return;
+            const show = force === undefined ? drawer.classList.contains('hidden') : !!force;
+            drawer.classList.toggle('hidden', !show);
+            if (show) renderSessionLists();
+        }
+
+        function setChatTitle(title) {
+            const el = document.getElementById('chat-current-title');
+            if (el) el.textContent = title || 'Đoạn chat mới';
+        }
+
+        function renderSessionListItem(s, activeId) {
+            const active = Number(s.id) === Number(activeId);
+            const title = escapeHtml(s.title || 'Đoạn chat mới');
+            const time = formatChatTime(s.updated_at || s.created_at);
+            return `<div class="group relative flex items-center gap-1 rounded-xl border ${active ? 'bg-primary/10 border-primary/25 text-primary' : 'border-transparent hover:bg-black/[0.04] text-dark'} transition">
+                <button type="button" onclick="openChatSession(${s.id})" class="flex-1 min-w-0 text-left px-3 py-2.5">
+                    <p class="text-[13px] font-semibold truncate leading-tight">${title}</p>
+                    <p class="text-[10px] ${active ? 'text-primary/70' : 'text-inkmute'} mt-0.5">${time || '—'}</p>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); deleteChatSession(${s.id})" class="w-8 h-8 mr-1 flex items-center justify-center rounded-lg text-inkmute hover:text-rose-500 hover:bg-rose-50 transition shrink-0" title="Xóa">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+            </div>`;
+        }
+
+        function renderSessionLists() {
+            const html = chatSessionsCache.length
+                ? chatSessionsCache.map(s => renderSessionListItem(s, currentChatSessionId)).join('')
+                : `<p class="text-xs text-inkmute text-center py-6">Chưa có đoạn chat.<br>Hãy gửi tin nhắn đầu tiên.</p>`;
+            const desk = document.getElementById('chat-session-list');
+            const mob = document.getElementById('chat-session-list-mobile');
+            if (desk) desk.innerHTML = html;
+            if (mob) mob.innerHTML = html;
+        }
+
+        function loadChatSessions() {
+            const uid = getChatUserId();
+            if (!uid) {
+                chatSessionsCache = [];
+                renderSessionLists();
+                return Promise.resolve();
+            }
+            return fetch(`/api/chat/sessions?limit=50&user_id=${encodeURIComponent(uid)}`)
+                .then(r => r.json())
+                .then(d => {
+                    chatSessionsCache = d.sessions || [];
+                    renderSessionLists();
+                })
+                .catch(() => { chatSessionsCache = []; renderSessionLists(); });
+        }
+
+        function startNewChat() {
+            currentChatSessionId = null;
+            setChatTitle('Đoạn chat mới');
+            const chatBox = document.getElementById('chat-box');
+            if (chatBox) chatBox.innerHTML = chatWelcomeHtml();
+            renderSessionLists();
+            setTimeout(() => document.getElementById('chat-input')?.focus(), 80);
+        }
+
+        function openChatSession(sessionId) {
+            const uid = getChatUserId();
+            if (!uid) { showToast('Vui lòng đăng nhập', 'error'); return; }
+            currentChatSessionId = sessionId;
+            const chatBox = document.getElementById('chat-box');
+            if (chatBox) chatBox.innerHTML = `<div class="text-center text-inkmute text-sm py-10">Đang tải…</div>`;
+            fetch(`/api/chat/sessions/${sessionId}?user_id=${encodeURIComponent(uid)}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status !== 'success') {
+                        showToast(d.message || 'Không tải được đoạn chat', 'error');
+                        startNewChat();
+                        return;
+                    }
+                    setChatTitle((d.session && d.session.title) || 'Đoạn chat');
+                    const logs = d.logs || [];
+                    let html = '';
+                    if (!logs.length) html = chatWelcomeHtml();
+                    else {
+                        logs.forEach(item => {
+                            const t = formatChatTime(item.created_at);
+                            if (item.question) html += renderChatBubble('user', item.question, t);
+                            if (item.answer) html += renderChatBubble('bot', item.answer, t);
+                        });
+                    }
+                    if (chatBox) {
+                        chatBox.innerHTML = html;
+                        setTimeout(() => chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'auto' }), 40);
+                    }
+                    renderSessionLists();
+                    toggleChatSidebar(false);
+                })
+                .catch(() => showToast('Lỗi tải đoạn chat', 'error'));
+        }
+
+        function deleteChatSession(sessionId) {
+            const uid = getChatUserId();
+            if (!uid) return;
+            if (!confirm('Xóa đoạn chat này?')) return;
+            fetch(`/api/chat/sessions/${sessionId}?user_id=${encodeURIComponent(uid)}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status !== 'success') { showToast(d.message || 'Xóa thất bại', 'error'); return; }
+                    if (Number(currentChatSessionId) === Number(sessionId)) startNewChat();
+                    loadChatSessions();
+                })
+                .catch(() => showToast('Lỗi xóa', 'error'));
+        }
+
+        /**
+         * Vào tab Chat (từ menu khác):
+         * - Giữ nguyên đoạn chat đang mở (không reset)
+         * - Chỉ tải lại danh sách lịch sử sidebar
+         * Chat mới CHỈ khi: F5/load trang, hoặc bấm nút "Đoạn chat mới"
+         */
+        function onEnterChatTab() {
+            loadChatSessions();
+            // Nếu đang có session nhưng khung chat trống (hiếm) → mở lại session
+            const box = document.getElementById('chat-box');
+            if (currentChatSessionId && box && box.querySelectorAll('.flex.justify-end, .flex.justify-start').length <= 1) {
+                openChatSession(currentChatSessionId);
+            }
+            renderSessionLists();
+        }
+
+        /** Alias cũ — không còn reset chat */
+        function loadChatHistory() {
+            onEnterChatTab();
+        }
+
+        function clearChatView() { startNewChat(); }
+
         function sendChatMessage() {
             const input = document.getElementById('chat-input'); 
             const msg = input.value.trim(); 
@@ -2521,11 +3655,7 @@
             };
             
             // Render tin nhắn của User (Bổ sung escapeHtml để bảo mật XSS)
-            chatBox.innerHTML += `
-            <div class="flex justify-end items-end gap-3 animate-fade-in-up">
-                <div class="bg-gradient-to-r from-primary to-ocean text-white p-4 rounded-2xl rounded-br-sm max-w-[85%] shadow-md text-sm font-medium leading-relaxed">${escapeHtml(msg)}</div>
-                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm shadow-sm border border-primary/30 shrink-0 mb-1">🥑</div>
-            </div>`;
+            chatBox.innerHTML += renderChatBubble('user', msg);
             
             input.value = ''; 
             scrollToBottom(); // Gọi cuộn khi User gửi
@@ -2558,9 +3688,28 @@
                 aiContextMsg += `\n\n(Lưu ý hệ thống: Người dùng hôm nay mới chỉ uống ${globalWaterMl}ml/2000ml nước. Hãy khéo léo nhắc nhở họ uống thêm nước trong câu trả lời một cách thật thân thiện nhé)`;
             }
 
-            fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({message: aiContextMsg, tdee: tdeeTarget, profile: profileData}) })
+            const chatUser = userStr ? JSON.parse(userStr) : {};
+            fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
+                message: aiContextMsg,
+                display_message: msg,
+                tdee: tdeeTarget,
+                profile: profileData,
+                user_id: chatUser.id || null,
+                session_id: currentChatSessionId
+            }) })
             .then(res => res.json()).then(data => {
                 document.getElementById(loadingId).remove();
+
+                // Tự gắn session (không cần đặt tên) + refresh sidebar
+                if (data.session_id) {
+                    const isNew = !currentChatSessionId;
+                    currentChatSessionId = data.session_id;
+                    if (isNew) {
+                        const shortTitle = msg.length > 48 ? msg.slice(0, 47) + '…' : msg;
+                        setChatTitle(shortTitle);
+                    }
+                    loadChatSessions();
+                }
                 
                 // Render câu trả lời của AI
                 if(data.type === 'diet' && data.diet && data.diet.meals) {
@@ -2728,6 +3877,170 @@
 
 
 
+
+        // ---- USER MEAL PLANS ----
+        const GOAL_LABEL_UI = { giam_can:'Giảm cân', tang_can:'Tăng cân', duy_tri:'Duy trì', tang_co:'Tăng cơ' };
+        function loadUserPlans() {
+            const goal = document.getElementById('user-plan-goal-filter')?.value || '';
+            const url = '/api/meal-plans' + (goal ? `?goal=${goal}` : '');
+            fetch(url).then(r => r.json()).then(d => {
+                const list = document.getElementById('user-plans-list');
+                const plans = d.plans || [];
+                if (!plans.length) {
+                    list.innerHTML = `<div class="col-span-2 text-center p-10 text-inkmute card-pro"><p class="text-3xl mb-2">📋</p>Chưa có thực đơn mẫu. Admin có thể tạo trong panel quản trị.</div>`;
+                    return;
+                }
+                list.innerHTML = plans.map(p => `
+                    <div class="card-pro p-5 hover:shadow-md transition cursor-pointer" onclick="viewUserPlan(${p.id})">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-display font-bold text-dark">${escapeHtml(p.name||'')}</h3>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg bg-primary/10 text-primary">${GOAL_LABEL_UI[p.goal]||p.goal||''}</span>
+                        </div>
+                        <p class="text-xs text-inkmute mb-3 line-clamp-2">${escapeHtml(p.description||'Thực đơn dinh dưỡng')}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="font-num font-black text-primary text-lg">${p.target_calories||p.total_calories||'—'} <span class="text-xs font-bold text-inkmute">kcal</span></span>
+                            <button onclick="event.stopPropagation(); applyUserPlan(${p.id})" class="btn-press text-xs font-bold bg-primary text-white px-3 py-1.5 rounded-xl">Áp dụng hôm nay</button>
+                        </div>
+                    </div>`).join('');
+            });
+        }
+        function viewUserPlan(id) {
+            fetch(`/api/meal-plans/${id}`).then(r => r.json()).then(d => {
+                const box = document.getElementById('user-plan-detail');
+                if (d.status !== 'success' && !d.plan) { showToast('Không tải được', 'error'); return; }
+                const plan = d.plan || d;
+                const items = plan.items || d.items || [];
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-display font-bold text-xl text-dark">${escapeHtml(plan.name||'')}</h3>
+                        <p class="text-xs text-inkmute mt-1">${escapeHtml(plan.description||'')}</p></div>
+                        <button onclick="document.getElementById('user-plan-detail').classList.add('hidden')" class="text-inkmute font-bold">✕</button>
+                    </div>
+                    <div class="space-y-2">
+                        ${items.map(it => `<div class="flex justify-between text-sm p-2 bg-paper rounded-xl border border-line">
+                            <span class="font-bold">${escapeHtml(it.name||it.food_name||'Món')} <span class="text-[10px] text-inkmute">${it.meal_slot||it.meal_type||''}</span></span>
+                            <span class="font-num text-primary font-bold">${it.calories||0} kcal</span>
+                        </div>`).join('') || '<p class="text-inkmute text-sm">Chưa có món</p>'}
+                    </div>
+                    <button onclick="applyUserPlan(${plan.id||id})" class="btn-press w-full bg-primary text-white font-bold py-3 rounded-xl">Áp dụng vào nhật ký hôm nay</button>
+                `;
+                box.scrollIntoView({behavior:'smooth'});
+            });
+        }
+        function applyUserPlan(id) {
+            if (!confirm('Thêm tất cả món trong thực đơn vào nhật ký hôm nay?')) return;
+            fetch(`/api/meal-plans/${id}/apply`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+            .then(r => r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { loadTodayLogs(); loadDailyChecklist(); switchAppTab('dashboard'); }
+            });
+        }
+
+        // ---- KNOWLEDGE / ARTICLES / FAQ ----
+        function loadKnowledge() {
+            fetch('/api/articles?limit=30').then(r => r.json()).then(d => {
+                const list = document.getElementById('knowledge-list');
+                const arts = d.articles || [];
+                if (!arts.length) {
+                    list.innerHTML = `<div class="col-span-2 text-center p-10 text-inkmute card-pro"><p class="text-3xl mb-2">📰</p>Chưa có bài viết published. Admin hãy xuất bản bài trong panel.</div>`;
+                } else {
+                    list.innerHTML = arts.map(a => `
+                        <div class="card-pro p-5 hover:shadow-md transition cursor-pointer" onclick="openArticle(${a.id})">
+                            <span class="text-[10px] font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-lg">${escapeHtml(a.category||'general')}</span>
+                            <h3 class="font-display font-bold text-dark mt-2 mb-1">${escapeHtml(a.title||'')}</h3>
+                            <p class="text-xs text-inkmute line-clamp-3">${escapeHtml(a.content||'')}</p>
+                            <p class="text-[10px] text-inkmute mt-2">${a.created_at||''}</p>
+                        </div>`).join('');
+                }
+            });
+            fetch('/api/faqs').then(r => r.json()).then(d => {
+                const el = document.getElementById('user-faq-list');
+                const faqs = d.faqs || [];
+                if (!faqs.length) { el.innerHTML = '<p class="text-xs text-inkmute">Chưa có FAQ.</p>'; return; }
+                el.innerHTML = faqs.map((f,i) => `
+                    <details class="group border border-line rounded-xl overflow-hidden">
+                        <summary class="cursor-pointer px-4 py-3 font-bold text-sm text-dark bg-paper hover:bg-surface2 transition list-none flex justify-between items-center">
+                            ${escapeHtml(f.question||'')}
+                            <span class="text-inkmute group-open:rotate-180 transition">▾</span>
+                        </summary>
+                        <div class="px-4 py-3 text-sm text-inkmute leading-relaxed border-t border-line">${escapeHtml(f.answer||'')}</div>
+                    </details>`).join('');
+            });
+        }
+        function openArticle(id) {
+            fetch(`/api/articles/${id}`).then(r => r.json()).then(d => {
+                if (d.status !== 'success') { showToast(d.message||'Lỗi', 'error'); return; }
+                const a = d.article;
+                const box = document.getElementById('knowledge-detail');
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <button onclick="document.getElementById('knowledge-detail').classList.add('hidden')" class="text-xs font-bold text-inkmute mb-2">← Quay lại</button>
+                    <span class="text-[10px] font-bold uppercase text-primary">${escapeHtml(a.category||'')}</span>
+                    <h2 class="font-display font-bold text-2xl text-dark">${escapeHtml(a.title||'')}</h2>
+                    <p class="text-[11px] text-inkmute">${a.created_at||''}</p>
+                    <div class="prose text-sm text-dark leading-relaxed whitespace-pre-wrap">${escapeHtml(a.content||'')}</div>
+                `;
+                box.scrollIntoView({behavior:'smooth'});
+            });
+        }
+
+        // ---- PROFILE EDIT ----
+        function loadAccountEditForm() {
+            const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (document.getElementById('pe-nickname')) document.getElementById('pe-nickname').value = u.nickname || '';
+            if (document.getElementById('pe-gender')) document.getElementById('pe-gender').value = u.gender || 'male';
+            if (document.getElementById('pe-birth')) document.getElementById('pe-birth').value = u.birth_year || '';
+            if (document.getElementById('pe-height')) document.getElementById('pe-height').value = u.height || '';
+            if (document.getElementById('pe-weight')) document.getElementById('pe-weight').value = u.weight || '';
+            if (document.getElementById('pe-goal')) document.getElementById('pe-goal').value = u.goal || 'duy_tri';
+            if (document.getElementById('pe-activity')) document.getElementById('pe-activity').value = u.activity_level || 'light';
+            if (document.getElementById('pe-weekly')) document.getElementById('pe-weekly').value = u.weekly_goal ?? 0.5;
+        }
+        function toggleProfileEdit(force) {
+            const view = document.getElementById('acc-view-mode');
+            const edit = document.getElementById('acc-edit-mode');
+            const btn = document.getElementById('btn-edit-profile');
+            const showEdit = force === true || (force !== false && edit.classList.contains('hidden'));
+            if (showEdit) {
+                loadAccountEditForm();
+                view.classList.add('hidden');
+                edit.classList.remove('hidden');
+                if (btn) btn.innerText = '✕ Đóng';
+            } else {
+                view.classList.remove('hidden');
+                edit.classList.add('hidden');
+                if (btn) btn.innerText = '✏️ Chỉnh sửa';
+            }
+        }
+        function saveUserProfile(e) {
+            e.preventDefault();
+            const payload = {
+                nickname: document.getElementById('pe-nickname').value.trim(),
+                gender: document.getElementById('pe-gender').value,
+                birth_year: document.getElementById('pe-birth').value,
+                height: document.getElementById('pe-height').value,
+                weight: document.getElementById('pe-weight').value,
+                goal: document.getElementById('pe-goal').value,
+                activity_level: document.getElementById('pe-activity').value,
+                weekly_goal: document.getElementById('pe-weekly').value,
+            };
+            fetch('/api/profile', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+            .then(r => r.json()).then(d => {
+                if (d.status !== 'success') { showToast(d.message || 'Lỗi', 'error'); return; }
+                const m = d.metrics || {};
+                const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                Object.assign(u, payload, {
+                    bmr: m.bmr, tdee: m.tdee, target_calories: m.target_calories,
+                    nickname: m.nickname || payload.nickname,
+                });
+                localStorage.setItem('currentUser', JSON.stringify(u));
+                showToast(`Đã cập nhật! Calo mục tiêu: ${m.target_calories} kcal`, 'success');
+                toggleProfileEdit(false);
+                applyLoginState();
+            });
+        }
+
         // ================= ADMIN PANEL LOGIC (simplified) =================
         let adminFoodsCache = [];
         let admFoodPageNum = 1;
@@ -2753,7 +4066,7 @@
             document.getElementById('app-screen')?.classList.remove('hidden');
         }
         function switchAdminTab(tab) {
-            ['users','foods','plans','articles'].forEach(t => {
+            ['users','foods'].forEach(t => {
                 document.getElementById('adm-view-' + t)?.classList.add('hidden');
                 const btn = document.getElementById('tab-adm-' + t);
                 if (btn) { btn.classList.remove('border-primary','text-primary'); btn.classList.add('text-inkmute','border-transparent'); }
@@ -2763,8 +4076,98 @@
             if (btn) { btn.classList.add('border-primary','text-primary'); btn.classList.remove('text-inkmute','border-transparent'); }
             if (tab === 'users') loadAdminUsers();
             else if (tab === 'foods') loadAdminFoods();
-            else if (tab === 'plans') loadAdminPlans();
-            else if (tab === 'articles') loadAdminArticles();
+        }
+
+        function loadAdminIngredients() {
+            const q = document.getElementById('adm-ing-search')?.value || '';
+            fetch(`/api/admin/ingredients?q=${encodeURIComponent(q)}&per_page=50`).then(r=>r.json()).then(d => {
+                const list = d.ingredients || [];
+                document.getElementById('admin-ing-list').innerHTML = list.map(i => `
+                    <div class="flex justify-between items-center px-4 py-3 text-sm">
+                        <div><p class="font-bold text-dark">${escapeHtml(i.name)}</p>
+                        <p class="text-[11px] text-inkmute font-num">${i.calories} kcal · P${i.protein}/C${i.carbs}/F${i.fat} · ${i.unit||''}</p></div>
+                        <button onclick="adminDeleteIngredient(${i.id})" class="text-xs font-bold text-rose-500">Xóa</button>
+                    </div>`).join('') || '<p class="p-6 text-center text-inkmute">Trống</p>';
+            });
+        }
+        function adminSaveIngredient(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('adm-ing-name').value,
+                calories: document.getElementById('adm-ing-cal').value,
+                protein: document.getElementById('adm-ing-pro').value,
+                carbs: document.getElementById('adm-ing-carb').value,
+                fat: document.getElementById('adm-ing-fat').value,
+                unit: document.getElementById('adm-ing-unit').value,
+            };
+            fetch('/api/admin/ingredients', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+            .then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { e.target.reset(); document.getElementById('adm-ing-unit').value='100g'; loadAdminIngredients(); }
+            });
+        }
+        function adminDeleteIngredient(id) {
+            if (!confirm('Xóa nguyên liệu?')) return;
+            fetch(`/api/admin/ingredients/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'','info'); loadAdminIngredients();
+            });
+        }
+
+        function loadAdminFaqs() {
+            fetch('/api/admin/faqs').then(r=>r.json()).then(d => {
+                document.getElementById('admin-faq-list').innerHTML = (d.faqs||[]).map(f => `
+                    <div class="px-4 py-3 flex justify-between gap-3">
+                        <div class="min-w-0"><p class="font-bold text-sm text-dark">${escapeHtml(f.question)}</p>
+                        <p class="text-xs text-inkmute mt-1 line-clamp-2">${escapeHtml(f.answer)}</p></div>
+                        <button onclick="adminDeleteFaq(${f.id})" class="text-xs font-bold text-rose-500 shrink-0">Xóa</button>
+                    </div>`).join('') || '<p class="p-6 text-center text-inkmute">Chưa có FAQ</p>';
+            });
+        }
+        function adminSaveFaq(e) {
+            e.preventDefault();
+            fetch('/api/admin/faqs', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ question: document.getElementById('adm-faq-q').value, answer: document.getElementById('adm-faq-a').value }),
+            }).then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { e.target.reset(); loadAdminFaqs(); }
+            });
+        }
+        function adminDeleteFaq(id) {
+            if (!confirm('Xóa FAQ?')) return;
+            fetch(`/api/admin/faqs/${id}`, {method:'DELETE'}).then(r=>r.json()).then(() => loadAdminFaqs());
+        }
+
+        function loadAdminKnowledge() {
+            fetch('/api/admin/knowledge').then(r=>r.json()).then(d => {
+                document.getElementById('admin-know-list').innerHTML = (d.docs||[]).map(k => `
+                    <div class="px-4 py-3 flex justify-between gap-3">
+                        <div><p class="font-bold text-sm text-dark">${escapeHtml(k.title)}</p>
+                        <p class="text-xs text-inkmute line-clamp-2">${escapeHtml(k.content)}</p>
+                        <span class="text-[10px] ${k.is_indexed?'text-emerald-600':'text-amber-600'} font-bold">${k.is_indexed?'Indexed':'Chưa index'}</span></div>
+                        <button onclick="adminDeleteKnowledge(${k.id})" class="text-xs font-bold text-rose-500 shrink-0">Xóa</button>
+                    </div>`).join('') || '<p class="p-6 text-center text-inkmute">Chưa có tài liệu</p>';
+            });
+        }
+        function adminSaveKnowledge(e) {
+            e.preventDefault();
+            fetch('/api/admin/knowledge', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ title: document.getElementById('adm-know-title').value, content: document.getElementById('adm-know-content').value }),
+            }).then(r=>r.json()).then(d => {
+                showToast(d.message||'', d.status==='success'?'success':'error');
+                if (d.status==='success') { e.target.reset(); loadAdminKnowledge(); }
+            });
+        }
+        function adminDeleteKnowledge(id) {
+            if (!confirm('Xóa tài liệu?')) return;
+            fetch(`/api/admin/knowledge/${id}`, {method:'DELETE'}).then(r=>r.json()).then(() => loadAdminKnowledge());
+        }
+        function adminReindexKnowledge() {
+            fetch('/api/admin/knowledge/reindex', {method:'POST'}).then(r=>r.json()).then(d => {
+                showToast(d.message||'Reindex xong', d.status==='success'?'success':'error');
+                loadAdminKnowledge();
+            });
         }
 
         async function loadAdminStats() {
@@ -2773,62 +4176,366 @@
                 if (res.status === 403) { showToast('Không có quyền Admin', 'error'); closeAdminPanel(); return; }
                 const d = await res.json();
                 if (d.status !== 'success' && d.total_users == null) return;
-                document.getElementById('stat-total-users').innerText = d.total_users ?? '--';
-                document.getElementById('stat-total-foods').innerText = d.total_foods ?? '--';
-                document.getElementById('stat-total-plans').innerText = d.total_plans ?? '--';
+                const elUsers = document.getElementById('stat-total-users');
+                const elFoods = document.getElementById('stat-total-foods');
+                const elActive = document.getElementById('stat-active-users');
+                if (elUsers) elUsers.innerText = d.total_users ?? '--';
+                if (elFoods) elFoods.innerText = d.total_foods ?? '--';
+                if (elActive) elActive.innerText = d.active_users ?? '--';
             } catch (e) {}
-            // AI stats from monitor endpoint (basic)
             try {
                 const r2 = await fetch('/api/admin/ai-monitor');
                 if (r2.ok) {
                     const a = await r2.json();
                     if (a.status === 'success') {
-                        document.getElementById('stat-ai-total').innerText = a.total ?? 0;
-                        document.getElementById('stat-ai-ok').innerText = a.success ?? 0;
-                        document.getElementById('stat-ai-fail').innerText = a.failed ?? 0;
+                        const t = document.getElementById('stat-ai-total');
+                        const ok = document.getElementById('stat-ai-ok');
+                        const fail = document.getElementById('stat-ai-fail');
+                        if (t) t.innerText = a.total ?? 0;
+                        if (ok) ok.innerText = a.success ?? 0;
+                        if (fail) fail.innerText = a.failed ?? 0;
                     }
-                }
-            } catch (e) {}
-            try {
-                const r3 = await fetch('/api/admin/articles?per_page=1');
-                if (r3.ok) {
-                    const ar = await r3.json();
-                    document.getElementById('stat-total-articles').innerText = ar.total ?? 0;
                 }
             } catch (e) {}
         }
 
         // ---- USERS ----
+        const GOAL_MAP = { giam_can:'Giảm cân', tang_can:'Tăng cân', duy_tri:'Duy trì', tang_co:'Tăng cơ' };
+        const ACT_MAP = { sedentary:'Ít vận động', light:'Nhẹ', moderate:'Vừa', active:'Năng động', very_active:'Rất năng động' };
+        const GENDER_MAP = { male:'Nam', female:'Nữ', other:'Khác' };
+
+        let admUserPage = 1;
+        let admUserSearchTimer = null;
+        function onAdminUserSearch() {
+            clearTimeout(admUserSearchTimer);
+            admUserSearchTimer = setTimeout(() => { admUserPage = 1; loadAdminUsers(); }, 320);
+        }
+
+        function exportAdminUsers() {
+            const q = document.getElementById('adm-user-search')?.value || '';
+            const status = document.getElementById('adm-user-filter-status')?.value || '';
+            const role = document.getElementById('adm-user-filter-role')?.value || '';
+            let url = `/api/admin/users/export?q=${encodeURIComponent(q)}`;
+            if (status) url += `&status=${status}`;
+            if (role) url += `&role=${role}`;
+            showToast('Đang xuất CSV…', 'success');
+            window.location.href = url;
+        }
+
         function loadAdminUsers() {
             const q = document.getElementById('adm-user-search')?.value || '';
-            fetch(`/api/admin/users?q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => {
-                const users = Array.isArray(data) ? data : [];
+            const status = document.getElementById('adm-user-filter-status')?.value || '';
+            const role = document.getElementById('adm-user-filter-role')?.value || '';
+            const perPage = document.getElementById('adm-user-per-page')?.value || 20;
+            let url = `/api/admin/users?q=${encodeURIComponent(q)}&page=${admUserPage}&per_page=${perPage}`;
+            if (status) url += `&status=${status}`;
+            if (role) url += `&role=${role}`;
+            fetch(url).then(r => r.json()).then(data => {
+                // Hỗ trợ cả format cũ (mảng) và mới (phân trang)
+                const users = Array.isArray(data) ? data : (data.items || []);
+                const total = Array.isArray(data) ? users.length : (data.total || 0);
+                const page = Array.isArray(data) ? 1 : (data.page || 1);
+                const totalPages = Array.isArray(data) ? 1 : (data.total_pages || 1);
+                admUserPage = page;
                 const me = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 let html = '';
                 users.forEach(u => {
                     const isAdm = u.role === 'admin' || u.role === 'super_admin';
                     const roleBadge = isAdm
-                        ? '<span class="px-2 py-0.5 bg-gold/15 text-gold rounded-lg text-[10px] font-black uppercase border border-gold/25">Admin</span>'
-                        : '<span class="px-2 py-0.5 bg-surface2 text-inkmute rounded-lg text-[10px] font-black uppercase border border-line">User</span>';
+                        ? '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-lg text-[10px] font-black uppercase border border-amber-200">Admin</span>'
+                        : '<span class="px-2 py-0.5 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-black uppercase border border-slate-200">User</span>';
                     const st = u.is_active
-                        ? '<span class="text-emerald-600 text-xs font-bold">Hoạt động</span>'
-                        : '<span class="text-rose-500 text-xs font-bold">Đã khóa</span>';
+                        ? '<span class="inline-flex items-center gap-1 text-emerald-600 text-xs font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Hoạt động</span>'
+                        : '<span class="inline-flex items-center gap-1 text-rose-500 text-xs font-bold"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Đã khóa</span>';
                     const isSelf = me.id === u.id;
-                    html += `<tr class="hover:bg-paper">
-                        <td class="px-4 py-3 text-xs font-num text-inkmute">#${u.id}</td>
-                        <td class="px-4 py-3 font-bold text-dark">${u.fullname||''}</td>
-                        <td class="px-4 py-3 text-xs text-inkmute">${u.email||''}</td>
+                    const goalLabel = GOAL_MAP[u.goal] || (u.goal ? u.goal : '—');
+                    const profileBits = [];
+                    if (u.height) profileBits.push(`${u.height}cm`);
+                    if (u.weight) profileBits.push(`${u.weight}kg`);
+                    if (u.gender) profileBits.push(GENDER_MAP[u.gender] || u.gender);
+                    if (u.birth_year) profileBits.push(u.birth_year);
+                    const initials = (u.fullname || 'U').trim().split(/\s+/).map(w=>w[0]).slice(-2).join('').toUpperCase();
+                    const avatarHtml = u.avatar_url
+                        ? `<img src="${u.avatar_url}" alt="" class="w-9 h-9 rounded-xl object-cover shrink-0 border border-line" onerror="this.outerHTML='<div class=\\'w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-xs font-black shrink-0\\'>${initials}</div>'">`
+                        : `<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-xs font-black shrink-0">${initials}</div>`;
+                    const authBits = [];
+                    if (u.google_linked) authBits.push('<span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-md" title="Liên kết Google">G</span>');
+                    if (u.has_password) authBits.push('<span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md" title="Có mật khẩu">MK</span>');
+                    if (!authBits.length) authBits.push('<span class="text-[10px] text-inkmute">—</span>');
+                    html += `<tr class="hover:bg-blue-50/40 transition cursor-pointer group" onclick="openUserDetail(${u.id})">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                ${avatarHtml}
+                                <div class="min-w-0">
+                                    <p class="font-bold text-dark truncate">${u.fullname||'—'}${isSelf?' <span class="text-[10px] text-primary font-bold">(Bạn)</span>':''}</p>
+                                    <p class="text-[11px] text-inkmute truncate">${u.email||''}${u.nickname?' · @'+u.nickname:''}</p>
+                                    <p class="text-[10px] text-inkmute/80 mt-0.5">${u.created_at ? 'Tham gia ' + u.created_at : ''}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-inkmute hidden md:table-cell">${profileBits.join(' · ') || '—'}</td>
+                        <td class="px-4 py-3"><span class="text-xs font-bold text-dark">${goalLabel}</span>${u.target_calories?`<span class="block text-[10px] text-inkmute font-num">${Math.round(u.target_calories)} kcal</span>`:''}</td>
+                        <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${authBits.join('')}</div></td>
                         <td class="px-4 py-3">${roleBadge}</td>
                         <td class="px-4 py-3">${st}</td>
-                        <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
-                            ${!isSelf ? `<button onclick="adminToggleLock(${u.id})" class="btn-press text-xs font-bold px-2 py-1 rounded-lg border ${u.is_active?'text-amber-600 bg-amber-50 border-amber-100':'text-emerald-600 bg-emerald-50 border-emerald-100'}">${u.is_active?'Khóa':'Mở khóa'}</button>` : '<span class="text-[10px] text-inkmute">(Bạn)</span>'}
-                            ${!isSelf ? `<button onclick="adminDeleteUser(${u.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">Xóa</button>` : ''}
+                        <td class="px-4 py-3 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                            <button onclick="openUserDetail(${u.id})" class="btn-press text-xs font-bold text-primary bg-primary/10 hover:bg-primary/15 px-2.5 py-1.5 rounded-lg">Chi tiết</button>
+                            ${!isSelf ? `<button onclick="adminToggleLock(${u.id})" class="btn-press text-xs font-bold px-2.5 py-1.5 rounded-lg border ${u.is_active?'text-amber-600 bg-amber-50 border-amber-100':'text-emerald-600 bg-emerald-50 border-emerald-100'}">${u.is_active?'Khóa':'Mở'}</button>` : ''}
+                            ${!isSelf ? `<button onclick="adminDeleteUser(${u.id})" class="btn-press text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg border border-rose-100">Xóa</button>` : ''}
                         </td>
                     </tr>`;
                 });
-                document.getElementById('admin-user-table').innerHTML = html || `<tr><td colspan="6" class="p-8 text-center text-inkmute">Không có người dùng</td></tr>`;
+                document.getElementById('admin-user-table').innerHTML = html || `<tr><td colspan="7" class="p-12 text-center text-inkmute"><div class="text-3xl mb-2">👤</div>Không tìm thấy người dùng</td></tr>`;
+                const cnt = document.getElementById('adm-user-count');
+                if (cnt) {
+                    const from = total === 0 ? 0 : (page - 1) * (parseInt(perPage, 10) || 20) + 1;
+                    const to = Math.min(page * (parseInt(perPage, 10) || 20), total);
+                    cnt.innerText = total ? `Hiển thị ${from}–${to} / ${total} người dùng` : '0 người dùng';
+                }
+                const pag = document.getElementById('adm-user-pagination');
+                if (pag) {
+                    if (totalPages <= 1) {
+                        pag.innerHTML = '';
+                    } else {
+                        let phtml = `<button type="button" class="btn-press px-2.5 py-1.5 rounded-lg border border-line text-xs font-bold ${page<=1?'opacity-40 pointer-events-none':''}" onclick="admUserPage=${page-1};loadAdminUsers()">←</button>`;
+                        const start = Math.max(1, page - 2);
+                        const end = Math.min(totalPages, page + 2);
+                        if (start > 1) phtml += `<span class="text-xs text-inkmute px-1">…</span>`;
+                        for (let i = start; i <= end; i++) {
+                            phtml += `<button type="button" class="btn-press px-2.5 py-1.5 rounded-lg text-xs font-bold ${i===page?'bg-primary text-white shadow-sm':'border border-line text-inkmute hover:bg-paper'}" onclick="admUserPage=${i};loadAdminUsers()">${i}</button>`;
+                        }
+                        if (end < totalPages) phtml += `<span class="text-xs text-inkmute px-1">…</span>`;
+                        phtml += `<button type="button" class="btn-press px-2.5 py-1.5 rounded-lg border border-line text-xs font-bold ${page>=totalPages?'opacity-40 pointer-events-none':''}" onclick="admUserPage=${page+1};loadAdminUsers()">→</button>`;
+                        pag.innerHTML = phtml;
+                    }
+                }
+            }).catch(() => {
+                document.getElementById('admin-user-table').innerHTML = `<tr><td colspan="7" class="p-8 text-center text-rose-500">Lỗi tải dữ liệu</td></tr>`;
             });
         }
+
+        function openUserDetail(id) {
+            fetch(`/api/admin/users/${id}`).then(r => r.json()).then(d => {
+                if (d.status !== 'success' || !d.user) { showToast(d.message || 'Không tải được', 'error'); return; }
+                const u = d.user;
+                const me = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                const isSelf = me.id === u.id;
+                document.getElementById('adm-modal-title').innerText = u.fullname || 'Người dùng';
+                document.getElementById('adm-modal-subtitle').innerText = `#${u.id} · ${u.email || ''} · Tham gia ${u.created_at || '—'}`;
+
+                const stats = u.stats || {};
+                const lastW = u.last_weight;
+                const avatarBlock = u.avatar_url
+                    ? `<img src="${u.avatar_url}" alt="" class="w-14 h-14 rounded-2xl object-cover border border-line shadow-sm">`
+                    : `<div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-ocean flex items-center justify-center text-white text-lg font-black">${(u.fullname||'U').trim().split(/\\s+/).map(w=>w[0]).slice(-2).join('').toUpperCase()}</div>`;
+                const authTags = [];
+                if (u.google_linked) authTags.push('<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Google</span>');
+                if (u.has_password) authTags.push('<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Mật khẩu</span>');
+                if (!u.has_password && !u.google_linked) authTags.push('<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Chưa có phương thức</span>');
+
+                document.getElementById('adm-modal-body').innerHTML = `
+                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-paper border border-line">
+                        ${avatarBlock}
+                        <div class="min-w-0 flex-1">
+                            <p class="font-display font-bold text-dark text-lg truncate">${u.fullname || '—'}</p>
+                            <p class="text-xs text-inkmute truncate">${u.email || ''}${u.nickname ? ' · @' + u.nickname : ''}</p>
+                            <div class="flex flex-wrap gap-1.5 mt-1.5">${authTags.join('')}</div>
+                        </div>
+                        ${lastW ? `<div class="text-right shrink-0"><p class="text-[10px] font-extrabold text-inkmute uppercase">Cân gần nhất</p><p class="font-num font-black text-dark">${lastW.weight} kg</p><p class="text-[10px] text-inkmute">${lastW.date||''}</p></div>` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                        <div class="rounded-xl bg-blue-50 border border-blue-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-blue-600 uppercase">Nhật ký ăn</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.food_logs||0}</p>
+                        </div>
+                        <div class="rounded-xl bg-cyan-50 border border-cyan-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-cyan-600 uppercase">Nước uống</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.water_logs||0}</p>
+                        </div>
+                        <div class="rounded-xl bg-violet-50 border border-violet-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-violet-600 uppercase">Cân nặng</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.weight_logs||0}</p>
+                        </div>
+                        <div class="rounded-xl bg-amber-50 border border-amber-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-amber-600 uppercase">Huy hiệu</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.achievements||0}</p>
+                        </div>
+                        <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-emerald-600 uppercase">Chat AI</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.chat_messages||0}</p>
+                        </div>
+                        <div class="rounded-xl bg-rose-50 border border-rose-100 p-2.5 text-center">
+                            <p class="text-[9px] font-extrabold text-rose-600 uppercase">Phân tích ảnh</p>
+                            <p class="text-lg font-num font-black text-dark">${stats.image_analyses||0}</p>
+                        </div>
+                    </div>
+
+                    <form id="adm-user-edit-form" class="space-y-4" onsubmit="adminSaveUser(event, ${u.id})">
+                        <h4 class="font-display font-bold text-dark text-sm border-b border-line pb-2">Thông tin tài khoản</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Họ tên *</label>
+                                <input name="fullname" value="${(u.fullname||'').replace(/"/g,'&quot;')}" required class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Email *</label>
+                                <input name="email" type="email" value="${(u.email||'').replace(/"/g,'&quot;')}" required class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Nickname</label>
+                                <input name="nickname" value="${(u.nickname||'').replace(/"/g,'&quot;')}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Giới tính</label>
+                                <select name="gender" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none">
+                                    <option value="">—</option>
+                                    <option value="male" ${u.gender==='male'?'selected':''}>Nam</option>
+                                    <option value="female" ${u.gender==='female'?'selected':''}>Nữ</option>
+                                    <option value="other" ${u.gender==='other'?'selected':''}>Khác</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Năm sinh ${u.age ? '(' + u.age + ' tuổi)' : ''}</label>
+                                <input name="birth_year" type="number" min="1920" max="2020" value="${u.birth_year||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase tracking-wider">Role</label>
+                                <select id="adm-edit-role" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none" ${isSelf?'disabled':''}>
+                                    <option value="user" ${u.role==='user'?'selected':''}>User</option>
+                                    <option value="admin" ${u.role==='admin'||u.role==='super_admin'?'selected':''}>Admin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h4 class="font-display font-bold text-dark text-sm border-b border-line pb-2 pt-2">Hồ sơ dinh dưỡng</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Chiều cao (cm)</label>
+                                <input name="height" type="number" step="0.1" min="50" max="250" value="${u.height||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Cân nặng (kg)</label>
+                                <input name="weight" type="number" step="0.1" min="20" max="300" value="${u.weight||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Mục tiêu</label>
+                                <select name="goal" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none">
+                                    <option value="">—</option>
+                                    <option value="giam_can" ${u.goal==='giam_can'?'selected':''}>Giảm cân</option>
+                                    <option value="tang_can" ${u.goal==='tang_can'?'selected':''}>Tăng cân</option>
+                                    <option value="duy_tri" ${u.goal==='duy_tri'?'selected':''}>Duy trì</option>
+                                    <option value="tang_co" ${u.goal==='tang_co'?'selected':''}>Tăng cơ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Cường độ vận động</label>
+                                <select name="activity_level" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-bold outline-none">
+                                    <option value="">—</option>
+                                    <option value="sedentary" ${u.activity_level==='sedentary'?'selected':''}>Ít vận động</option>
+                                    <option value="light" ${u.activity_level==='light'?'selected':''}>Nhẹ</option>
+                                    <option value="moderate" ${u.activity_level==='moderate'?'selected':''}>Vừa</option>
+                                    <option value="active" ${u.activity_level==='active'?'selected':''}>Năng động</option>
+                                    <option value="very_active" ${u.activity_level==='very_active'?'selected':''}>Rất năng động</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Mục tiêu tuần (kg)</label>
+                                <input name="weekly_goal" type="number" step="0.1" value="${u.weekly_goal??''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">BMR</label>
+                                <input name="bmr" type="number" step="1" value="${u.bmr||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">TDEE</label>
+                                <input name="tdee" type="number" step="1" value="${u.tdee||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Calo mục tiêu</label>
+                                <input name="target_calories" type="number" step="1" value="${u.target_calories||''}" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm font-num outline-none focus:border-primary">
+                            </div>
+                        </div>
+
+                        <h4 class="font-display font-bold text-dark text-sm border-b border-line pb-2 pt-2">Đặt lại mật khẩu</h4>
+                        <div class="flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="text-[10px] font-extrabold text-inkmute uppercase">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+                                <input type="password" id="adm-reset-pwd" placeholder="Để trống nếu không đổi" class="mt-1 w-full border border-line bg-paper rounded-xl p-2.5 text-sm outline-none focus:border-primary">
+                            </div>
+                            <button type="button" onclick="adminResetPwd(${u.id})" class="btn-press px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold whitespace-nowrap">Đặt lại MK</button>
+                        </div>
+                    </form>
+                `;
+
+                let footer = `<button onclick="closeUserModal()" class="btn-press px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-inkmute">Đóng</button>`;
+                footer += `<button onclick="document.getElementById('adm-user-edit-form').requestSubmit()" class="btn-press px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm shadow-primary/25">Lưu thay đổi</button>`;
+                if (!isSelf) {
+                    footer = `
+                        <button onclick="adminToggleLock(${u.id}); closeUserModal();" class="btn-press px-3 py-2.5 rounded-xl border text-xs font-bold ${u.is_active?'text-amber-600 bg-amber-50 border-amber-100':'text-emerald-600 bg-emerald-50 border-emerald-100'}">${u.is_active?'Khóa TK':'Mở khóa'}</button>
+                        <button onclick="adminDeleteUser(${u.id}); closeUserModal();" class="btn-press px-3 py-2.5 rounded-xl border border-rose-100 bg-rose-50 text-rose-500 text-xs font-bold">Xóa TK</button>
+                        <div class="flex-1"></div>
+                    ` + footer;
+                }
+                document.getElementById('adm-modal-footer').innerHTML = footer;
+                document.getElementById('adm-user-modal').classList.remove('hidden');
+            });
+        }
+
+        function closeUserModal() {
+            document.getElementById('adm-user-modal')?.classList.add('hidden');
+        }
+
+        function adminSaveUser(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const fd = new FormData(form);
+            const payload = {};
+            fd.forEach((v, k) => { payload[k] = v; });
+            // Role change separately if needed
+            const roleEl = document.getElementById('adm-edit-role');
+            const newRole = roleEl ? roleEl.value : null;
+
+            fetch(`/api/admin/users/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload),
+            }).then(r => r.json()).then(async d => {
+                if (d.status !== 'success') {
+                    showToast(d.message || 'Lỗi', 'error');
+                    return;
+                }
+                if (newRole && roleEl && !roleEl.disabled) {
+                    const rr = await fetch(`/api/admin/users/${id}/role`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ role: newRole }),
+                    }).then(r => r.json());
+                    if (rr.status !== 'success') {
+                        showToast(rr.message || 'Cập nhật role thất bại', 'error');
+                    }
+                }
+                showToast('Đã lưu thông tin người dùng', 'success');
+                closeUserModal();
+                loadAdminUsers();
+                loadAdminStats();
+            }).catch(() => showToast('Lỗi kết nối', 'error'));
+        }
+
+        function adminResetPwd(id) {
+            const pwd = document.getElementById('adm-reset-pwd')?.value || '';
+            if (pwd.length < 6) { showToast('Mật khẩu tối thiểu 6 ký tự', 'error'); return; }
+            if (!confirm('Xác nhận đặt lại mật khẩu cho tài khoản này?')) return;
+            fetch(`/api/admin/users/${id}/reset-password`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ new_password: pwd }),
+            }).then(r => r.json()).then(d => {
+                showToast(d.message || '', d.status === 'success' ? 'success' : 'error');
+                if (d.status === 'success') document.getElementById('adm-reset-pwd').value = '';
+            });
+        }
+
         function adminToggleLock(id) {
             if (!confirm('Xác nhận khóa/mở khóa tài khoản này?')) return;
             fetch(`/api/admin/users/${id}/lock`, {method:'POST'}).then(r=>r.json()).then(d => {
@@ -2837,7 +4544,7 @@
             });
         }
         function adminDeleteUser(id) {
-            if (!confirm('XÓA vĩnh viễn tài khoản này?')) return;
+            if (!confirm('XÓA vĩnh viễn tài khoản này và toàn bộ dữ liệu liên quan?')) return;
             fetch(`/api/admin/users/${id}`, {method:'DELETE'}).then(r=>r.json()).then(d => {
                 showToast(d.message||'', d.status==='success'?'info':'error');
                 if (d.status==='success') { loadAdminUsers(); loadAdminStats(); }

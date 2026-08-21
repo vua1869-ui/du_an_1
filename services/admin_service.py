@@ -99,13 +99,9 @@ def get_dashboard_stats():
 # USERS
 # ═══════════════════════════════════════════
 
-def get_all_users(q=None, status=None, role=None):
-    conn = get_db_connection()
-    c = conn.cursor()
-    sql = '''SELECT id, fullname, email, role, created_at,
-                    COALESCE(is_active,1) as is_active,
-                    nickname, gender, height, weight, goal, tdee, target_calories
-             FROM users WHERE 1=1'''
+def _users_where(q=None, status=None, role=None):
+    """Build WHERE clause + params for user listing."""
+    sql = ' WHERE 1=1'
     params = []
     if q:
         sql += ' AND (LOWER(fullname) LIKE ? OR LOWER(email) LIKE ? OR LOWER(COALESCE(nickname,"")) LIKE ?)'
@@ -118,20 +114,107 @@ def get_all_users(q=None, status=None, role=None):
     if role in ('admin', 'user'):
         sql += ' AND role=?'
         params.append(role)
-    sql += ' ORDER BY id DESC'
-    c.execute(sql, params)
+    return sql, params
+
+
+def get_all_users(q=None, status=None, role=None, page=1, per_page=20):
+    """
+    Lấy danh sách user có phân trang.
+    Trả về dict: { items, total, page, per_page, total_pages }
+    """
+    try:
+        page = max(1, int(page or 1))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        per_page = min(100, max(5, int(per_page or 20)))
+    except (TypeError, ValueError):
+        per_page = 20
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    where_sql, params = _users_where(q, status, role)
+
+    c.execute('SELECT COUNT(*) FROM users' + where_sql, params)
+    total = c.fetchone()[0] or 0
+
+    offset = (page - 1) * per_page
+    sql = '''SELECT id, fullname, email, role, created_at,
+                    COALESCE(is_active,1) as is_active,
+                    nickname, gender, birth_year, height, weight, goal,
+                    activity_level, weekly_goal, bmr, tdee, target_calories,
+                    avatar_url, google_id,
+                    CASE WHEN password IS NULL OR password = '' THEN 0 ELSE 1 END as has_password
+             FROM users''' + where_sql + ' ORDER BY id DESC LIMIT ? OFFSET ?'
+    c.execute(sql, params + [per_page, offset])
     rows = c.fetchall()
     conn.close()
-    return [
+
+    items = [
         {
             'id': r[0], 'fullname': r[1], 'email': r[2], 'role': r[3],
             'created_at': r[4], 'is_active': bool(r[5]),
-            'nickname': r[6], 'gender': r[7], 'height': r[8], 'weight': r[9],
-            'goal': r[10], 'tdee': r[11], 'target_calories': r[12],
+            'nickname': r[6], 'gender': r[7], 'birth_year': r[8],
+            'height': r[9], 'weight': r[10], 'goal': r[11],
+            'activity_level': r[12], 'weekly_goal': r[13],
+            'bmr': r[14], 'tdee': r[15], 'target_calories': r[16],
+            'avatar_url': r[17],
+            'google_linked': bool(r[18]),
+            'has_password': bool(r[19]),
             'status': 'active' if r[5] else 'locked',
         }
         for r in rows
     ]
+    total_pages = max(1, (total + per_page - 1) // per_page) if total else 1
+    return {
+        'items': items,
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': total_pages,
+    }
+
+
+def export_users_csv(q=None, status=None, role=None):
+    """Xuất toàn bộ user (theo filter) ra CSV string."""
+    import csv
+    import io
+    data = get_all_users(q=q, status=status, role=role, page=1, per_page=10000)
+    users = data.get('items') or []
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow([
+        'ID', 'Họ tên', 'Email', 'Nickname', 'Role', 'Trạng thái',
+        'Giới tính', 'Năm sinh', 'Chiều cao', 'Cân nặng', 'Mục tiêu',
+        'Hoạt động', 'BMR', 'TDEE', 'Calo mục tiêu',
+        'Google', 'Có MK', 'Ngày tạo',
+    ])
+    goal_map = {
+        'giam_can': 'Giảm cân', 'tang_can': 'Tăng cân',
+        'duy_tri': 'Duy trì', 'tang_co': 'Tăng cơ',
+    }
+    for u in users:
+        writer.writerow([
+            u.get('id'),
+            u.get('fullname') or '',
+            u.get('email') or '',
+            u.get('nickname') or '',
+            u.get('role') or '',
+            'Hoạt động' if u.get('is_active') else 'Đã khóa',
+            u.get('gender') or '',
+            u.get('birth_year') or '',
+            u.get('height') or '',
+            u.get('weight') or '',
+            goal_map.get(u.get('goal'), u.get('goal') or ''),
+            u.get('activity_level') or '',
+            u.get('bmr') or '',
+            u.get('tdee') or '',
+            u.get('target_calories') or '',
+            'Có' if u.get('google_linked') else 'Không',
+            'Có' if u.get('has_password') else 'Không',
+            u.get('created_at') or '',
+        ])
+    return buf.getvalue()
 
 
 def get_user_detail(user_id):
@@ -140,7 +223,8 @@ def get_user_detail(user_id):
     c.execute('''SELECT id, fullname, email, role, created_at,
                         COALESCE(is_active,1), nickname, gender, birth_year,
                         height, weight, goal, activity_level, weekly_goal,
-                        bmr, tdee, target_calories
+                        bmr, tdee, target_calories, avatar_url, google_id,
+                        CASE WHEN password IS NULL OR password = '' THEN 0 ELSE 1 END
                  FROM users WHERE id=?''', (user_id,))
     u = c.fetchone()
     if not u:
@@ -153,7 +237,33 @@ def get_user_detail(user_id):
     water_count = c.fetchone()[0]
     c.execute('SELECT COUNT(*) FROM weight_logs WHERE user_id=?', (user_id,))
     weight_count = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM user_achievements WHERE user_id=?', (user_id,))
+    try:
+        ach_count = c.fetchone()[0]
+    except Exception:
+        ach_count = 0
+    # Recent weight
+    c.execute('SELECT weight, date FROM weight_logs WHERE user_id=? ORDER BY date DESC LIMIT 1', (user_id,))
+    last_w = c.fetchone()
+    # Chat & analysis usage
+    chat_count = 0
+    analysis_count = 0
+    try:
+        c.execute('SELECT COUNT(*) FROM chat_logs WHERE user_id=?', (user_id,))
+        chat_count = c.fetchone()[0]
+        c.execute('SELECT COUNT(*) FROM analysis_logs WHERE user_id=?', (user_id,))
+        analysis_count = c.fetchone()[0]
+    except Exception:
+        pass
     conn.close()
+
+    age = None
+    if u[8]:
+        try:
+            from datetime import date as _date
+            age = _date.today().year - int(u[8])
+        except Exception:
+            age = None
 
     return {
         'status': 'success',
@@ -165,13 +275,141 @@ def get_user_detail(user_id):
             'height': u[9], 'weight': u[10], 'goal': u[11],
             'activity_level': u[12], 'weekly_goal': u[13],
             'bmr': u[14], 'tdee': u[15], 'target_calories': u[16],
+            'avatar_url': u[17],
+            'google_linked': bool(u[18]),
+            'has_password': bool(u[19]),
+            'age': age,
             'stats': {
                 'food_logs': log_count,
                 'water_logs': water_count,
                 'weight_logs': weight_count,
+                'achievements': ach_count,
+                'chat_messages': chat_count,
+                'image_analyses': analysis_count,
             },
+            'last_weight': {'weight': last_w[0], 'date': last_w[1]} if last_w else None,
         },
     }
+
+
+def update_user(user_id, data, admin_id=None):
+    """Admin cập nhật toàn bộ thông tin hồ sơ người dùng."""
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id, email, role FROM users WHERE id=?', (user_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    fullname = (data.get('fullname') or '').strip()
+    if not fullname:
+        conn.close()
+        return {'status': 'error', 'message': 'Họ tên không được để trống'}
+    if len(fullname) > 120:
+        conn.close()
+        return {'status': 'error', 'message': 'Họ tên quá dài'}
+
+    email = (data.get('email') or '').strip().lower()
+    if email and email != (row[1] or '').lower():
+        try:
+            from email_validator import validate_email, EmailNotValidError
+            validate_email(email)
+        except Exception:
+            conn.close()
+            return {'status': 'error', 'message': 'Email không hợp lệ'}
+        c.execute('SELECT id FROM users WHERE LOWER(email)=? AND id!=?', (email, user_id))
+        if c.fetchone():
+            conn.close()
+            return {'status': 'error', 'message': 'Email đã được sử dụng bởi tài khoản khác'}
+    else:
+        email = row[1]
+
+    nickname = (data.get('nickname') or '').strip()[:60] or None
+    gender = data.get('gender')
+    if gender not in ('male', 'female', 'other', None, ''):
+        gender = None
+    if gender == '':
+        gender = None
+
+    def _num(key, lo=None, hi=None):
+        v = data.get(key)
+        if v is None or v == '':
+            return None
+        try:
+            n = float(v)
+            if lo is not None and n < lo:
+                return None
+            if hi is not None and n > hi:
+                return None
+            return n
+        except (TypeError, ValueError):
+            return None
+
+    birth_year = data.get('birth_year')
+    try:
+        birth_year = int(birth_year) if birth_year not in (None, '') else None
+        if birth_year is not None and (birth_year < 1920 or birth_year > 2020):
+            birth_year = None
+    except (TypeError, ValueError):
+        birth_year = None
+
+    height = _num('height', 50, 250)
+    weight = _num('weight', 20, 300)
+    weekly_goal = _num('weekly_goal', -5, 5)
+    bmr = _num('bmr', 500, 5000)
+    tdee = _num('tdee', 500, 8000)
+    target_calories = _num('target_calories', 500, 8000)
+
+    goal = data.get('goal')
+    if goal not in ('giam_can', 'tang_can', 'duy_tri', 'tang_co', None, ''):
+        goal = None
+    if goal == '':
+        goal = None
+
+    activity = data.get('activity_level')
+    if activity not in ('sedentary', 'light', 'moderate', 'active', 'very_active', None, ''):
+        activity = None
+    if activity == '':
+        activity = None
+
+    c.execute(
+        '''UPDATE users SET fullname=?, email=?, nickname=?, gender=?, birth_year=?,
+           height=?, weight=?, goal=?, activity_level=?, weekly_goal=?,
+           bmr=?, tdee=?, target_calories=?
+           WHERE id=?''',
+        (
+            fullname, email, nickname, gender, birth_year,
+            height, weight, goal, activity, weekly_goal,
+            bmr, tdee, target_calories, user_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã cập nhật thông tin người dùng'}
+
+
+def admin_reset_password(user_id, new_password, admin_id=None):
+    """Admin đặt lại mật khẩu cho user."""
+    pwd = (new_password or '').strip()
+    if len(pwd) < 6:
+        return {'status': 'error', 'message': 'Mật khẩu mới tối thiểu 6 ký tự'}
+    if len(pwd) > 128:
+        return {'status': 'error', 'message': 'Mật khẩu quá dài'}
+
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id FROM users WHERE id=?', (user_id,))
+    if not c.fetchone():
+        conn.close()
+        return {'status': 'error', 'message': 'Không tìm thấy người dùng'}
+
+    from services.auth_service import hash_password
+    hashed = hash_password(pwd)
+    c.execute('UPDATE users SET password=? WHERE id=?', (hashed, user_id))
+    conn.commit()
+    conn.close()
+    return {'status': 'success', 'message': 'Đã đặt lại mật khẩu thành công'}
 
 
 def toggle_user_lock(user_id, admin_id):

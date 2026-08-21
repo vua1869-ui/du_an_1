@@ -11,9 +11,19 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'data', 'balance_nutrition.db')
 EXCEL_PATH = os.path.join(BASE_DIR, 'data', 'mon_an.xlsx')
 
+# Load .env nếu có
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+except Exception:
+    pass
+
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.secret_key = os.getenv("SECRET_KEY", binascii.hexlify(os.urandom(24)).decode())
+# Khóa session ổn định (tránh mất đăng nhập mỗi lần restart)
+app.secret_key = os.getenv("SECRET_KEY", "nutriai-dev-secret-key-change-in-production")
+app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID', '')
+app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET', '')
 
 os.makedirs(os.path.join(BASE_DIR, 'data'), exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, 'templates'), exist_ok=True)
