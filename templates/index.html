@@ -1042,9 +1042,9 @@
                                     <label for="chat-image-upload" class="btn-press w-9 h-9 flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-primary rounded-xl transition-colors cursor-pointer" title="Tải ảnh từ thư viện">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     </label>
-                                    <label for="chat-camera-capture" class="btn-press w-9 h-9 flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-primary rounded-xl transition-colors cursor-pointer" title="Chụp ảnh món ăn">
+                                    <button type="button" onclick="openChatCamera()" class="btn-press w-9 h-9 flex items-center justify-center text-inkmute hover:bg-surface2 hover:text-primary rounded-xl transition-colors cursor-pointer" title="Chụp ảnh món ăn">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    </label>
+                                    </button>
                                 </div>
                                 <input type="file" id="chat-image-upload" accept="image/*" class="hidden" onchange="uploadImageForChat(event)">
                                 <input type="file" id="chat-camera-capture" accept="image/*" capture="environment" class="hidden" onchange="uploadImageForChat(event)">
@@ -3160,9 +3160,14 @@
         let cameraStream = null;
 
         async function openCamera() {
+            // Scan feature UI có thể chưa có trong DOM — chuyển sang chat camera
             const container = document.getElementById('camera-container');
             const video = document.getElementById('camera-stream');
             const buttons = document.getElementById('scan-buttons');
+            if (!container || !video) {
+                openChatCamera();
+                return;
+            }
             
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -3172,7 +3177,7 @@
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 video.srcObject = cameraStream;
                 container.classList.remove('hidden');
-                buttons.classList.add('hidden');
+                if (buttons) buttons.classList.add('hidden');
             } catch (err) {
                 showToast("Không thể mở Camera! Vui lòng cấp quyền.", "error");
             }
@@ -3183,13 +3188,16 @@
                 cameraStream.getTracks().forEach(track => track.stop());
                 cameraStream = null;
             }
-            document.getElementById('camera-container').classList.add('hidden');
-            document.getElementById('scan-buttons').classList.remove('hidden');
+            const container = document.getElementById('camera-container');
+            const buttons = document.getElementById('scan-buttons');
+            if (container) container.classList.add('hidden');
+            if (buttons) buttons.classList.remove('hidden');
         }
 
         function captureCamera() {
             const video = document.getElementById('camera-stream');
             const canvas = document.getElementById('camera-canvas');
+            if (!video || !canvas) return;
             const context = canvas.getContext('2d');
 
             canvas.width = video.videoWidth;
@@ -3206,6 +3214,117 @@
             }, 'image/jpeg', 0.9);
         }
 
+        // ================= CHAT CAMERA (getUserMedia) =================
+        let chatCameraStream = null;
+        let chatCameraFacing = 'environment'; // 'environment' | 'user'
+
+        async function openChatCamera() {
+            // Fallback: nếu không hỗ trợ getUserMedia → dùng input capture native
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                const fallback = document.getElementById('chat-camera-capture');
+                if (fallback) {
+                    fallback.click();
+                    return;
+                }
+                showToast("Trình duyệt không hỗ trợ Camera. Hãy dùng nút tải ảnh.", "error");
+                return;
+            }
+
+            const modal = document.getElementById('chat-camera-modal');
+            const video = document.getElementById('chat-camera-video');
+            if (!modal || !video) {
+                showToast("Lỗi giao diện camera.", "error");
+                return;
+            }
+
+            try {
+                // Dừng stream cũ nếu còn
+                if (chatCameraStream) {
+                    chatCameraStream.getTracks().forEach(t => t.stop());
+                    chatCameraStream = null;
+                }
+
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: chatCameraFacing },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+
+                chatCameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = chatCameraStream;
+                await video.play().catch(() => {});
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } catch (err) {
+                console.error('Chat camera error:', err);
+                // Fallback sang file input capture (mobile vẫn mở camera native)
+                const fallback = document.getElementById('chat-camera-capture');
+                if (fallback) {
+                    showToast("Không mở được camera trong app — chuyển sang camera hệ thống.", "error");
+                    fallback.click();
+                } else {
+                    let msg = "Không thể mở Camera.";
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        msg = "Bạn đã từ chối quyền Camera. Hãy bật quyền trong cài đặt trình duyệt.";
+                    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                        msg = "Không tìm thấy camera trên thiết bị.";
+                    } else if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                        msg = "Camera cần HTTPS hoặc localhost. Vui lòng truy cập qua HTTPS.";
+                    }
+                    showToast(msg, "error");
+                }
+            }
+        }
+
+        function closeChatCamera() {
+            if (chatCameraStream) {
+                chatCameraStream.getTracks().forEach(t => t.stop());
+                chatCameraStream = null;
+            }
+            const video = document.getElementById('chat-camera-video');
+            if (video) video.srcObject = null;
+            const modal = document.getElementById('chat-camera-modal');
+            if (modal) modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function captureChatCamera() {
+            const video = document.getElementById('chat-camera-video');
+            const canvas = document.getElementById('chat-camera-canvas');
+            if (!video || !canvas || !video.videoWidth) {
+                showToast("Camera chưa sẵn sàng, thử lại sau giây lát.", "error");
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            closeChatCamera();
+
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    showToast("Không chụp được ảnh. Thử lại.", "error");
+                    return;
+                }
+                const file = new File([blob], "chat_camera_" + Date.now() + ".jpg", { type: "image/jpeg" });
+                processChatImageFile(file);
+            }, 'image/jpeg', 0.92);
+        }
+
+        async function switchChatCameraFacing() {
+            chatCameraFacing = chatCameraFacing === 'environment' ? 'user' : 'environment';
+            // Mở lại với facing mới
+            const modal = document.getElementById('chat-camera-modal');
+            const wasOpen = modal && !modal.classList.contains('hidden');
+            if (wasOpen) {
+                await openChatCamera();
+            }
+        }
+
         function uploadImage(e) {
             const file = e.target.files[0];
             if (file) {
@@ -3214,8 +3333,15 @@
         }
 
         function processImageFile(file) {
-            document.getElementById('loading-scan').classList.remove('hidden');
-            document.getElementById('scan-result').classList.add('hidden');
+            const loadingScan = document.getElementById('loading-scan');
+            const scanResult = document.getElementById('scan-result');
+            // Nếu không có UI scan riêng → dùng luồng chat
+            if (!loadingScan || !scanResult) {
+                processChatImageFile(file);
+                return;
+            }
+            loadingScan.classList.remove('hidden');
+            scanResult.classList.add('hidden');
             
             const formData = new FormData(); 
             formData.append('image', file);
@@ -3335,10 +3461,18 @@
         function uploadImageForChat(e) {
             const file = e.target.files[0];
             if (!file) return;
-            // Cho phép chọn lại cùng file / chụp lại
             try { e.target.value = ''; } catch (_) {}
-            
+            processChatImageFile(file);
+        }
+
+        function processChatImageFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showToast("Vui lòng chọn file ảnh hợp lệ.", "error");
+                return;
+            }
             let chatBox = document.getElementById('chat-box');
+            if (!chatBox) return;
+
             const imgURL = URL.createObjectURL(file);
             chatBox.innerHTML += `
             <div class="flex justify-end items-end gap-3 mb-4 animate-fade-in-up">
@@ -3348,7 +3482,7 @@
                 </div>
                 <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm shadow-sm border border-primary/30 shrink-0 mb-1">🥑</div>
             </div>`;
-            
+
             const loadingId = 'loading-' + Date.now();
             chatBox.innerHTML += `
             <div id="${loadingId}" class="flex justify-start items-end gap-3 mb-4">
@@ -3363,36 +3497,41 @@
             </div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const formData = new FormData(); 
+            const formData = new FormData();
             formData.append('image', file);
             try {
                 const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 if (u.id) formData.append('user_id', u.id);
                 if (u.target_calories || u.tdee) formData.append('tdee', u.target_calories || u.tdee);
             } catch (_) {}
-            if (onboardingData && onboardingData.user_id) formData.append('user_id', onboardingData.user_id);
-            if (onboardingData && onboardingData.tdee) formData.append('tdee', onboardingData.tdee);
+            if (typeof onboardingData !== 'undefined' && onboardingData) {
+                if (onboardingData.user_id) formData.append('user_id', onboardingData.user_id);
+                if (onboardingData.tdee) formData.append('tdee', onboardingData.tdee);
+            }
 
             fetch('/api/analyze', { method: 'POST', body: formData }).then(res => res.json()).then(data => {
-                document.getElementById(loadingId).remove();
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
                 let html = '';
-                
-                if(data.analysis && data.analysis.items && Object.keys(data.analysis.items).length > 0) {
+
+                if (data.error) {
+                    html = `<p class="text-sm text-red-600">Lỗi phân tích: ${data.error}</p>`;
+                } else if (data.analysis && data.analysis.items && Object.keys(data.analysis.items).length > 0) {
                     let itemsArray = Array.isArray(data.analysis.items) ? data.analysis.items : Object.values(data.analysis.items);
-                    
+
                     let totalCals = 0;
                     let foodNames = [];
                     itemsArray.forEach(f => {
                         totalCals += (f.calories || f.cals || 0);
                         foodNames.push(f.name);
                     });
-                    
+
                     html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tôi đã phân tích hình ảnh bạn gửi. Mâm cơm của bạn bao gồm: <b>${foodNames.join(", ")}</b>.</p>`;
                     html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tổng lượng calo ước tính là <b>${totalCals} kcal</b>.</p>`;
-                    if(data.analysis.description) {
+                    if (data.analysis.description) {
                         html += `<p class="text-sm font-medium text-slate-700 bg-surface2/50 p-3 rounded-lg mb-4 border border-line leading-relaxed">${data.analysis.description.replace(/\n/g, '<br>')}</p>`;
                     }
-                    
+
                     html += `
                     <div class="mt-2 pt-4 border-t border-line text-center">
                         <button onclick='addMultipleFoodsToLog(${JSON.stringify(itemsArray).replace(/'/g, "&#39;")})' class="bg-gradient-to-r from-ocean to-primary text-white px-5 py-3 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all w-full flex items-center justify-center gap-2">
@@ -3400,12 +3539,12 @@
                             Thêm tất cả vào nhật ký
                         </button>
                     </div>`;
-                    
+
                 } else if (data.analysis && data.analysis.dish_name) {
-                    let f = data.analysis;
+                    let f = Object.assign({}, data.analysis);
                     f.name = f.dish_name;
                     html += `<p class="text-sm mb-3 text-dark leading-relaxed">Tôi nhận diện đây là: <b>${f.name}</b> với khoảng <b>${f.calories || 0} kcal</b>.</p>`;
-                    if(f.description) {
+                    if (f.description) {
                         html += `<p class="text-sm font-medium text-slate-700 bg-surface2/50 p-3 rounded-lg mb-4 border border-line leading-relaxed">${f.description.replace(/\n/g, '<br>')}</p>`;
                     }
                     html += `
@@ -3428,7 +3567,8 @@
                 </div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             }).catch(err => {
-                document.getElementById(loadingId).remove();
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
                 chatBox.innerHTML += `
                 <div class="flex justify-start items-end gap-3 mb-4">
                     <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-sm shadow-sm border border-line shrink-0 mb-1">🤖</div>
@@ -3438,8 +3578,6 @@
                 </div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
-            // Reset input
-            e.target.value = '';
         }
 
         async function addMultipleFoodsToLog(foods) {
@@ -5549,6 +5687,33 @@
         try { applyPrivacyMode(); } catch(e) {}
 
     </script>
+
+    <!-- Modal Camera cho Chat -->
+    <div id="chat-camera-modal" class="hidden fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center">
+        <div class="relative w-full max-w-lg mx-4 aspect-[3/4] sm:aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl">
+            <video id="chat-camera-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+            <canvas id="chat-camera-canvas" class="hidden"></canvas>
+            <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+                <p class="text-white text-sm font-bold bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">📷 Chụp ảnh món ăn</p>
+                <button type="button" onclick="closeChatCamera()" class="w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition" title="Đóng">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6">
+                <button type="button" onclick="closeChatCamera()" class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition" title="Hủy">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <button type="button" onclick="captureChatCamera()" class="w-16 h-16 rounded-full bg-white border-4 border-primary shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition" title="Chụp">
+                    <span class="w-12 h-12 rounded-full bg-primary"></span>
+                </button>
+                <button type="button" onclick="switchChatCameraFacing()" class="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition" title="Đổi camera">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </button>
+            </div>
+        </div>
+        <p class="text-white/70 text-xs mt-4 font-medium">Giữ điện thoại ngang / dọc cho rõ món ăn · Cần quyền Camera</p>
+    </div>
+
     <style>
         /* Privacy mode: blur sensitive numbers */
         body.privacy-mode #total-cals,
@@ -5566,7 +5731,5 @@
             user-select: none;
         }
     </style>
-</body>
-</html>
 </body>
 </html>
