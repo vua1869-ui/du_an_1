@@ -432,17 +432,17 @@ def predict_with_groq(image_bytes):
     try:
         b64_image = base64.b64encode(image_bytes).decode('utf-8')
         response = groq_client.chat.completions.create(
-            model=GROQ_MODEL,
+            model="qwen/qwen3.6-27b",
             messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": DETAILED_FOOD_PROMPT},
+                        {"type": "text", "text": DETAILED_FOOD_PROMPT + "\nMake sure to output ONLY valid JSON without Markdown formatting."},
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}}
                     ]
                 }
             ],
-            response_format={"type": "json_object"}
+            max_tokens=4096
         )
         result = safe_json_parse(response.choices[0].message.content)
         analysis = normalize_analysis(result)
@@ -452,8 +452,13 @@ def predict_with_groq(image_bytes):
             "message": "Đã phân tích bằng Groq (lớp dự phòng)!"
         }
     except Exception as e:
-        print(f"Lỗi khi phân tích ảnh bằng Groq: {e}")
-        return {"error": f"Lỗi khi phân tích ảnh bằng Groq: {str(e)}"}
+        raw_output = "No response"
+        try:
+            raw_output = response.choices[0].message.content
+        except:
+            pass
+        print(f"Loi khi phan tich anh bang Groq: {e}\nRaw output: {raw_output}")
+        return {"error": f"Loi khi phan tich anh bang Groq: {str(e)}"}
  
  
 def predict_image(image_bytes):

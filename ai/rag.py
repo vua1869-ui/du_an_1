@@ -33,7 +33,8 @@ except Exception as e:
 collection = None
 try:
     import chromadb
-    chroma_client = chromadb.Client()
+    from chromadb.config import Settings
+    chroma_client = chromadb.Client(Settings(anonymized_telemetry=False))
     collection = chroma_client.get_or_create_collection(name="food_database")
 except Exception as e:
     print(f"[WARN] ChromaDB không khả dụng: {e}")
